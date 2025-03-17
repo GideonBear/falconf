@@ -18,6 +18,8 @@ impl Piece for File {
         // TODO:
         //  - Find the file in the repo
         //  - Link the file (using hardlink & root)
+        let repo_file = find_file(&self.location);
+
     }
 }
 
