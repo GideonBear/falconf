@@ -82,9 +82,6 @@ struct File {
 
 impl Piece for File {
     fn execute(&self) -> ExecutionResult {
-        // TODO:
-        //  - Find the file in the repo
-        //  - Link the file (using hardlink & sudo)
         let repo_file = find_file(&self.location);
 
         let mut cmd = if_sudo("ln", self.sudo)
