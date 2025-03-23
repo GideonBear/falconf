@@ -4,6 +4,7 @@ use crate::utils;
 use std::fs::remove_file;
 use std::path::PathBuf;
 use crate::errors::{ExecutionError, ExecutionResult, ResultExitStatusExt};
+use crate::logging::CommandExt;
 
 /// Sym/hardlink a file
 #[derive(Debug, Clone)]
@@ -25,7 +26,10 @@ impl Piece for File {
             cmd.arg("--symbolic");
         }
 
-        cmd.status().to_execution_result()
+        cmd
+            .log_execution()
+            .status()
+            .to_execution_result()
     }
 
     fn undo(&self) -> Option<ExecutionResult> {

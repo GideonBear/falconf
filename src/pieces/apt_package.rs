@@ -1,6 +1,7 @@
 use crate::piece::Piece;
 use std::process;
 use crate::errors::{ExecutionResult, ResultExitStatusExt};
+use crate::logging::CommandExt;
 
 /// Install a package with apt
 #[derive(Debug, Clone)]
@@ -34,6 +35,7 @@ impl AptPackage {
         process::Command::new("apt")
             .arg(command)
             .args(pieces.iter().map(|p| &p.package))
+            .log_execution()
             .status()
             .to_execution_result()
     }
