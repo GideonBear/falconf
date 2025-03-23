@@ -2,6 +2,7 @@ use crate::piece::{ExecutionResult, Piece, ResultExitStatusExt};
 use std::process;
 
 /// Install a package with apt
+#[derive(Debug, Clone)]
 pub(crate) struct AptPackage {
     /// The package to install
     package: String,

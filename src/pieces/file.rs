@@ -5,6 +5,7 @@ use std::fs::remove_file;
 use std::path::PathBuf;
 
 /// Sym/hardlink a file
+#[derive(Debug, Clone)]
 pub(crate) struct File {
     location: PathBuf,
     /// If the file should be a hardlink or symlink

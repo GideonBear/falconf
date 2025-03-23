@@ -1,5 +1,7 @@
 use std::io;
 use std::process::ExitStatus;
+
+#[derive(Debug)]
 pub(crate) enum ExecutionError {
     ProcessError(ExitStatus),
     IoError(io::Error),

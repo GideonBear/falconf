@@ -9,6 +9,7 @@ mod file;
 mod manual;
 
 #[non_exhaustive]
+#[derive(Debug, Clone)]
 pub(crate) enum PieceEnum {
     AptPackage(AptPackage),
     Command(Command),

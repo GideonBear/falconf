@@ -2,6 +2,7 @@ use crate::piece::{ExecutionResult, Piece, ResultExitStatusExt};
 use crate::utils;
 
 /// Run an arbitrary command with bash
+#[derive(Debug, Clone)]
 pub(crate) struct Command {
     /// The command to run
     command: String,

@@ -2,6 +2,7 @@ use crate::piece::{ExecutionResult, Piece};
 use crate::utils::press_enter;
 
 /// Request the user to perform an action manually *sad robot face*
+#[derive(Debug, Clone)]
 pub(crate) struct Manual {
     /// The message to show the user
     message: String,
