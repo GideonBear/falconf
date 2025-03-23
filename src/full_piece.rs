@@ -1,8 +1,8 @@
 use crate::machine::Machine;
-use crate::piece::Piece;
+use crate::pieces::PieceEnum;
 
-struct FullPiece<T: Piece> {
-    piece: T,
+pub(crate) struct FullPiece {
+    piece: PieceEnum,
     done_on: Vec<Machine>,
     undo: bool,
     undone_on: Vec<Machine>,
