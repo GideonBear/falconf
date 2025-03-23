@@ -1,10 +1,11 @@
 use std::fs::remove_file;
 use std::path::PathBuf;
 use crate::piece::{ExecutionError, ExecutionResult, Piece, ResultExitStatusExt};
+use crate::repo::find_file;
 use crate::utils;
 
 /// Sym/hardlink a file
-struct File {
+pub(crate) struct File {
     location: PathBuf,
     /// If the file should be a hardlink or symlink
     hardlink: bool,

@@ -1,6 +1,6 @@
 use std::process;
 
-pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
+pub(crate) fn if_sudo(program: &str, sudo: bool) -> process::Command {
     if sudo {
         let mut cmd = process::Command::new("sudo");
         cmd.arg(program);
@@ -8,4 +8,8 @@ pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
     } else {
         process::Command::new(program)
     }
+}
+
+pub(crate) fn press_enter() {
+    todo!();
 }

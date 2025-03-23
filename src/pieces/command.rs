@@ -2,7 +2,7 @@ use crate::piece::{ExecutionResult, Piece, ResultExitStatusExt};
 use crate::utils;
 
 /// Run an arbitrary command with bash
-struct Command {
+pub(crate) struct Command {
     /// The command to run
     command: String,
     /// If the command should be run with sudo

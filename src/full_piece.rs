@@ -1,3 +1,4 @@
+use crate::machine::Machine;
 use crate::piece::Piece;
 
 struct FullPiece<T: Piece> {
