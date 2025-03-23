@@ -1,8 +1,8 @@
-use std::fs::remove_file;
-use std::path::PathBuf;
 use crate::piece::{ExecutionError, ExecutionResult, Piece, ResultExitStatusExt};
 use crate::repo::find_file;
 use crate::utils;
+use std::fs::remove_file;
+use std::path::PathBuf;
 
 /// Sym/hardlink a file
 pub(crate) struct File {
@@ -18,22 +18,15 @@ impl Piece for File {
         let repo_file = find_file(&self.location);
 
         let mut cmd = utils::if_sudo("ln", self.sudo);
-        cmd
-            .arg(repo_file)
-            .arg(&self.location);
+        cmd.arg(repo_file).arg(&self.location);
         if !self.hardlink {
             cmd.arg("--symbolic");
         }
 
-        cmd
-            .status()
-            .to_execution_result()
+        cmd.status().to_execution_result()
     }
 
     fn undo(&self) -> Option<ExecutionResult> {
-        Some(
-            remove_file(&self.location)
-                .map_err(ExecutionError::from)
-        )
+        Some(remove_file(&self.location).map_err(ExecutionError::from))
     }
 }

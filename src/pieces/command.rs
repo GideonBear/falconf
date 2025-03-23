@@ -18,7 +18,9 @@ impl Piece for Command {
 
     fn undo(&self) -> Option<ExecutionResult> {
         // This will return None if self.undo_command is None
-        self.undo_command.as_ref().map(|cmd| Self::run_command(cmd, self.sudo))
+        self.undo_command
+            .as_ref()
+            .map(|cmd| Self::run_command(cmd, self.sudo))
     }
 }
 

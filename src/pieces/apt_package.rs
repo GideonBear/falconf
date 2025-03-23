@@ -1,5 +1,5 @@
-use std::process;
 use crate::piece::{ExecutionResult, Piece, ResultExitStatusExt};
+use std::process;
 
 /// Install a package with apt
 pub(crate) struct AptPackage {

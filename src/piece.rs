@@ -33,16 +33,14 @@ pub(crate) trait ResultExitStatusExt {
 
 impl ResultExitStatusExt for io::Result<ExitStatus> {
     fn to_execution_result(self) -> ExecutionResult {
-        self
-            .map_err(ExecutionError::from)?
-            .to_execution_result()
+        self.map_err(ExecutionError::from)?.to_execution_result()
     }
 }
 
 /// A single piece of configuration
 pub(crate) trait Piece: Sized {
     /// Execute the piece
-    fn execute(&self)-> ExecutionResult;
+    fn execute(&self) -> ExecutionResult;
 
     /// Execute multiple of these pieces in bulk. Returns None when this Piece does not support it.
     fn execute_bulk(_pieces: &[&Self]) -> Option<ExecutionResult> {

@@ -1,9 +1,10 @@
-mod piece;
-mod repo;
+mod data;
 mod full_piece;
-mod utils;
-mod pieces;
 mod machine;
+mod piece;
+mod pieces;
+mod repo;
+mod utils;
 
 fn main() {
     println!("Hello, world!");
