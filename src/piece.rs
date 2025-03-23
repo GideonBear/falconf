@@ -34,7 +34,7 @@ pub(crate) trait ResultExitStatusExt {
 impl ResultExitStatusExt for io::Result<ExitStatus> {
     fn to_execution_result(self) -> ExecutionResult {
         self
-            .map_err(|e| ExecutionError::from(e))?
+            .map_err(ExecutionError::from)?
             .to_execution_result()
     }
 }

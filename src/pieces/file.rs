@@ -17,8 +17,9 @@ impl Piece for File {
     fn execute(&self) -> ExecutionResult {
         let repo_file = find_file(&self.location);
 
-        let mut cmd = utils::if_sudo("ln", self.sudo)
-            .arg(&repo_file)
+        let mut cmd = utils::if_sudo("ln", self.sudo);
+        cmd
+            .arg(repo_file)
             .arg(&self.location);
         if !self.hardlink {
             cmd.arg("--symbolic");
@@ -32,7 +33,7 @@ impl Piece for File {
     fn undo(&self) -> Option<ExecutionResult> {
         Some(
             remove_file(&self.location)
-                .map_err(|e| ExecutionError::from(e))
+                .map_err(ExecutionError::from)
         )
     }
 }
