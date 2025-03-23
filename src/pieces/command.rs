@@ -1,4 +1,5 @@
-use crate::piece::{ExecutionResult, Piece, ResultExitStatusExt};
+use crate::errors::{ExecutionResult, ResultExitStatusExt};
+use crate::piece::Piece;
 use crate::utils;
 
 /// Run an arbitrary command with bash

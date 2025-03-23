@@ -1,8 +1,9 @@
-use crate::piece::{ExecutionError, ExecutionResult, Piece, ResultExitStatusExt};
+use crate::piece::Piece;
 use crate::repo::find_file;
 use crate::utils;
 use std::fs::remove_file;
 use std::path::PathBuf;
+use crate::errors::{ExecutionError, ExecutionResult, ResultExitStatusExt};
 
 /// Sym/hardlink a file
 #[derive(Debug, Clone)]

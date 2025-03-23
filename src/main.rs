@@ -5,6 +5,7 @@ mod piece;
 mod pieces;
 mod repo;
 mod utils;
+mod errors;
 
 fn main() {
     println!("Hello, world!");

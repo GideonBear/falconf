@@ -1,5 +1,6 @@
-use crate::piece::{ExecutionResult, Piece, ResultExitStatusExt};
+use crate::piece::Piece;
 use std::process;
+use crate::errors::{ExecutionResult, ResultExitStatusExt};
 
 /// Install a package with apt
 #[derive(Debug, Clone)]

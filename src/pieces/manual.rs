@@ -1,4 +1,5 @@
-use crate::piece::{ExecutionResult, Piece};
+use crate::errors::ExecutionResult;
+use crate::piece::Piece;
 use crate::utils::press_enter;
 
 /// Request the user to perform an action manually *sad robot face*
