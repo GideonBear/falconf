@@ -11,9 +11,9 @@ pub(crate) struct FullPiece {
 }
 
 pub(crate) enum Todo {
-    NO,
-    DO,
-    UNDO,
+    No,
+    Do,
+    Undo,
 }
 
 impl FullPiece {
@@ -30,11 +30,11 @@ impl FullPiece {
         };
 
         match (done, undo, undone) {
-            (false, false, _) => Todo::DO, // Not done, not to undo: DO (undone is `None`)
-            (false, true, _) => Todo::NO, // Not done, but to undo: NO (undone must be `Some(false)`)
-            (true, false, _) => Todo::NO, // Done, not to undo: NO (undone is `None`)
-            (true, true, Some(false)) => Todo::UNDO, // Done, but to undo, and not undone yet: UNDO
-            (true, true, Some(true)) => Todo::NO, // Done, but to undo, but already undone: NO
+            (false, false, _) => Todo::Do, // Not done, not to undo: Do (undone is `None`)
+            (false, true, _) => Todo::No, // Not done, but to undo: No (undone must be `Some(false)`)
+            (true, false, _) => Todo::No, // Done, not to undo: No (undone is `None`)
+            (true, true, Some(false)) => Todo::Undo, // Done, but to undo, and not undone yet: Undo
+            (true, true, Some(true)) => Todo::No, // Done, but to undo, but already undone: No
             (_, true, None) => unreachable!(), // SAFETY: We just accounted for this
         }
     }
