@@ -12,6 +12,7 @@ use std::path::PathBuf;
 pub struct File {
     /// The location the file should be linked to
     location: PathBuf,
+    // TODO: Check if hardlinks actually work when new versions of files are pulled with git
     /// If the file should be a hardlink or symlink
     hardlink: bool,
     /// If the file should be created as sudo
