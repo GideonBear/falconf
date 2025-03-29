@@ -2,6 +2,7 @@ use crate::errors::{ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use std::process;
+use serde::{Deserialize, Serialize};
 
 /// Install a package with apt
 #[derive(Debug, Clone, Serialize, Deserialize)]
