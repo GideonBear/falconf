@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-// TODO: contains a unique identifier that is generated on first boot and stored in some config file
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Machine(Uuid);
 
