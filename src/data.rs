@@ -6,7 +6,7 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Data {
     pieces: Vec<FullPiece>,
     machines: HashMap<Machine, MachineData>,
