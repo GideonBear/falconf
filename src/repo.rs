@@ -4,7 +4,7 @@ use crate::data::{Data, DataError};
 
 pub struct Repo {
     repo: Repository,
-    data: Data,
+    pub data: Data,
 }
 
 impl Repo {
@@ -21,8 +21,13 @@ impl Repo {
     }
 
     pub fn from_repository(repo: Repository) -> Result<Self, RepoError> {
-        let data = Data::from_file(&repo.workdir().ok_or(RepoError::InvalidInstallation("Git repository is bare".to_string()))?.join("data.json"))?;
+        let data = Data::from_file(&data_path_from_repository(&repo)?)?;
         Ok(Self { repo, data })
+    }
+    
+    pub fn write_data(&self) -> Result<(), RepoError> {
+        self.data.to_file(&data_path_from_repository(&self.repo)?)?;
+        Ok(())
     }
 }
 
@@ -42,4 +47,8 @@ impl From<DataError> for RepoError {
     fn from(err: DataError) -> Self {
         RepoError::Data(err)
     }
+}
+
+fn data_path_from_repository(repo: &Repository) -> Result<PathBuf, RepoError> {
+    Ok(repo.workdir().ok_or(RepoError::InvalidInstallation("Git repository is bare".to_string()))?.join("data.json"))
 }
