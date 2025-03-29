@@ -10,6 +10,7 @@ pub(crate) struct FullPiece {
     undone_on: Option<Vec<Machine>>,
 }
 
+#[derive(Debug, Clone)]
 pub(crate) enum Todo {
     No,
     Do,
