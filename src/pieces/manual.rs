@@ -12,21 +12,20 @@ pub(crate) struct Manual {
 
 impl Piece for Manual {
     fn execute(&self) -> ExecutionResult {
-        Self::print_message(&self.message);
-        Ok(())
+        Self::print_message(&self.message)
     }
 
     fn undo(&self) -> Option<ExecutionResult> {
-        Self::print_message(&format!("UNDO the following change: {}", self.message));
-        Some(Ok(()))
+        Some(Self::print_message(&format!("UNDO the following change: {}", self.message)))
     }
 }
 
 impl Manual {
-    fn print_message(message: &str) {
+    fn print_message(message: &str) -> ExecutionResult {
         println!("Manual action required");
         println!("{}", message);
         println!("Continue when the action is performed.");
-        press_enter();
+        press_enter()?;
+        Ok(())
     }
 }
