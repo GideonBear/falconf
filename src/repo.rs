@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
-use git2::Repository;
 use crate::data::{Data, DataError};
+use git2::Repository;
+use std::path::{Path, PathBuf};
 
 pub struct Repo {
     repo: Repository,
@@ -11,7 +11,7 @@ impl Repo {
     pub fn new(remote: &str, path: &Path) -> Result<Self, RepoError> {
         Repository::clone(remote, path).map(Repo::from_repository)?
     }
-    
+
     pub fn from_path(path: &Path) -> Result<Self, RepoError> {
         Repository::open(path).map(Repo::from_repository)?
     }
@@ -24,7 +24,7 @@ impl Repo {
         let data = Data::from_file(&data_path_from_repository(&repo)?)?;
         Ok(Self { repo, data })
     }
-    
+
     pub fn write_data(&self) -> Result<(), RepoError> {
         self.data.to_file(&data_path_from_repository(&self.repo)?)?;
         Ok(())
@@ -50,5 +50,10 @@ impl From<DataError> for RepoError {
 }
 
 fn data_path_from_repository(repo: &Repository) -> Result<PathBuf, RepoError> {
-    Ok(repo.workdir().ok_or(RepoError::InvalidInstallation("Git repository is bare".to_string()))?.join("data.json"))
+    Ok(repo
+        .workdir()
+        .ok_or(RepoError::InvalidInstallation(
+            "Git repository is bare".to_string(),
+        ))?
+        .join("data.json"))
 }

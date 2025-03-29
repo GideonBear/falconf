@@ -1,9 +1,9 @@
-use crate::machine::Machine;
-use std::env::home_dir;
-use std::{fs, io};
-use std::path::PathBuf;
 use crate::data::DataError;
+use crate::machine::Machine;
 use crate::repo::{Repo, RepoError};
+use std::env::home_dir;
+use std::path::PathBuf;
+use std::{fs, io};
 
 struct Installation {
     machine: Machine,
@@ -12,32 +12,27 @@ struct Installation {
 
 impl Installation {
     fn get_root() -> Result<PathBuf, GetRootError> {
-        Ok(home_dir()
-            .ok_or(GetRootError::NoHomeDir)?
-            .join(".falconf"))
+        Ok(home_dir().ok_or(GetRootError::NoHomeDir)?.join(".falconf"))
     }
-    
+
     fn new(remote: &str) -> Result<Self, InstallationCreateError> {
         let root = Self::get_root()?;
         if root.exists() {
             return Err(InstallationCreateError::Exists);
         }
         fs::create_dir(&root)?;
-        
+
         let machine_path = root.join("machine");
         let repo_path = root.join("repo");
-        
+
         let machine = Machine::new();
         fs::write(&machine_path, &machine.0)?;
-        
+
         let repo = Repo::new(remote, &repo_path)?;
-        
-        Ok(Self {
-            machine,
-            repo,
-        })
+
+        Ok(Self { machine, repo })
     }
-    
+
     fn get() -> Result<Self, InstallationGetError> {
         let root = Self::get_root()?;
 
@@ -49,7 +44,9 @@ impl Installation {
             fs::read_to_string(root.join("machine"))?
                 .parse()
                 .map_err(|_| {
-                    InstallationGetError::InvalidInstallation("`machine` file does not contain a valid UUID".to_string())
+                    InstallationGetError::InvalidInstallation(
+                        "`machine` file does not contain a valid UUID".to_string(),
+                    )
                 })?,
         );
 
@@ -148,7 +145,9 @@ impl From<RepoError> for InstallationCreateError {
         match err {
             RepoError::Git(err) => err.into(),
             RepoError::Data(err) => err.into(),
-            RepoError::InvalidInstallation(err) => InstallationCreateError::InvalidInstallation(err),
+            RepoError::InvalidInstallation(err) => {
+                InstallationCreateError::InvalidInstallation(err)
+            }
         }
     }
 }
