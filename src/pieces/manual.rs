@@ -1,9 +1,10 @@
 use crate::errors::ExecutionResult;
 use crate::piece::Piece;
 use crate::utils::press_enter;
+use serde::{Deserialize, Serialize};
 
 /// Request the user to perform an action manually *sad robot face*
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Manual {
     /// The message to show the user
     message: String,

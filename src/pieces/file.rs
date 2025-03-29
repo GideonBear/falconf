@@ -1,13 +1,14 @@
+use crate::errors::{ExecutionError, ExecutionResult, ResultExitStatusExt};
+use crate::logging::CommandExt;
 use crate::piece::Piece;
 use crate::repo::find_file;
 use crate::utils;
+use serde::{Deserialize, Serialize};
 use std::fs::remove_file;
 use std::path::PathBuf;
-use crate::errors::{ExecutionError, ExecutionResult, ResultExitStatusExt};
-use crate::logging::CommandExt;
 
 /// Sym/hardlink a file
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct File {
     location: PathBuf,
     /// If the file should be a hardlink or symlink
@@ -26,10 +27,7 @@ impl Piece for File {
             cmd.arg("--symbolic");
         }
 
-        cmd
-            .log_execution()
-            .status()
-            .to_execution_result()
+        cmd.log_execution().status().to_execution_result()
     }
 
     fn undo(&self) -> Option<ExecutionResult> {

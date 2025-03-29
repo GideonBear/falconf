@@ -1,10 +1,10 @@
-use crate::piece::Piece;
-use std::process;
 use crate::errors::{ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
+use crate::piece::Piece;
+use std::process;
 
 /// Install a package with apt
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct AptPackage {
     /// The package to install
     package: String,

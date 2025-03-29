@@ -1,10 +1,11 @@
+use serde::{Deserialize, Serialize};
 use crate::errors::{ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use crate::utils;
 
 /// Run an arbitrary command with bash
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Command {
     /// The command to run
     command: String,
