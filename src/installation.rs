@@ -2,7 +2,8 @@ use crate::machine::Machine;
 use std::env::home_dir;
 use std::{fs, io};
 use std::path::PathBuf;
-use crate::repo::Repo;
+use crate::data::DataError;
+use crate::repo::{Repo, RepoError};
 
 struct Installation {
     machine: Machine,
@@ -65,7 +66,8 @@ enum GetRootError {
 enum InstallationGetError {
     NotFound,
     InvalidInstallation(String),
-    GitError(git2::Error),
+    Git(git2::Error),
+    Data(DataError),
     Io(io::Error),
     NoHomeDir,
 }
@@ -78,7 +80,7 @@ impl From<io::Error> for InstallationGetError {
 
 impl From<git2::Error> for InstallationGetError {
     fn from(err: git2::Error) -> Self {
-        InstallationGetError::GitError(err)
+        InstallationGetError::Git(err)
     }
 }
 
@@ -90,11 +92,29 @@ impl From<GetRootError> for InstallationGetError {
     }
 }
 
+impl From<DataError> for InstallationGetError {
+    fn from(err: DataError) -> Self {
+        InstallationGetError::Data(err)
+    }
+}
+
+impl From<RepoError> for InstallationGetError {
+    fn from(err: RepoError) -> Self {
+        match err {
+            RepoError::Git(err) => err.into(),
+            RepoError::Data(err) => err.into(),
+            RepoError::InvalidInstallation(err) => InstallationGetError::InvalidInstallation(err),
+        }
+    }
+}
+
 enum InstallationCreateError {
     Exists,
-    GitError(git2::Error),
+    Git(git2::Error),
+    Data(DataError),
     Io(io::Error),
     NoHomeDir,
+    InvalidInstallation(String),
 }
 
 impl From<io::Error> for InstallationCreateError {
@@ -105,7 +125,13 @@ impl From<io::Error> for InstallationCreateError {
 
 impl From<git2::Error> for InstallationCreateError {
     fn from(err: git2::Error) -> Self {
-        InstallationCreateError::GitError(err)
+        InstallationCreateError::Git(err)
+    }
+}
+
+impl From<DataError> for InstallationCreateError {
+    fn from(err: DataError) -> Self {
+        InstallationCreateError::Data(err)
     }
 }
 
@@ -113,6 +139,16 @@ impl From<GetRootError> for InstallationCreateError {
     fn from(err: GetRootError) -> Self {
         match err {
             GetRootError::NoHomeDir => InstallationCreateError::NoHomeDir,
+        }
+    }
+}
+
+impl From<RepoError> for InstallationCreateError {
+    fn from(err: RepoError) -> Self {
+        match err {
+            RepoError::Git(err) => err.into(),
+            RepoError::Data(err) => err.into(),
+            RepoError::InvalidInstallation(err) => InstallationCreateError::InvalidInstallation(err),
         }
     }
 }

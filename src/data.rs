@@ -7,7 +7,7 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-struct Data {
+pub struct Data {
     pieces: Vec<FullPiece>,
     machines: HashMap<Machine, MachineData>,
 }
@@ -36,7 +36,7 @@ impl Data {
 }
 
 #[derive(Debug)]
-enum DataError {
+pub enum DataError {
     Io(std::io::Error),
     Json(serde_json::Error),
 }
