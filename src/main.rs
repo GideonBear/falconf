@@ -1,6 +1,7 @@
 mod data;
 mod errors;
 mod full_piece;
+mod installation;
 mod logging;
 mod machine;
 mod piece;
