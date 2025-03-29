@@ -1,10 +1,10 @@
 use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct Data {
@@ -13,21 +13,21 @@ struct Data {
 }
 
 impl Data {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             pieces: vec![],
             machines: HashMap::new(),
         }
     }
 
-    pub(crate) fn from_file(path: &Path) -> Result<Self, DataError> {
+    pub fn from_file(path: &Path) -> Result<Self, DataError> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
         let data = serde_json::from_reader(reader)?;
         Ok(data)
     }
 
-    pub(crate) fn to_file(&self, path: &Path) -> Result<(), DataError> {
+    pub fn to_file(&self, path: &Path) -> Result<(), DataError> {
         let file = File::create(path)?;
         let writer = BufWriter::new(file);
         serde_json::to_writer(writer, self)?;

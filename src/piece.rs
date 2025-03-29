@@ -1,7 +1,7 @@
 use crate::errors::ExecutionResult;
 
 /// A single piece of configuration
-pub(crate) trait Piece: Sized {
+pub trait Piece: Sized {
     /// Execute the piece
     fn execute(&self) -> ExecutionResult;
 

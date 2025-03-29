@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct FullPiece {
+pub struct FullPiece {
     piece: PieceEnum,
     done_on: Vec<Machine>,
     undo: bool,
@@ -11,7 +11,7 @@ pub(crate) struct FullPiece {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum Todo {
+pub enum Todo {
     No,
     Do,
     Undo,

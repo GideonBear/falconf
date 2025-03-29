@@ -2,7 +2,7 @@ use std::io;
 use std::process::ExitStatus;
 
 #[derive(Debug)]
-pub(crate) enum ExecutionError {
+pub enum ExecutionError {
     ProcessError(ExitStatus),
     IoError(io::Error),
 }
@@ -13,9 +13,9 @@ impl From<io::Error> for ExecutionError {
     }
 }
 
-pub(crate) type ExecutionResult = Result<(), ExecutionError>;
+pub type ExecutionResult = Result<(), ExecutionError>;
 
-pub(crate) trait ExitStatusExt {
+pub trait ExitStatusExt {
     fn to_execution_result(self) -> ExecutionResult;
 }
 
@@ -29,7 +29,7 @@ impl ExitStatusExt for ExitStatus {
     }
 }
 
-pub(crate) trait ResultExitStatusExt {
+pub trait ResultExitStatusExt {
     fn to_execution_result(self) -> ExecutionResult;
 }
 

@@ -1,12 +1,12 @@
-use serde::{Deserialize, Serialize};
 use crate::errors::{ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use crate::utils;
+use serde::{Deserialize, Serialize};
 
 /// Run an arbitrary command with bash
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Command {
+pub struct Command {
     /// The command to run
     command: String,
     /// If the command should be run with sudo

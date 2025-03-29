@@ -11,7 +11,7 @@ mod manual;
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) enum PieceEnum {
+pub enum PieceEnum {
     AptPackage(AptPackage),
     Command(Command),
     File(File),

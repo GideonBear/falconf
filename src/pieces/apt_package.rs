@@ -1,12 +1,12 @@
 use crate::errors::{ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
 use crate::piece::Piece;
-use std::process;
 use serde::{Deserialize, Serialize};
+use std::process;
 
 /// Install a package with apt
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct AptPackage {
+pub struct AptPackage {
     /// The package to install
     package: String,
 }

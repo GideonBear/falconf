@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 /// Request the user to perform an action manually *sad robot face*
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Manual {
+pub struct Manual {
     /// The message to show the user
     message: String,
 }
@@ -16,7 +16,10 @@ impl Piece for Manual {
     }
 
     fn undo(&self) -> Option<ExecutionResult> {
-        Some(Self::print_message(&format!("UNDO the following change: {}", self.message)))
+        Some(Self::print_message(&format!(
+            "UNDO the following change: {}",
+            self.message
+        )))
     }
 }
 

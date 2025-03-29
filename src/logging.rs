@@ -1,6 +1,6 @@
 use std::process::Command;
 
-pub(crate) trait CommandExt {
+pub trait CommandExt {
     fn log_execution(&mut self) -> &mut Self;
 }
 

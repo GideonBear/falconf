@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 /// Sym/hardlink a file
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct File {
+pub struct File {
     location: PathBuf,
     /// If the file should be a hardlink or symlink
     hardlink: bool,
