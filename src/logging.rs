@@ -19,3 +19,5 @@ fn log(message: impl Display) -> io::Result<()> {
     println!("{}", message);
     Ok(())
 }
+
+// TODO: log everywhere!
