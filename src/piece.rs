@@ -65,6 +65,6 @@ pub trait ResultExitStatusExt {
 
 impl ResultExitStatusExt for io::Result<ExitStatus> {
     fn to_execution_result(self) -> ExecutionResult {
-        self.map_err(ExecutionError::from)?.to_execution_result()
+        self?.to_execution_result()
     }
 }
