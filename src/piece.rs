@@ -32,7 +32,7 @@ pub trait Piece: Sized {
 
 #[derive(Debug)]
 pub enum ExecutionError {
-    ProcessError(ExitStatus),
+    Process(ExitStatus),
     IoError(io::Error),
     UndefinedUndo,
 }
@@ -54,7 +54,7 @@ impl ExitStatusExt for ExitStatus {
         if self.success() {
             Ok(())
         } else {
-            Err(ExecutionError::ProcessError(self))
+            Err(ExecutionError::Process(self))
         }
     }
 }
