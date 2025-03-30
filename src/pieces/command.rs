@@ -33,7 +33,7 @@ impl Command {
         utils::if_sudo("bash", sudo)
             .arg("-c")
             .arg(command)
-            .log_execution()
+            .log_execution()?
             .status()
             .to_execution_result()
     }

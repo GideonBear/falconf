@@ -29,7 +29,7 @@ impl Piece for File {
             cmd.arg("--symbolic");
         }
 
-        cmd.log_execution().status().to_execution_result()
+        cmd.log_execution()?.status().to_execution_result()
     }
 
     fn undo(&self) -> Option<ExecutionResult> {

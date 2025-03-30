@@ -38,7 +38,7 @@ impl AptPackage {
         process::Command::new("apt")
             .arg(command)
             .args(pieces.iter().map(|p| &p.package))
-            .log_execution()
+            .log_execution()?
             .status()
             .to_execution_result()
     }
