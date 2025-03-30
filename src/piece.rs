@@ -1,3 +1,4 @@
+use crate::pieces::file::FileError;
 use std::io;
 use std::process::ExitStatus;
 
@@ -35,11 +36,18 @@ pub enum ExecutionError {
     Process(ExitStatus),
     IoError(io::Error),
     UndefinedUndo,
+    File(FileError),
 }
 
 impl From<io::Error> for ExecutionError {
     fn from(err: io::Error) -> ExecutionError {
         ExecutionError::IoError(err)
+    }
+}
+
+impl From<FileError> for ExecutionError {
+    fn from(err: FileError) -> ExecutionError {
+        ExecutionError::File(err)
     }
 }
 
