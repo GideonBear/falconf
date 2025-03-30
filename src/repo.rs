@@ -18,10 +18,6 @@ impl Repo {
         Repository::open(path).map(Repo::from_repository)?
     }
 
-    pub fn file(&self, location: &Path) -> PathBuf {
-        todo!();
-    }
-
     fn get_data(repo: &Repository) -> Result<Data, RepoError> {
         Ok(Data::from_file(&data_path_from_repository(&repo)?)?)
     }
