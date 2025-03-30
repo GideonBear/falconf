@@ -1,4 +1,4 @@
-use crate::errors::ExecutionResult;
+use crate::piece::ExecutionResult;
 use crate::piece::Piece;
 use crate::pieces::apt_package::AptPackage;
 use crate::pieces::command::Command;

@@ -1,6 +1,6 @@
-use crate::errors::{ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
-use crate::piece::Piece;
+use crate::piece::ResultExitStatusExt;
+use crate::piece::{ExecutionResult, Piece};
 use serde::{Deserialize, Serialize};
 use std::process;
 

@@ -1,6 +1,6 @@
-use crate::errors::{ExecutionError, ExecutionResult, ResultExitStatusExt};
 use crate::logging::CommandExt;
-use crate::piece::Piece;
+use crate::piece::ResultExitStatusExt;
+use crate::piece::{ExecutionError, ExecutionResult, Piece};
 use crate::repo::find_file;
 use crate::utils;
 use serde::{Deserialize, Serialize};

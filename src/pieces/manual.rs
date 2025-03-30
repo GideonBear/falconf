@@ -1,4 +1,4 @@
-use crate::errors::ExecutionResult;
+use crate::piece::ExecutionResult;
 use crate::piece::Piece;
 use crate::utils::press_enter;
 use serde::{Deserialize, Serialize};
