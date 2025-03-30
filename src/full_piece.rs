@@ -1,4 +1,5 @@
 use crate::machine::Machine;
+use crate::piece::ExecutionResult;
 use crate::pieces::PieceEnum;
 use serde::{Deserialize, Serialize};
 
@@ -12,8 +13,8 @@ pub struct FullPiece {
 
 #[derive(Debug, Clone)]
 pub enum Todo {
-    No,
-    Do,
+    Noop,
+    Execute,
     Undo,
 }
 
@@ -31,22 +32,40 @@ impl FullPiece {
         };
 
         match (done, undo, undone) {
-            (false, false, _) => Todo::Do, // Not done, not to undo: Do (undone is `None`)
-            (false, true, _) => Todo::No, // Not done, but to undo: No (undone must be `Some(false)`)
-            (true, false, _) => Todo::No, // Done, not to undo: No (undone is `None`)
+            (false, false, _) => Todo::Execute, // Not done, not to undo: Execute (undone is `None`)
+            (false, true, _) => Todo::Noop, // Not done, but to undo: Noop (undone must be `Some(false)`)
+            (true, false, _) => Todo::Noop, // Done, not to undo: Noop (undone is `None`)
             (true, true, Some(false)) => Todo::Undo, // Done, but to undo, and not undone yet: Undo
-            (true, true, Some(true)) => Todo::No, // Done, but to undo, but already undone: No
+            (true, true, Some(true)) => Todo::Noop, // Done, but to undo, but already undone: Noop
             (_, true, None) => unreachable!(), // SAFETY: We just accounted for this
         }
     }
 
-    // TODO: We don't need this here but maybe somewhere else
-    // fn do_todo(&self, machine: &Machine) -> ExecutionResult {
-    //     match self.todo(machine) {
-    //         Todo::No => Ok(()),
-    //         Todo::Do => self.piece.execute(),
-    //         // SAFETY: if undo is true but the undo is undefined, the configuration is in an illegal state
-    //         Todo::Undo => self.piece.undo().unwrap(),
-    //     }
-    // }
+    fn do_todo(pieces: Vec<&mut Self>, machine: &Machine) -> ExecutionResult {
+        let mut to_execute = vec![];
+        let mut to_undo = vec![];
+
+        for piece in pieces {
+            match piece.todo(machine) {
+                Todo::Noop => {}
+                Todo::Execute => to_execute.push(piece),
+                Todo::Undo => to_undo.push(piece),
+            }
+        }
+
+        PieceEnum::execute_bulk(to_execute.iter().map(|x| &x.piece).collect())?;
+        for piece in to_execute {
+            piece.done_on.push(machine.clone());
+        }
+
+        PieceEnum::undo_bulk(to_undo.iter().map(|x| &x.piece).collect())?;
+        for piece in to_undo {
+            // SAFETY: since we got Todo::Undo back we can assume that `piece.undo == true`,
+            //  Thus `undone_on` must be `Some`, or the configuration is illegal.
+            assert!(piece.undo);
+            piece.undone_on.as_mut().unwrap().push(machine.clone());
+        }
+
+        Ok(())
+    }
 }
