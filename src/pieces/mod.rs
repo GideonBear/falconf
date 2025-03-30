@@ -6,10 +6,10 @@ use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
 use serde::{Deserialize, Serialize};
 
-mod apt_package;
-mod command;
-mod file;
-mod manual;
+pub mod apt_package;
+pub mod command;
+pub mod file;
+pub mod manual;
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
