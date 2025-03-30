@@ -19,7 +19,7 @@ impl Piece for AptPackage {
     }
 
     fn execute_bulk(pieces: &[&Self]) -> ExecutionResult {
-        Self::apt_command("install", pieces)
+        Self::apt_command(&["install"], pieces)
     }
 
     fn undo(&self) -> Option<ExecutionResult> {
@@ -29,14 +29,14 @@ impl Piece for AptPackage {
     }
 
     fn undo_bulk(pieces: &[&Self]) -> ExecutionResult {
-        Self::apt_command("remove", pieces)
+        Self::apt_command(&["remove", "--autoremove"], pieces)
     }
 }
 
 impl AptPackage {
-    fn apt_command(command: &str, pieces: &[&Self]) -> ExecutionResult {
+    fn apt_command(command: &[&str], pieces: &[&Self]) -> ExecutionResult {
         process::Command::new("apt")
-            .arg(command)
+            .args(command)
             .args(pieces.iter().map(|p| &p.package))
             .log_execution()?
             .status()
