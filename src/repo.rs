@@ -6,7 +6,7 @@ const BRANCH: &str = "main";
 
 pub struct Repo {
     repo: Repository,
-    pub data: Data,
+    data: Data,
 }
 
 impl Repo {
