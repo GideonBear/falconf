@@ -13,21 +13,23 @@ pub struct AptPackage {
 
 impl Piece for AptPackage {
     fn execute(&self) -> ExecutionResult {
-        // Safety: we implement the method below and know it will only return Some
-        Self::execute_bulk(&[self]).unwrap()
+        // Since execute_bulk is implemented we assume this is never called.
+        panic!();
+        Self::execute_bulk(&[self])
     }
 
-    fn execute_bulk(pieces: &[&Self]) -> Option<ExecutionResult> {
-        Some(Self::apt_command("install", pieces))
+    fn execute_bulk(pieces: &[&Self]) -> ExecutionResult {
+        Self::apt_command("install", pieces)
     }
 
     fn undo(&self) -> Option<ExecutionResult> {
-        // Safety: we implement the method below and know it will only return Some
-        Self::undo_bulk(&[self]).unwrap()
+        // Since execute_bulk is implemented we assume this is never called.
+        panic!();
+        Self::undo_bulk(&[self])
     }
 
-    fn undo_bulk(pieces: &[&Self]) -> Option<Option<ExecutionResult>> {
-        Some(Some(Self::apt_command("remove", pieces)))
+    fn undo_bulk(pieces: &[&Self]) -> Option<ExecutionResult> {
+        Some(Self::apt_command("remove", pieces))
     }
 }
 
