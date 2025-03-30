@@ -1,6 +1,7 @@
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use serde::{Deserialize, Serialize};
+use crate::errors::ExecutionResult;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
@@ -39,4 +40,14 @@ impl FullPiece {
             (_, true, None) => unreachable!(), // SAFETY: We just accounted for this
         }
     }
+    
+    // TODO: We don't need this here but maybe somewhere else
+    // fn do_todo(&self, machine: &Machine) -> ExecutionResult {
+    //     match self.todo(machine) {
+    //         Todo::No => Ok(()),
+    //         Todo::Do => self.piece.execute(),
+    //         // SAFETY: if undo is true but the undo is undefined, the configuration is in an illegal state
+    //         Todo::Undo => self.piece.undo().unwrap(),
+    //     }
+    // }
 }

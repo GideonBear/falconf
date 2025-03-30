@@ -1,10 +1,12 @@
 use std::io;
 use std::process::ExitStatus;
 
+// TODO: move this to piece.rs
 #[derive(Debug)]
 pub enum ExecutionError {
     ProcessError(ExitStatus),
     IoError(io::Error),
+    UndefinedUndo,
 }
 
 impl From<io::Error> for ExecutionError {

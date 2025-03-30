@@ -25,11 +25,11 @@ impl Piece for AptPackage {
     fn undo(&self) -> Option<ExecutionResult> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
-        Self::undo_bulk(&[self])
+        Some(Self::undo_bulk(&[self]))
     }
 
-    fn undo_bulk(pieces: &[&Self]) -> Option<ExecutionResult> {
-        Some(Self::apt_command("remove", pieces))
+    fn undo_bulk(pieces: &[&Self]) -> ExecutionResult {
+        Self::apt_command("remove", pieces)
     }
 }
 
