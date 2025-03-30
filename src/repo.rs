@@ -18,7 +18,7 @@ impl Repo {
         Repository::open(path).map(Repo::from_repository)?
     }
 
-    pub fn file(location: &Path) -> PathBuf {
+    pub fn file(&self, location: &Path) -> PathBuf {
         todo!();
     }
 
