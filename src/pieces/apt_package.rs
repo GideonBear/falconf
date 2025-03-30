@@ -15,7 +15,7 @@ impl Piece for AptPackage {
     fn execute(&self) -> ExecutionResult {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
-        Self::execute_bulk(&[self])
+        // Self::execute_bulk(&[self])
     }
 
     fn execute_bulk(pieces: &[&Self]) -> ExecutionResult {
@@ -25,7 +25,7 @@ impl Piece for AptPackage {
     fn undo(&self) -> Option<ExecutionResult> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
-        Some(Self::undo_bulk(&[self]))
+        // Some(Self::undo_bulk(&[self]))
     }
 
     fn undo_bulk(pieces: &[&Self]) -> ExecutionResult {
