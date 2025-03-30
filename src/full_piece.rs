@@ -60,7 +60,7 @@ impl FullPiece {
 
         PieceEnum::undo_bulk(to_undo.iter().map(|x| &x.piece).collect())?;
         for piece in to_undo {
-            // SAFETY: since we got Todo::Undo back we can assume that `piece.undo == true`,
+            // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undo == true`,
             //  Thus `undone_on` must be `Some`, or the configuration is illegal.
             assert!(piece.undo);
             piece.undone_on.as_mut().unwrap().push(machine.clone());
