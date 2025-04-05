@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
     piece: PieceEnum,
+    comment: Option<String>,
     done_on: Vec<Machine>,
     undo: bool,
     undone_on: Option<Vec<Machine>>,
