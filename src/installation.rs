@@ -26,7 +26,7 @@ impl Installation {
         let repo_path = root.join("repo");
 
         let machine = Machine::new();
-        fs::write(&machine_path, &machine.0)?;
+        fs::write(&machine_path, machine.0)?;
 
         let repo = Repo::new(remote, &repo_path)?;
 

@@ -19,7 +19,7 @@ impl Repo {
     }
 
     fn get_data(repo: &Repository) -> Result<Data, RepoError> {
-        Ok(Data::from_file(&data_path_from_repository(&repo)?)?)
+        Ok(Data::from_file(&data_path_from_repository(repo)?)?)
     }
 
     fn update_data(&mut self) -> Result<(), RepoError> {
@@ -61,7 +61,7 @@ impl Repo {
     fn commit(&self) -> Result<(), git2::Error> {
         let mut index = self.repo.index()?;
 
-        index.add_all(&["."], git2::IndexAddOption::DEFAULT, None)?;
+        index.add_all(["."], git2::IndexAddOption::DEFAULT, None)?;
         index.write()?;
 
         let oid = index.write_tree()?;
