@@ -2,14 +2,23 @@ use crate::machine::Machine;
 use crate::piece::ExecutionResult;
 use crate::pieces::PieceEnum;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
     piece: PieceEnum,
+    /// An optional comment to clarify the use of the piece
     comment: Option<String>,
+    /// The machines on which this piece is already done
     done_on: Vec<Machine>,
+    /// Whether this piece should be undone
     undo: bool,
+    /// The machines on which this piece is already undone
     undone_on: Option<Vec<Machine>>,
+    /// Whether this piece should be executed just once (so not on new machines)
+    one_time: bool,
+    /// The machines to do it on if one_time is true
+    one_time_todo_on: Option<Vec<Machine>>,
 }
 
 #[derive(Debug, Clone)]
@@ -68,5 +77,31 @@ impl FullPiece {
         }
 
         Ok(())
+    }
+
+    /// Returns true if the piece is safe to clean up
+    fn unused(&self) -> bool {
+        if self.undo {
+            // If it's something to undo (whether it's one_time or not),
+            //  we don't want to execute it on new machines and can remove it
+            //  if none of our existing machines need to have it undone
+
+            // SAFETY: if self.undo self.undo_on must be Some, or the configuration is in an illegal state
+            let undone_on = self.undone_on.as_ref().unwrap();
+            HashSet::from(&self.done_on) == HashSet::from(undone_on)
+        } else if self.one_time {
+            // We do not want to check with a list of all machines here, since
+            //  new machines that are added since the addition of the
+            //  one_time piece should not have the piece executed on them.
+
+            // SAFETY: if self.one_time self.one_time_todo_on must be Some, or the configuration is in an illegal state
+            let one_time_todo_on = self.one_time_todo_on.as_ref().unwrap();
+            HashSet::from(&self.done_on) == HashSet::from(one_time_todo_on)
+        } else {
+            // Any non-undo and non-one time pieces should never be cleaned up,
+            //  since they need to be executed on new machines.
+
+            false
+        }
     }
 }
