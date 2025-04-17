@@ -14,3 +14,11 @@ impl Machine {
 pub struct MachineData {
     hostname: String,
 }
+
+impl MachineData {
+    pub fn new() -> Self {
+        Self {
+            hostname: todo!(),
+        }
+    }
+}
