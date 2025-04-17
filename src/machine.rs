@@ -17,8 +17,6 @@ pub struct MachineData {
 
 impl MachineData {
     pub fn new() -> Self {
-        Self {
-            hostname: todo!(),
-        }
+        Self { hostname: todo!() }
     }
 }
