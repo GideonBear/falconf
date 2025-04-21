@@ -7,6 +7,7 @@ mod piece;
 mod pieces;
 mod repo;
 mod utils;
+mod cli;
 
 fn main() {
     println!("Hello, world!");
