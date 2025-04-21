@@ -20,6 +20,15 @@ impl Data {
         }
     }
 
+    pub fn pieces(&mut self) -> Vec<&mut FullPiece> {
+        // TODO: is this the best way?
+        self.pieces.iter_mut().collect()
+    }
+
+    pub fn machines(&self) -> &[Machine] {
+        self.machines.keys().collect()
+    }
+
     pub fn from_file(path: &Path) -> Result<Self, DataError> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);

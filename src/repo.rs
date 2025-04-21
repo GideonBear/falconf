@@ -14,6 +14,10 @@ impl Repo {
         Repository::clone(remote, path).map(Repo::from_repository)?
     }
 
+    pub fn data(&mut self) -> &mut Data {
+        &mut self.data
+    }
+
     pub fn from_path(path: &Path) -> Result<Self, RepoError> {
         Repository::open(path).map(Repo::from_repository)?
     }
@@ -118,7 +122,7 @@ impl From<DataError> for RepoError {
     }
 }
 
-enum PushPullError {
+pub enum PushPullError {
     Divergence,
     Git(git2::Error),
     Repo(RepoError),

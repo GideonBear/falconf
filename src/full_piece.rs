@@ -51,7 +51,7 @@ impl FullPiece {
         }
     }
 
-    fn do_todo(pieces: Vec<&mut Self>, machine: &Machine) -> ExecutionResult {
+    pub fn do_todo(pieces: Vec<&mut Self>, machine: &Machine) -> ExecutionResult {
         let mut to_execute = vec![];
         let mut to_undo = vec![];
 

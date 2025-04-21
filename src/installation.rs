@@ -5,12 +5,20 @@ use std::env::home_dir;
 use std::path::PathBuf;
 use std::{fs, io};
 
-struct Installation {
+pub struct Installation {
     machine: Machine,
     repo: Repo,
 }
 
 impl Installation {
+    pub fn machine(&self) -> &Machine {
+        &self.machine
+    }
+
+    pub fn repo(&mut self) -> &mut Repo {
+        &mut self.repo
+    }
+
     fn get_root() -> Result<PathBuf, GetRootError> {
         Ok(home_dir().ok_or(GetRootError::NoHomeDir)?.join(".falconf"))
     }
