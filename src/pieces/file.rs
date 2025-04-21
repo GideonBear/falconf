@@ -40,17 +40,15 @@ impl Piece for File {
 
 impl File {
     fn target_file(&self) -> Result<PathBuf, FileError> {
-        Ok(self.target_dir.join(self.location.strip_prefix("/")?))
+        Ok(self.target_dir.join(
+            self.location
+                .strip_prefix("/")
+                .map_err(|_| FileError::InvalidLocation)?,
+        ))
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum FileError {
     InvalidLocation,
-}
-
-impl From<StripPrefixError> for FileError {
-    fn from(_: StripPrefixError) -> Self {
-        FileError::InvalidLocation
-    }
 }
