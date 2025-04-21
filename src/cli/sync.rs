@@ -14,6 +14,9 @@ pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
     // Do out-of-sync (todo) changes
     FullPiece::do_todo(data.pieces(), installation.machine())?;
 
+    // Push changes
+    repo.write_and_push()?;
+
     Ok(())
 }
 
