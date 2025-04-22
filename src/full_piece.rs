@@ -1,8 +1,8 @@
 use crate::machine::Machine;
 use crate::piece::ExecutionResult;
 use crate::pieces::PieceEnum;
+use crate::utils::unordered_eq;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
@@ -101,7 +101,7 @@ impl FullPiece {
 
             // SAFETY: if self.undo self.undo_on must be Some, or the configuration is in an illegal state
             let undone_on = self.undone_on.as_ref().unwrap();
-            HashSet::from(&self.done_on) == HashSet::from(undone_on)
+            unordered_eq(&self.done_on, undone_on)
         } else if self.one_time {
             // We do not want to check with a list of all machines here, since
             //  new machines that are added since the addition of the
@@ -109,7 +109,7 @@ impl FullPiece {
 
             // SAFETY: if self.one_time self.one_time_todo_on must be Some, or the configuration is in an illegal state
             let one_time_todo_on = self.one_time_todo_on.as_ref().unwrap();
-            HashSet::from(&self.done_on) == HashSet::from(one_time_todo_on)
+            unordered_eq(&self.done_on, one_time_todo_on)
         } else {
             // Any non-undo and non-one time pieces should never be cleaned up,
             //  since they need to be executed on new machines.

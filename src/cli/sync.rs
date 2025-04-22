@@ -4,6 +4,7 @@ use crate::piece::ExecutionError;
 use crate::repo::PushPullError;
 
 pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
+    let machine = installation.machine().clone();
     let repo = installation.repo();
 
     // Pull the repo
@@ -12,7 +13,7 @@ pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
     let data = repo.data();
 
     // Do out-of-sync (todo) changes
-    FullPiece::do_todo(data.pieces(), installation.machine())?;
+    FullPiece::do_todo(data.pieces().iter_mut().collect(), &machine)?;
 
     // Push changes
     repo.write_and_push()?;

@@ -16,3 +16,7 @@ pub fn press_enter() -> io::Result<()> {
     io::stdin().read_line(&mut input)?;
     Ok(())
 }
+
+pub fn unordered_eq<T: Eq>(vec1: &Vec<T>, vec2: &Vec<T>) -> bool {
+    vec1.len() == vec2.len() && vec1.iter().all(|x| vec2.contains(x))
+}

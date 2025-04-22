@@ -20,12 +20,11 @@ impl Data {
         }
     }
 
-    pub fn pieces(&mut self) -> &mut [FullPiece] {
-        // TODO: can I use &mut [FullPiece] or &mut Vec<FullPiece> in places where Vec<&mut FullPiece> is used right now?
+    pub fn pieces(&mut self) -> &mut Vec<FullPiece> {
         &mut self.pieces
     }
 
-    pub fn machines(&self) -> &[Machine] {
+    pub fn machines(&self) -> Vec<&Machine> {
         self.machines.keys().collect()
     }
 
