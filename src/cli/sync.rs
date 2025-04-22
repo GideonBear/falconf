@@ -21,7 +21,7 @@ pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
     Ok(())
 }
 
-enum SyncError {
+pub enum SyncError {
     Execution(ExecutionError),
     PushPull(PushPullError),
 }

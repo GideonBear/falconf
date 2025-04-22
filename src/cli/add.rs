@@ -21,7 +21,7 @@ pub fn add(
     Ok(())
 }
 
-enum AddError {
+pub enum AddError {
     PushPull(PushPullError),
 }
 
