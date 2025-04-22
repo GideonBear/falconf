@@ -29,6 +29,19 @@ pub enum Todo {
 }
 
 impl FullPiece {
+    // TODO: one-time support
+    pub fn new(piece: PieceEnum, comment: Option<String>) -> Self {
+        Self {
+            piece,
+            comment,
+            done_on: vec![],
+            undo: false,
+            undone_on: None,
+            one_time: false,
+            one_time_todo_on: None,
+        }
+    }
+
     fn todo(&self, machine: &Machine) -> Todo {
         let done = self.done_on.contains(machine);
         let undo = self.undo;

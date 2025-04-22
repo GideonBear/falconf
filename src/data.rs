@@ -20,9 +20,9 @@ impl Data {
         }
     }
 
-    pub fn pieces(&mut self) -> Vec<&mut FullPiece> {
-        // TODO: is this the best way?
-        self.pieces.iter_mut().collect()
+    pub fn pieces(&mut self) -> &mut [FullPiece] {
+        // TODO: can I use &mut [FullPiece] or &mut Vec<FullPiece> in places where Vec<&mut FullPiece> is used right now?
+        &mut self.pieces
     }
 
     pub fn machines(&self) -> &[Machine] {
