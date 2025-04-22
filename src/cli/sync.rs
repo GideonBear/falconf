@@ -4,7 +4,7 @@ use crate::piece::ExecutionError;
 use crate::repo::PushPullError;
 
 pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
-    let machine = installation.machine().clone();
+    let machine = *installation.machine();
     let repo = installation.repo();
 
     // Pull the repo
