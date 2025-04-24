@@ -3,7 +3,7 @@ use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use color_eyre::Result;
 
-pub fn sync(args: SyncArgs) -> Result<()> {
+pub fn sync(_args: SyncArgs) -> Result<()> {
     let mut installation = Installation::get()?;
     let machine = *installation.machine();
     let repo = installation.repo();
