@@ -29,6 +29,16 @@ impl TestRemote {
             .status_checked()
             .unwrap();
 
+        // Make sure the branch is called "main"
+        Command::new("git")
+            .arg("-C")
+            .arg(&repo)
+            .arg("branch")
+            .arg("-m")
+            .arg("main")
+            .status_checked()
+            .unwrap();
+
         // Start the git daemon
         let mut daemon = Command::new("git")
             .arg("daemon")
