@@ -15,7 +15,7 @@ pub mod file;
 pub mod manual;
 
 macro_rules! unknown {
-    ($command:expr, $target:expr) => {{
+    ($command:expr, $target:expr, $args:expr) => {{
         warn!(concat!(
             "Unknown `",
             $command,
@@ -23,7 +23,7 @@ macro_rules! unknown {
             $target,
             "')"
         ));
-        PieceEnum::Command(Command::from_cli_autodetected(args))
+        PieceEnum::Command(Command::from_cli($args))
     }};
 }
 
@@ -108,10 +108,10 @@ impl PieceEnum {
     }
 
     fn from_cli_autodetect(args: AddArgs) -> Self {
-        let command = &args.value;
+        let command = args.value.clone();
         match command
             .iter()
-            .map(|&x| &*x)
+            .map(|x| x.as_str())
             .collect::<Vec<&str>>()
             .as_slice()
         {
@@ -120,11 +120,11 @@ impl PieceEnum {
             | ["apt", "install", "-y", package]
             | ["apt", "-y", "install", package] => {
                 info!("Using `apt` piece instead of `command`");
-                PieceEnum::Apt(Apt::from_cli_autodetected(args, package))
+                PieceEnum::Apt(Apt::from_cli_autodetected(args, package.to_string()))
             }
-            ["apt", ..] => unknown!("apt", "apt"),
-            ["ln", ..] => unknown!("ln", "file"),
-            _ => PieceEnum::Command(Command::from_cli_autodetected(args)),
+            ["apt", ..] => unknown!("apt", "apt", args),
+            ["ln", ..] => unknown!("ln", "file", args),
+            _ => PieceEnum::Command(Command::from_cli(args)),
         }
     }
 }

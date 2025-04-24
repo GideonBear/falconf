@@ -1,3 +1,4 @@
+use crate::cli::AddArgs;
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use color_eyre::Result;
@@ -40,5 +41,9 @@ impl Apt {
             .args(pieces.iter().map(|p| &p.package))
             .status_checked()?;
         Ok(())
+    }
+
+    pub fn from_cli_autodetected(_args: AddArgs, package: String) -> Self {
+        Self { package }
     }
 }
