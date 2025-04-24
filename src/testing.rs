@@ -71,7 +71,7 @@ mod tests {
     use std::io::Write;
 
     #[test]
-    fn test_test_repository() {
+    fn test_test_remote() {
         let mut remote = TestRemote::new();
 
         let tempdir = TempDir::new("test_local_repo").unwrap();
