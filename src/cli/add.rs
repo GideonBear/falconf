@@ -6,16 +6,13 @@ use color_eyre::Result;
 
 pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     // TODO
-    // piece_enum: PieceEnum,
-    // comment: Option<String>,
-    let mut installation = Installation::get(cli)?;
+    let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo();
-    let mut data = repo.data();
-    let mut pieces = data.pieces();
+    let data = repo.data();
+    let pieces = data.pieces();
 
     // Add the piece
-    // TODO
-    // pieces.push(FullPiece::new(piece_enum, comment));
+    pieces.push(FullPiece::from_cli(&args));
 
     // Push changes
     repo.write_and_push()?;

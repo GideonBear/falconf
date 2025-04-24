@@ -6,12 +6,12 @@ use std::process;
 
 /// Install a package with apt
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AptPackage {
+pub struct Apt {
     /// The package to install
     package: String,
 }
 
-impl Piece for AptPackage {
+impl Piece for Apt {
     fn execute(&self) -> Result<()> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
@@ -33,7 +33,7 @@ impl Piece for AptPackage {
     }
 }
 
-impl AptPackage {
+impl Apt {
     fn apt_command(command: &[&str], pieces: &[&Self]) -> Result<()> {
         process::Command::new("apt")
             .args(command)

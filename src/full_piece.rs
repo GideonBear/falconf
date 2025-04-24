@@ -1,3 +1,4 @@
+use crate::cli::AddArgs;
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use crate::utils::unordered_eq;
@@ -116,5 +117,9 @@ impl FullPiece {
 
             false
         }
+    }
+
+    pub fn from_cli(args: &AddArgs) -> Self {
+        Self::new(PieceEnum::from_cli(args), args.comment.clone())
     }
 }

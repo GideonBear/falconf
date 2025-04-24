@@ -80,7 +80,7 @@ struct SyncArgs {}
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 #[value(rename_all = "kebab-case")]
-enum Piece {
+pub enum Piece {
     /// Executes a command in a shell. Expects a command as value.
     Command,
     /// Installs an apt package. Expects a package name as value.
@@ -92,7 +92,11 @@ enum Piece {
 }
 
 #[derive(Args, Debug)]
-struct AddArgs {
+pub struct AddArgs {
+    /// An optional comment if the use of the piece is non-obvious
+    #[arg(long, short)]
+    pub comment: Option<String>,
+
     /// Omitting this argument will be interpreted as a `command` piece, but it will be translated
     /// to another piece whenever possible. For example, `falconf add apt install cowsay`
     /// will result in the same piece as `falconf add --apt cowsay`.
@@ -102,7 +106,7 @@ struct AddArgs {
         ("_file", "true", "file"),
         ("_manual", "true", "manual"),
     ])]
-    pub(crate) piece: Option<Piece>,
+    pub piece: Option<Piece>,
 
     /// Shorthand for `--piece=command`
     #[arg(long="command", action=SetTrue)]
@@ -124,7 +128,7 @@ struct AddArgs {
     /// Quoting this is optional; both `falconf add apt install cowsay` and
     /// `falconf add "apt install cowsay"` are allowed.
     #[arg(trailing_var_arg = true)]
-    value: Vec<String>,
+    pub value: Vec<String>,
 }
 
 pub fn main() -> Result<()> {

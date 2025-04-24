@@ -1,12 +1,14 @@
+use crate::cli;
+use crate::cli::AddArgs;
 use crate::piece::Piece;
-use crate::pieces::apt_package::AptPackage;
+use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
 use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
-pub mod apt_package;
+pub mod apt;
 pub mod command;
 pub mod file;
 pub mod manual;
@@ -14,7 +16,7 @@ pub mod manual;
 #[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PieceEnum {
-    AptPackage(AptPackage),
+    Apt(Apt),
     Command(Command),
     File(File),
     Manual(Manual),
@@ -24,7 +26,7 @@ impl PieceEnum {
     /// Execute the piece
     pub fn execute(&self) -> Result<()> {
         match self {
-            PieceEnum::AptPackage(p) => p.execute(),
+            PieceEnum::Apt(p) => p.execute(),
             PieceEnum::Command(c) => c.execute(),
             PieceEnum::File(f) => f.execute(),
             PieceEnum::Manual(m) => m.execute(),
@@ -34,7 +36,7 @@ impl PieceEnum {
     /// Undo the piece. Returns None when the undo is user-defined and has not been defined.
     pub fn undo(&self) -> Option<Result<()>> {
         match self {
-            PieceEnum::AptPackage(p) => p.undo(),
+            PieceEnum::Apt(p) => p.undo(),
             PieceEnum::Command(c) => c.undo(),
             PieceEnum::File(f) => f.undo(),
             PieceEnum::Manual(m) => m.undo(),
@@ -43,8 +45,8 @@ impl PieceEnum {
 
     /// Execute multiple pieces
     pub fn execute_bulk(pieces: Vec<&Self>) -> Result<()> {
-        let (apt_package, command, file, manual) = Self::sort_pieces(pieces);
-        AptPackage::execute_bulk(&apt_package)?;
+        let (apt, command, file, manual) = Self::sort_pieces(pieces);
+        Apt::execute_bulk(&apt)?;
         Command::execute_bulk(&command)?;
         File::execute_bulk(&file)?;
         Manual::execute_bulk(&manual)?;
@@ -53,26 +55,40 @@ impl PieceEnum {
 
     /// Undo multiple pieces.
     pub fn undo_bulk(pieces: Vec<&Self>) -> Result<()> {
-        let (apt_package, command, file, manual) = Self::sort_pieces(pieces);
-        AptPackage::undo_bulk(&apt_package)?;
+        let (apt, command, file, manual) = Self::sort_pieces(pieces);
+        Apt::undo_bulk(&apt)?;
         Command::undo_bulk(&command)?;
         File::undo_bulk(&file)?;
         Manual::undo_bulk(&manual)?;
         Ok(())
     }
 
-    pub fn sort_pieces(
-        pieces: Vec<&Self>,
-    ) -> (Vec<&AptPackage>, Vec<&Command>, Vec<&File>, Vec<&Manual>) {
-        let (mut apt_package, mut command, mut file, mut manual) = (vec![], vec![], vec![], vec![]);
+    pub fn sort_pieces(pieces: Vec<&Self>) -> (Vec<&Apt>, Vec<&Command>, Vec<&File>, Vec<&Manual>) {
+        let (mut apt, mut command, mut file, mut manual) = (vec![], vec![], vec![], vec![]);
         for piece in pieces {
             match piece {
-                PieceEnum::AptPackage(p) => apt_package.push(p),
+                PieceEnum::Apt(p) => apt.push(p),
                 PieceEnum::Command(c) => command.push(c),
                 PieceEnum::File(f) => file.push(f),
                 PieceEnum::Manual(m) => manual.push(m),
             }
         }
-        (apt_package, command, file, manual)
+        (apt, command, file, manual)
+    }
+
+    pub fn from_cli(args: &AddArgs) -> Self {
+        match args.piece {
+            None => Self::from_cli_autodetect(args),
+            Some(piece) => Self::from_cli_known(piece, args),
+        }
+    }
+
+    fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Self {
+        match piece {
+            cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)),
+            cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
+            cli::Piece::File => PieceEnum::File(File::from_cli(args)),
+            cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
+        }
     }
 }
