@@ -1,5 +1,6 @@
 #![deny(clippy::print_stdout)]
 #![deny(clippy::print_stderr)]
+#![allow(dead_code)] // TODO: remove
 
 use color_eyre::eyre;
 
