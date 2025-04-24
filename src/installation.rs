@@ -24,7 +24,7 @@ impl Installation {
         Ok(home_dir().ok_or_eyre("No home dir found")?.join(".falconf"))
     }
 
-    fn new(remote: &str) -> Result<Self> {
+    pub fn new(remote: &str) -> Result<Self> {
         let root = Self::get_root()?;
         if root.exists() {
             return Err(eyre!("Installation already exists"));
@@ -42,7 +42,7 @@ impl Installation {
         Ok(Self { machine, repo })
     }
 
-    fn get() -> Result<Self> {
+    pub fn get() -> Result<Self> {
         let root = Self::get_root()?;
 
         if !root.is_dir() {
