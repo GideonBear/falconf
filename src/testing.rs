@@ -1,7 +1,9 @@
 use crate::logging::CommandExt;
 use libc::{SIGTERM, kill};
+use std::env::set_current_dir;
 use std::io::BufRead;
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
+use std::path::PathBuf;
 use std::process::{Child, Command};
 use std::thread::sleep;
 use tempdir::TempDir;
@@ -51,6 +53,37 @@ impl TestRemote {
     fn address(&self) -> &str {
         "git://localhost/test_repo.git"
     }
+
+    fn clone_and_enter(&self) -> PathBuf {
+        let tempdir = TempDir::new("test_local_repo").unwrap();
+        let local = tempdir.path().join("test_repo");
+
+        Command::new("git")
+            .arg("clone")
+            .arg(self.address())
+            .arg(&local)
+            .status_checked()
+            .unwrap();
+
+        set_current_dir(&local).unwrap();
+
+        Command::new("git")
+            .arg("config")
+            .arg("user.email")
+            .arg("testing@example.com")
+            .arg("--local")
+            .status_checked()
+            .unwrap();
+        Command::new("git")
+            .arg("config")
+            .arg("user.name")
+            .arg("Test User")
+            .arg("--local")
+            .status_checked()
+            .unwrap();
+
+        local
+    }
 }
 
 impl Drop for TestRemote {
@@ -66,7 +99,6 @@ impl Drop for TestRemote {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env::set_current_dir;
     use std::fs::OpenOptions;
     use std::io::Write;
 
@@ -74,20 +106,9 @@ mod tests {
     fn test_test_remote() {
         let mut remote = TestRemote::new();
 
-        let tempdir = TempDir::new("test_local_repo").unwrap();
-        let local_1 = tempdir.path().join("test_repo_1");
-        let local_2 = tempdir.path().join("test_repo_2");
-
         // 1
 
-        Command::new("git")
-            .arg("clone")
-            .arg(remote.address())
-            .arg(&local_1)
-            .status_checked()
-            .unwrap();
-
-        set_current_dir(&local_1).unwrap();
+        let local_1 = remote.clone_and_enter();
 
         OpenOptions::new()
             .create(true)
@@ -119,14 +140,7 @@ mod tests {
 
         // 2
 
-        Command::new("git")
-            .arg("clone")
-            .arg(remote.address())
-            .arg(&local_2)
-            .status_checked()
-            .unwrap();
-
-        set_current_dir(&local_2).unwrap();
+        let local_2 = remote.clone_and_enter();
 
         assert!(local_2.join("test_file").exists());
         assert_eq!(
