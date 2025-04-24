@@ -28,7 +28,7 @@ pub struct File {
 impl Piece for File {
     fn execute(&self) -> Result<()> {
         // TODO: do stuff if the file exists
-        
+
         let target_file = self.target_file()?;
 
         let mut cmd = Command::new("ln");
