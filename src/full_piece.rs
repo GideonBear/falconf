@@ -1,7 +1,7 @@
 use crate::machine::Machine;
-use crate::piece::ExecutionResult;
 use crate::pieces::PieceEnum;
 use crate::utils::unordered_eq;
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -64,7 +64,7 @@ impl FullPiece {
         }
     }
 
-    pub fn do_todo(pieces: Vec<&mut Self>, machine: &Machine) -> ExecutionResult {
+    pub fn do_todo(pieces: Vec<&mut Self>, machine: &Machine) -> Result<()> {
         let mut to_execute = vec![];
         let mut to_undo = vec![];
 

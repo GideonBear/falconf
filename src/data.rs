@@ -1,5 +1,6 @@
 use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
@@ -28,35 +29,17 @@ impl Data {
         self.machines.keys().collect()
     }
 
-    pub fn from_file(path: &Path) -> Result<Self, DataError> {
+    pub fn from_file(path: &Path) -> Result<Self> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
         let data = serde_json::from_reader(reader)?;
         Ok(data)
     }
 
-    pub fn to_file(&self, path: &Path) -> Result<(), DataError> {
+    pub fn to_file(&self, path: &Path) -> Result<()> {
         let file = File::create(path)?;
         let writer = BufWriter::new(file);
         serde_json::to_writer(writer, self)?;
         Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub enum DataError {
-    Io(std::io::Error),
-    Json(serde_json::Error),
-}
-
-impl From<std::io::Error> for DataError {
-    fn from(e: std::io::Error) -> Self {
-        DataError::Io(e)
-    }
-}
-
-impl From<serde_json::Error> for DataError {
-    fn from(e: serde_json::Error) -> Self {
-        DataError::Json(e)
     }
 }

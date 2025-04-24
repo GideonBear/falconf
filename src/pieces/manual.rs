@@ -1,6 +1,6 @@
-use crate::piece::ExecutionResult;
 use crate::piece::Piece;
 use crate::utils::press_enter;
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
 /// Request the user to perform an action manually *sad robot face*
@@ -11,11 +11,11 @@ pub struct Manual {
 }
 
 impl Piece for Manual {
-    fn execute(&self) -> ExecutionResult {
+    fn execute(&self) -> Result<()> {
         Self::print_message(&self.message)
     }
 
-    fn undo(&self) -> Option<ExecutionResult> {
+    fn undo(&self) -> Option<Result<()>> {
         Some(Self::print_message(&format!(
             "UNDO the following change: {}",
             self.message
@@ -24,7 +24,7 @@ impl Piece for Manual {
 }
 
 impl Manual {
-    fn print_message(message: &str) -> ExecutionResult {
+    fn print_message(message: &str) -> Result<()> {
         println!("Manual action required");
         println!("{message}");
         println!("Continue when the action is performed.");

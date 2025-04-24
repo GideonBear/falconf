@@ -1,13 +1,13 @@
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::PieceEnum;
-use crate::repo::PushPullError;
+use color_eyre::Result;
 
 pub fn add(
     installation: &mut Installation,
     piece_enum: PieceEnum,
     comment: Option<String>,
-) -> Result<(), AddError> {
+) -> Result<()> {
     let repo = installation.repo();
     let mut data = repo.data();
     let mut pieces = data.pieces();
@@ -19,14 +19,4 @@ pub fn add(
     repo.write_and_push()?;
 
     Ok(())
-}
-
-pub enum AddError {
-    PushPull(PushPullError),
-}
-
-impl From<PushPullError> for AddError {
-    fn from(error: PushPullError) -> Self {
-        AddError::PushPull(error)
-    }
 }

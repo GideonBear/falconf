@@ -1,0 +1,47 @@
+[[disallowed-methods]]
+path = "std::process::Command::output"
+reason = "Use command_error::CommandExt::output_checked[_with][_utf8]"
+
+[[disallowed-methods]]
+path = "std::process::Command::status"
+reason = "Use command_error::CommandExt::status_checked[_with]"
+
+[[disallowed-methods]]
+path = "std::process::Command::spawn"
+reason = "Use command_error::CommandExt::spawn_checked"
+
+[[disallowed-methods]]
+path = "std::process::Child::try_wait"
+reason = "Use command_error::ChildExt::try_wait_checked[_with]"
+
+[[disallowed-methods]]
+path = "std::process::Child::wait"
+reason = "Use command_error::ChildExt::wait_checked[_with]"
+
+[[disallowed-methods]]
+path = "std::process::Child::wait_with_output"
+reason = "Use command_error::ChildExt::output_checked[_with][_utf8]"
+
+#[[disallowed-methods]]
+#path = "command_error::CommandExt::output_checked"
+#reason = "Use the logging::CommandExt variant"
+#
+#[[disallowed-methods]]
+#path = "command_error::CommandExt::status_checked"
+#reason = "Use the logging::CommandExt variant"
+#
+#[[disallowed-methods]]
+#path = "command_error::CommandExt::spawn_checked"
+#reason = "Use the logging::CommandExt variant"
+#
+#[[disallowed-methods]]
+#path = "command_error::ChildExt::try_wait_checked"
+#reason = "Use the logging::Ext variant"
+#
+#[[disallowed-methods]]
+#path = "command_error::ChildExt::wait_checked"
+#reason = "Use the logging::Ext variant"
+#
+#[[disallowed-methods]]
+#path = "command_error::ChildExt::output_checked"
+#reason = "Use the logging::Ext variant"

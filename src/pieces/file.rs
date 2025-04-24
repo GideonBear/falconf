@@ -1,10 +1,11 @@
 use crate::logging::CommandExt;
-use crate::piece::ResultExitStatusExt;
-use crate::piece::{ExecutionError, ExecutionResult, Piece};
+use crate::piece::Piece;
 use crate::utils;
+use color_eyre::eyre::WrapErr;
+use color_eyre::{Report, Result};
 use serde::{Deserialize, Serialize};
 use std::fs::remove_file;
-use std::path::{PathBuf, StripPrefixError};
+use std::path::PathBuf;
 
 /// Sym/hardlink a file
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,7 +22,7 @@ pub struct File {
 }
 
 impl Piece for File {
-    fn execute(&self) -> ExecutionResult {
+    fn execute(&self) -> Result<()> {
         let target_file = self.target_file()?;
 
         let mut cmd = utils::if_sudo("ln", self.sudo);
@@ -30,25 +31,21 @@ impl Piece for File {
             cmd.arg("--symbolic");
         }
 
-        cmd.log_execution()?.status().to_execution_result()
+        cmd.status_checked()?;
+        Ok(())
     }
 
-    fn undo(&self) -> Option<ExecutionResult> {
-        Some(remove_file(&self.location).map_err(ExecutionError::from))
+    fn undo(&self) -> Option<Result<()>> {
+        Some(remove_file(&self.location).map_err(Report::from))
     }
 }
 
 impl File {
-    fn target_file(&self) -> Result<PathBuf, FileError> {
+    fn target_file(&self) -> Result<PathBuf> {
         Ok(self.target_dir.join(
             self.location
                 .strip_prefix("/")
-                .map_err(|_| FileError::InvalidLocation)?,
+                .wrap_err("Invalid file location (no leading slash)")?,
         ))
     }
-}
-
-#[derive(Debug, Clone)]
-pub enum FileError {
-    InvalidLocation,
 }

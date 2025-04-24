@@ -1,9 +1,9 @@
-use crate::piece::ExecutionResult;
 use crate::piece::Piece;
 use crate::pieces::apt_package::AptPackage;
 use crate::pieces::command::Command;
 use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
 pub mod apt_package;
@@ -22,7 +22,7 @@ pub enum PieceEnum {
 
 impl PieceEnum {
     /// Execute the piece
-    pub fn execute(&self) -> ExecutionResult {
+    pub fn execute(&self) -> Result<()> {
         match self {
             PieceEnum::AptPackage(p) => p.execute(),
             PieceEnum::Command(c) => c.execute(),
@@ -32,7 +32,7 @@ impl PieceEnum {
     }
 
     /// Undo the piece. Returns None when the undo is user-defined and has not been defined.
-    pub fn undo(&self) -> Option<ExecutionResult> {
+    pub fn undo(&self) -> Option<Result<()>> {
         match self {
             PieceEnum::AptPackage(p) => p.undo(),
             PieceEnum::Command(c) => c.undo(),
@@ -42,7 +42,7 @@ impl PieceEnum {
     }
 
     /// Execute multiple pieces
-    pub fn execute_bulk(pieces: Vec<&Self>) -> ExecutionResult {
+    pub fn execute_bulk(pieces: Vec<&Self>) -> Result<()> {
         let (apt_package, command, file, manual) = Self::sort_pieces(pieces);
         AptPackage::execute_bulk(&apt_package)?;
         Command::execute_bulk(&command)?;
@@ -52,7 +52,7 @@ impl PieceEnum {
     }
 
     /// Undo multiple pieces.
-    pub fn undo_bulk(pieces: Vec<&Self>) -> ExecutionResult {
+    pub fn undo_bulk(pieces: Vec<&Self>) -> Result<()> {
         let (apt_package, command, file, manual) = Self::sort_pieces(pieces);
         AptPackage::undo_bulk(&apt_package)?;
         Command::undo_bulk(&command)?;

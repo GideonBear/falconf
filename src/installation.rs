@@ -1,9 +1,10 @@
-use crate::data::DataError;
 use crate::machine::Machine;
-use crate::repo::{Repo, RepoError};
+use crate::repo::Repo;
+use color_eyre::Result;
+use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use std::env::home_dir;
+use std::fs;
 use std::path::PathBuf;
-use std::{fs, io};
 
 pub struct Installation {
     machine: Machine,
@@ -19,14 +20,14 @@ impl Installation {
         &mut self.repo
     }
 
-    fn get_root() -> Result<PathBuf, GetRootError> {
-        Ok(home_dir().ok_or(GetRootError::NoHomeDir)?.join(".falconf"))
+    fn get_root() -> Result<PathBuf> {
+        Ok(home_dir().ok_or_eyre("No home dir found")?.join(".falconf"))
     }
 
-    fn new(remote: &str) -> Result<Self, InstallationCreateError> {
+    fn new(remote: &str) -> Result<Self> {
         let root = Self::get_root()?;
         if root.exists() {
-            return Err(InstallationCreateError::Exists);
+            return Err(eyre!("Installation already exists"));
         }
         fs::create_dir(&root)?;
 
@@ -41,121 +42,21 @@ impl Installation {
         Ok(Self { machine, repo })
     }
 
-    fn get() -> Result<Self, InstallationGetError> {
+    fn get() -> Result<Self> {
         let root = Self::get_root()?;
 
         if !root.is_dir() {
-            return Err(InstallationGetError::NotFound);
+            return Err(eyre!("No installation found"));
         }
 
         let machine = Machine(
             fs::read_to_string(root.join("machine"))?
                 .parse()
-                .map_err(|_| {
-                    InstallationGetError::InvalidInstallation(
-                        "`machine` file does not contain a valid UUID".to_string(),
-                    )
-                })?,
+                .wrap_err("`machine` file does not contain a valid UUID".to_string())?,
         );
 
         let repo = Repo::from_path(&root.join("repo"))?;
 
         Ok(Self { machine, repo })
-    }
-}
-
-enum GetRootError {
-    NoHomeDir,
-}
-
-enum InstallationGetError {
-    NotFound,
-    InvalidInstallation(String),
-    Git(git2::Error),
-    Data(DataError),
-    Io(io::Error),
-    NoHomeDir,
-}
-
-impl From<io::Error> for InstallationGetError {
-    fn from(err: io::Error) -> Self {
-        InstallationGetError::Io(err)
-    }
-}
-
-impl From<git2::Error> for InstallationGetError {
-    fn from(err: git2::Error) -> Self {
-        InstallationGetError::Git(err)
-    }
-}
-
-impl From<GetRootError> for InstallationGetError {
-    fn from(err: GetRootError) -> Self {
-        match err {
-            GetRootError::NoHomeDir => InstallationGetError::NoHomeDir,
-        }
-    }
-}
-
-impl From<DataError> for InstallationGetError {
-    fn from(err: DataError) -> Self {
-        InstallationGetError::Data(err)
-    }
-}
-
-impl From<RepoError> for InstallationGetError {
-    fn from(err: RepoError) -> Self {
-        match err {
-            RepoError::Git(err) => err.into(),
-            RepoError::Data(err) => err.into(),
-            RepoError::InvalidInstallation(err) => InstallationGetError::InvalidInstallation(err),
-        }
-    }
-}
-
-enum InstallationCreateError {
-    Exists,
-    Git(git2::Error),
-    Data(DataError),
-    Io(io::Error),
-    NoHomeDir,
-    InvalidInstallation(String),
-}
-
-impl From<io::Error> for InstallationCreateError {
-    fn from(err: io::Error) -> Self {
-        InstallationCreateError::Io(err)
-    }
-}
-
-impl From<git2::Error> for InstallationCreateError {
-    fn from(err: git2::Error) -> Self {
-        InstallationCreateError::Git(err)
-    }
-}
-
-impl From<DataError> for InstallationCreateError {
-    fn from(err: DataError) -> Self {
-        InstallationCreateError::Data(err)
-    }
-}
-
-impl From<GetRootError> for InstallationCreateError {
-    fn from(err: GetRootError) -> Self {
-        match err {
-            GetRootError::NoHomeDir => InstallationCreateError::NoHomeDir,
-        }
-    }
-}
-
-impl From<RepoError> for InstallationCreateError {
-    fn from(err: RepoError) -> Self {
-        match err {
-            RepoError::Git(err) => err.into(),
-            RepoError::Data(err) => err.into(),
-            RepoError::InvalidInstallation(err) => {
-                InstallationCreateError::InvalidInstallation(err)
-            }
-        }
     }
 }

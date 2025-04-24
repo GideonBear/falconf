@@ -1,9 +1,8 @@
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
-use crate::piece::ExecutionError;
-use crate::repo::PushPullError;
+use color_eyre::Result;
 
-pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
+pub fn sync(installation: &mut Installation) -> Result<()> {
     let machine = *installation.machine();
     let repo = installation.repo();
 
@@ -19,21 +18,4 @@ pub fn sync(installation: &mut Installation) -> Result<(), SyncError> {
     repo.write_and_push()?;
 
     Ok(())
-}
-
-pub enum SyncError {
-    Execution(ExecutionError),
-    PushPull(PushPullError),
-}
-
-impl From<ExecutionError> for SyncError {
-    fn from(value: ExecutionError) -> Self {
-        Self::Execution(value)
-    }
-}
-
-impl From<PushPullError> for SyncError {
-    fn from(value: PushPullError) -> Self {
-        Self::PushPull(value)
-    }
 }

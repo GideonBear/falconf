@@ -1,7 +1,7 @@
 use crate::logging::CommandExt;
-use crate::piece::ResultExitStatusExt;
-use crate::piece::{ExecutionResult, Piece};
+use crate::piece::Piece;
 use crate::utils;
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
 /// Run an arbitrary command with bash
@@ -16,11 +16,11 @@ pub struct Command {
 }
 
 impl Piece for Command {
-    fn execute(&self) -> ExecutionResult {
+    fn execute(&self) -> Result<()> {
         Self::run_command(&self.command, self.sudo)
     }
 
-    fn undo(&self) -> Option<ExecutionResult> {
+    fn undo(&self) -> Option<Result<()>> {
         // This will return None if self.undo_command is None
         self.undo_command
             .as_ref()
@@ -29,12 +29,11 @@ impl Piece for Command {
 }
 
 impl Command {
-    fn run_command(command: &str, sudo: bool) -> ExecutionResult {
+    fn run_command(command: &str, sudo: bool) -> Result<()> {
         utils::if_sudo("bash", sudo)
             .arg("-c")
             .arg(command)
-            .log_execution()?
-            .status()
-            .to_execution_result()
+            .status_checked()?;
+        Ok(())
     }
 }

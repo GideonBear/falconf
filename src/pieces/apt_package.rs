@@ -1,6 +1,6 @@
 use crate::logging::CommandExt;
-use crate::piece::ResultExitStatusExt;
-use crate::piece::{ExecutionResult, Piece};
+use crate::piece::Piece;
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::process;
 
@@ -12,34 +12,33 @@ pub struct AptPackage {
 }
 
 impl Piece for AptPackage {
-    fn execute(&self) -> ExecutionResult {
+    fn execute(&self) -> Result<()> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
         // Self::execute_bulk(&[self])
     }
 
-    fn execute_bulk(pieces: &[&Self]) -> ExecutionResult {
+    fn execute_bulk(pieces: &[&Self]) -> Result<()> {
         Self::apt_command(&["install"], pieces)
     }
 
-    fn undo(&self) -> Option<ExecutionResult> {
+    fn undo(&self) -> Option<Result<()>> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
         // Some(Self::undo_bulk(&[self]))
     }
 
-    fn undo_bulk(pieces: &[&Self]) -> ExecutionResult {
+    fn undo_bulk(pieces: &[&Self]) -> Result<()> {
         Self::apt_command(&["remove", "--autoremove"], pieces)
     }
 }
 
 impl AptPackage {
-    fn apt_command(command: &[&str], pieces: &[&Self]) -> ExecutionResult {
+    fn apt_command(command: &[&str], pieces: &[&Self]) -> Result<()> {
         process::Command::new("apt")
             .args(command)
             .args(pieces.iter().map(|p| &p.package))
-            .log_execution()?
-            .status()
-            .to_execution_result()
+            .status_checked()?;
+        Ok(())
     }
 }

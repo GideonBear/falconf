@@ -1,4 +1,6 @@
-use crate::data::{Data, DataError};
+use crate::data::Data;
+use color_eyre::Result;
+use color_eyre::eyre::{OptionExt, eyre};
 use git2::Repository;
 use std::path::{Path, PathBuf};
 
@@ -10,7 +12,7 @@ pub struct Repo {
 }
 
 impl Repo {
-    pub fn new(remote: &str, path: &Path) -> Result<Self, RepoError> {
+    pub fn new(remote: &str, path: &Path) -> Result<Self> {
         Repository::clone(remote, path).map(Repo::from_repository)?
     }
 
@@ -20,25 +22,25 @@ impl Repo {
         &mut self.data
     }
 
-    pub fn from_path(path: &Path) -> Result<Self, RepoError> {
+    pub fn from_path(path: &Path) -> Result<Self> {
         Repository::open(path).map(Repo::from_repository)?
     }
 
-    fn get_data(repo: &Repository) -> Result<Data, RepoError> {
-        Ok(Data::from_file(&data_path_from_repository(repo)?)?)
+    fn get_data(repo: &Repository) -> Result<Data> {
+        Data::from_file(&data_path_from_repository(repo)?)
     }
 
-    fn update_data(&mut self) -> Result<(), RepoError> {
+    fn update_data(&mut self) -> Result<()> {
         self.data = Self::get_data(&self.repo)?;
         Ok(())
     }
 
-    fn from_repository(repo: Repository) -> Result<Self, RepoError> {
+    fn from_repository(repo: Repository) -> Result<Self> {
         let data = Self::get_data(&repo)?;
         Ok(Self { repo, data })
     }
 
-    fn pull(&self) -> Result<(), PushPullError> {
+    fn pull(&self) -> Result<()> {
         let mut remote = self.repo.find_remote("origin")?;
         remote.fetch(&[BRANCH], None, None)?;
         let fetch_head = self.repo.find_reference("FETCH_HEAD")?;
@@ -55,11 +57,11 @@ impl Repo {
                 .checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
             Ok(())
         } else {
-            Err(PushPullError::Divergence)
+            Err(eyre!("Branches have diverted"))
         }
     }
 
-    fn write_data(&self) -> Result<(), RepoError> {
+    fn write_data(&self) -> Result<()> {
         self.data.to_file(&data_path_from_repository(&self.repo)?)?;
         Ok(())
     }
@@ -82,7 +84,7 @@ impl Repo {
         Ok(())
     }
 
-    fn push(&self) -> Result<(), PushPullError> {
+    fn push(&self) -> Result<()> {
         // TODO: check for failed push
         //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
         //  > to test whether all the references were pushed successfully.
@@ -92,13 +94,13 @@ impl Repo {
         Ok(())
     }
 
-    pub fn pull_and_read(&mut self) -> Result<(), PushPullError> {
+    pub fn pull_and_read(&mut self) -> Result<()> {
         self.pull()?;
         self.update_data()?;
         Ok(())
     }
 
-    pub fn write_and_push(&self) -> Result<(), PushPullError> {
+    pub fn write_and_push(&self) -> Result<()> {
         self.write_data()?;
         self.commit()?;
         self.push()?;
@@ -106,47 +108,9 @@ impl Repo {
     }
 }
 
-pub enum RepoError {
-    InvalidInstallation(String),
-    Git(git2::Error),
-    Data(DataError),
-}
-
-impl From<git2::Error> for RepoError {
-    fn from(err: git2::Error) -> Self {
-        RepoError::Git(err)
-    }
-}
-
-impl From<DataError> for RepoError {
-    fn from(err: DataError) -> Self {
-        RepoError::Data(err)
-    }
-}
-
-pub enum PushPullError {
-    Divergence,
-    Git(git2::Error),
-    Repo(RepoError),
-}
-
-impl From<git2::Error> for PushPullError {
-    fn from(err: git2::Error) -> Self {
-        PushPullError::Git(err)
-    }
-}
-
-impl From<RepoError> for PushPullError {
-    fn from(err: RepoError) -> Self {
-        PushPullError::Repo(err)
-    }
-}
-
-fn data_path_from_repository(repo: &Repository) -> Result<PathBuf, RepoError> {
+fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
     Ok(repo
         .workdir()
-        .ok_or(RepoError::InvalidInstallation(
-            "Git repository is bare".to_string(),
-        ))?
+        .ok_or_eyre("Git repository is bare")?
         .join("data.json"))
 }
