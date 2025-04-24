@@ -4,26 +4,32 @@ use crate::cli::sync::sync;
 use clap::ArgAction::SetTrue;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use color_eyre::Result;
+use expanduser::expanduser;
 use log::{LevelFilter, debug};
+use std::path::PathBuf;
 use std::str::FromStr;
 
 mod add;
 mod init;
 mod sync;
 
+fn parse_path(s: &str) -> Result<PathBuf> {
+    Ok(expanduser(s)?)
+}
+
 #[derive(Parser, Debug)]
 #[command(name = "falconf", author, long_version = crate::VERSION)]
 #[command(about = "TODO description")] // TODO
 #[command(propagate_version = true)]
-struct Cli {
+pub struct Cli {
     #[command(subcommand)]
     command: Box<Commands>,
     #[clap(flatten)]
-    top_level: TopLevelArgs,
+    pub top_level: TopLevelArgs,
 }
 
 #[derive(Args, Debug)]
-struct TopLevelArgs {
+pub struct TopLevelArgs {
     /// The log level to use.
     #[arg(long, short, default_value = "info")]
     log_level: String,
@@ -31,6 +37,10 @@ struct TopLevelArgs {
     /// Output debug logs. Alias for `--log-level debug`.
     #[arg(long, short)]
     verbose: bool,
+
+    /// The path to the falconf directory.
+    #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
+    pub path: PathBuf,
 }
 
 impl TopLevelArgs {
@@ -121,14 +131,14 @@ pub fn main() -> Result<()> {
     let cli = Cli::parse();
 
     env_logger::Builder::new()
-        .filter_level(LevelFilter::from_str(cli.top_level.effective_log_level())?)
+        .filter_level(LevelFilter::from_str(&cli.top_level.effective_log_level())?)
         .init();
 
     debug!("{cli:?}");
 
     match *cli.command {
-        Commands::Init(args) => init(args),
-        Commands::Sync(args) => sync(args),
-        Commands::Add(args) => add(args),
+        Commands::Init(ref args) => init(&cli, args),
+        Commands::Sync(ref args) => sync(&cli, args),
+        Commands::Add(ref args) => add(&cli, args),
     }
 }

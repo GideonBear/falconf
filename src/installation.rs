@@ -1,10 +1,10 @@
+use crate::cli::Cli;
 use crate::machine::Machine;
 use crate::repo::Repo;
 use color_eyre::Result;
-use color_eyre::eyre::{OptionExt, WrapErr, eyre};
-use std::env::home_dir;
+use color_eyre::eyre::{WrapErr, eyre};
+use log::debug;
 use std::fs;
-use std::path::PathBuf;
 
 pub struct Installation {
     machine: Machine,
@@ -20,13 +20,11 @@ impl Installation {
         &mut self.repo
     }
 
-    fn get_root() -> Result<PathBuf> {
-        Ok(home_dir().ok_or_eyre("No home dir found")?.join(".falconf"))
-    }
+    pub fn new(remote: &str, cli: &Cli) -> Result<Self> {
+        let root = &cli.top_level.path;
+        debug!("Looking at {root:?}");
 
-    pub fn new(remote: &str) -> Result<Self> {
-        let root = Self::get_root()?;
-        if root.exists() {
+        if root.try_exists()? {
             return Err(eyre!("Installation already exists"));
         }
         fs::create_dir(&root)?;
@@ -42,8 +40,9 @@ impl Installation {
         Ok(Self { machine, repo })
     }
 
-    pub fn get() -> Result<Self> {
-        let root = Self::get_root()?;
+    pub fn get(cli: &Cli) -> Result<Self> {
+        let root = &cli.top_level.path;
+        debug!("Looking at {root:?}");
 
         if !root.is_dir() {
             return Err(eyre!("No installation found"));

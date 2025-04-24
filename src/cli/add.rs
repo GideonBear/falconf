@@ -1,14 +1,14 @@
-use crate::cli::AddArgs;
+use crate::cli::{AddArgs, Cli};
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::PieceEnum;
 use color_eyre::Result;
 
-pub fn add(args: AddArgs) -> Result<()> {
+pub fn add(cli: &Cli, args: &AddArgs) -> Result<()> {
     // TODO
     // piece_enum: PieceEnum,
     // comment: Option<String>,
-    let mut installation = Installation::get()?;
+    let mut installation = Installation::get(cli)?;
     let repo = installation.repo();
     let mut data = repo.data();
     let mut pieces = data.pieces();

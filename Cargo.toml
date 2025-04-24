@@ -14,6 +14,7 @@ command-error = "0.6.0"
 log = "0.4.27"
 env_logger = "0.11.8"
 hostname = "0.4.1"
+expanduser = "1.2.2"
 
 [dev-dependencies]
 libc = "0.2.172"

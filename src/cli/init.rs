@@ -1,6 +1,6 @@
-use crate::cli::InitArgs;
+use crate::cli::{Cli, InitArgs};
 use color_eyre::Result;
 
-pub fn init(args: InitArgs) -> Result<()> {
+pub fn init(cli: &Cli, args: &InitArgs) -> Result<()> {
     todo!()
 }
