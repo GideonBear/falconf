@@ -1,4 +1,4 @@
-use command_error::CommandExt;
+use crate::logging::CommandExt;
 use libc::{SIGTERM, kill};
 use std::io::BufRead;
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
