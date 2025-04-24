@@ -18,7 +18,15 @@ impl Repo {
 
     // TODO: pub fn create
 
-    pub fn data(&mut self) -> &mut Data {
+    pub fn file_dir(&self) -> Result<PathBuf> {
+        Ok(self
+            .repo
+            .workdir()
+            .ok_or_eyre("Repo is bare")?
+            .join("files"))
+    }
+
+    pub fn data_mut(&mut self) -> &mut Data {
         &mut self.data
     }
 

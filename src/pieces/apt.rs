@@ -2,6 +2,7 @@ use crate::cli::AddArgs;
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use color_eyre::Result;
+use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
 use std::process;
 
@@ -41,6 +42,17 @@ impl Apt {
             .args(pieces.iter().map(|p| &p.package))
             .status_checked()?;
         Ok(())
+    }
+
+    pub fn from_cli(args: AddArgs) -> Result<Self> {
+        if args.value.len() != 1 {
+            return Err(eyre!(
+                "Expected a singular value (package name) for 'apt' piece, got '{:?}'.",
+                args.value
+            ));
+        }
+        let package = args.value[0].clone();
+        Ok(Self { package })
     }
 
     pub fn from_cli_autodetected(_args: AddArgs, package: String) -> Self {

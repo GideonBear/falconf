@@ -1,3 +1,4 @@
+use crate::cli::AddArgs;
 use crate::piece::Piece;
 use crate::utils::press_enter;
 use color_eyre::Result;
@@ -31,5 +32,11 @@ impl Manual {
         println!("Continue when the action is performed.");
         press_enter()?;
         Ok(())
+    }
+
+    pub fn from_cli(args: AddArgs) -> Self {
+        Self {
+            message: args.value.join(" "),
+        }
     }
 }

@@ -1,4 +1,5 @@
 use crate::cli::AddArgs;
+use crate::installation::Installation;
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use crate::utils::unordered_eq;
@@ -119,8 +120,8 @@ impl FullPiece {
         }
     }
 
-    pub fn from_cli(args: AddArgs) -> Self {
+    pub fn from_cli(args: AddArgs, installation: &Installation) -> Result<Self> {
         let comment = args.comment.clone();
-        Self::new(PieceEnum::from_cli(args), comment)
+        Ok(Self::new(PieceEnum::from_cli(args, installation)?, comment))
     }
 }

@@ -21,7 +21,7 @@ impl Data {
         }
     }
 
-    pub fn pieces(&mut self) -> &mut Vec<FullPiece> {
+    pub fn pieces_mut(&mut self) -> &mut Vec<FullPiece> {
         &mut self.pieces
     }
 

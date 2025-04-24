@@ -16,7 +16,11 @@ impl Installation {
         &self.machine
     }
 
-    pub fn repo(&mut self) -> &mut Repo {
+    pub fn repo(&self) -> &Repo {
+        &self.repo
+    }
+
+    pub fn repo_mut(&mut self) -> &mut Repo {
         &mut self.repo
     }
 

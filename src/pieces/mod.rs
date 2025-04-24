@@ -1,5 +1,6 @@
 use crate::cli;
 use crate::cli::AddArgs;
+use crate::installation::Installation;
 use crate::piece::Piece;
 use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
@@ -90,21 +91,24 @@ impl PieceEnum {
         (apt, command, file, manual)
     }
 
-    pub fn from_cli(args: AddArgs) -> Self {
-        match args.piece {
+    pub fn from_cli(args: AddArgs, installation: &Installation) -> Result<Self> {
+        Ok(match args.piece {
             None => Self::from_cli_autodetect(args),
-            Some(piece) => Self::from_cli_known(piece, args),
-        }
+            Some(piece) => Self::from_cli_known(piece, args, installation)?,
+        })
     }
 
-    fn from_cli_known(piece: cli::Piece, args: AddArgs) -> Self {
-        todo!()
-        // match piece {
-        //     cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)),
-        //     cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
-        //     cli::Piece::File => PieceEnum::File(File::from_cli(args)),
-        //     cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
-        // }
+    fn from_cli_known(
+        piece: cli::Piece,
+        args: AddArgs,
+        installation: &Installation,
+    ) -> Result<Self> {
+        Ok(match piece {
+            cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)?),
+            cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
+            cli::Piece::File => PieceEnum::File(File::from_cli(args, installation)?),
+            cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
+        })
     }
 
     fn from_cli_autodetect(args: AddArgs) -> Self {
