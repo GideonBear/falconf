@@ -1,7 +1,6 @@
 use crate::cli::{AddArgs, TopLevelArgs};
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
-use crate::pieces::PieceEnum;
 use color_eyre::Result;
 use log::debug;
 
