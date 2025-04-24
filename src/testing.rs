@@ -136,6 +136,8 @@ mod tests {
 
         OpenOptions::new()
             .create(true)
+            // Not necessary here since the file doesn't exist yet, but this is what clippy demands
+            .truncate(true)
             .write(true)
             .open(local_1.path.join("test_file"))
             .unwrap()
