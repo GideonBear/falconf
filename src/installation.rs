@@ -1,4 +1,4 @@
-use crate::cli::Cli;
+use crate::cli::TopLevelArgs;
 use crate::machine::Machine;
 use crate::repo::Repo;
 use color_eyre::Result;
@@ -20,8 +20,8 @@ impl Installation {
         &mut self.repo
     }
 
-    pub fn new(remote: &str, cli: &Cli) -> Result<Self> {
-        let root = &cli.top_level.path;
+    pub fn new(remote: &str, top_level_args: &TopLevelArgs) -> Result<Self> {
+        let root = &top_level_args.path;
         debug!("Looking at {root:?}");
 
         if root.try_exists()? {
@@ -40,8 +40,8 @@ impl Installation {
         Ok(Self { machine, repo })
     }
 
-    pub fn get(cli: &Cli) -> Result<Self> {
-        let root = &cli.top_level.path;
+    pub fn get(top_level_args: &TopLevelArgs) -> Result<Self> {
+        let root = &top_level_args.path;
         debug!("Looking at {root:?}");
 
         if !root.is_dir() {

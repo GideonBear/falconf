@@ -1,10 +1,10 @@
-use crate::cli::{AddArgs, Cli};
+use crate::cli::{AddArgs, TopLevelArgs};
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::PieceEnum;
 use color_eyre::Result;
 
-pub fn add(cli: &Cli, args: &AddArgs) -> Result<()> {
+pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     // TODO
     // piece_enum: PieceEnum,
     // comment: Option<String>,

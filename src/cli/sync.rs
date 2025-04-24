@@ -1,10 +1,10 @@
-use crate::cli::{Cli, SyncArgs};
+use crate::cli::{SyncArgs, TopLevelArgs};
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use color_eyre::Result;
 
-pub fn sync(cli: &Cli, _args: &SyncArgs) -> Result<()> {
-    let mut installation = Installation::get(cli)?;
+pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
+    let mut installation = Installation::get(&top_level_args)?;
     let machine = *installation.machine();
     let repo = installation.repo();
 

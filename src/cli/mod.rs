@@ -136,9 +136,11 @@ pub fn main() -> Result<()> {
 
     debug!("{cli:?}");
 
-    match *cli.command {
-        Commands::Init(ref args) => init(&cli, args),
-        Commands::Sync(ref args) => sync(&cli, args),
-        Commands::Add(ref args) => add(&cli, args),
+    let Cli { command, top_level } = cli;
+
+    match *command {
+        Commands::Init(args) => init(top_level, args),
+        Commands::Sync(args) => sync(top_level, args),
+        Commands::Add(args) => add(top_level, args),
     }
 }
