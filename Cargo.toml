@@ -13,6 +13,7 @@ uuid = { version = "1.16.0", features = ["serde", "v4"] }
 command-error = "0.6.0"
 log = "0.4.27"
 env_logger = "0.11.8"
+hostname = "0.4.1"
 
 [dev-dependencies]
 libc = "0.2.172"

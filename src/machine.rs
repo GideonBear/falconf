@@ -1,3 +1,4 @@
+use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -16,7 +17,9 @@ pub struct MachineData {
 }
 
 impl MachineData {
-    pub fn new() -> Self {
-        Self { hostname: todo!() }
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            hostname: hostname::get()?.to_string_lossy().into_owned(),
+        })
     }
 }
