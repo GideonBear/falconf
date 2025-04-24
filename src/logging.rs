@@ -16,7 +16,7 @@ impl CommandExt for Command {
 fn log(message: impl Display) -> io::Result<()> {
     // TODO: do actual logging instead of printing. Deny printing lint?
     //  Logging should also print, but also log to file
-    println!("{}", message);
+    println!("{message}");
     Ok(())
 }
 

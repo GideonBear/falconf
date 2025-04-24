@@ -26,7 +26,7 @@ impl Piece for Manual {
 impl Manual {
     fn print_message(message: &str) -> ExecutionResult {
         println!("Manual action required");
-        println!("{}", message);
+        println!("{message}");
         println!("Continue when the action is performed.");
         press_enter()?;
         Ok(())

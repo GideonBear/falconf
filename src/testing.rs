@@ -130,7 +130,7 @@ mod tests {
 
         assert!(local_2.join("test_file").exists());
         assert_eq!(
-            std::fs::read_to_string(&local_2.join("test_file")).unwrap(),
+            std::fs::read_to_string(local_2.join("test_file")).unwrap(),
             "test"
         );
     }

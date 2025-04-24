@@ -47,7 +47,7 @@ impl Repo {
         if analysis.0.is_up_to_date() {
             Ok(())
         } else if analysis.0.is_fast_forward() {
-            let refname = format!("refs/heads/{}", BRANCH);
+            let refname = format!("refs/heads/{BRANCH}");
             let mut reference = self.repo.find_reference(&refname)?;
             reference.set_target(fetch_commit.id(), "Fast-Forward")?;
             self.repo.set_head(&refname)?;
