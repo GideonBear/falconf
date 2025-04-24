@@ -8,3 +8,8 @@ git2 = "0.20.1"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
+
+[dev-dependencies]
+command-error = "0.6.0"
+libc = "0.2.172"
+tempdir = "0.3.7"
