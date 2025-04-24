@@ -24,6 +24,7 @@ impl Piece for Manual {
 }
 
 impl Manual {
+    #[allow(clippy::print_stdout)]
     fn print_message(message: &str) -> Result<()> {
         println!("Manual action required");
         println!("{message}");

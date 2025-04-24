@@ -1,3 +1,6 @@
+#![deny(clippy::print_stdout)]
+#![deny(clippy::print_stderr)]
+
 use color_eyre::eyre;
 
 mod cli;

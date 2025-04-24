@@ -4,6 +4,8 @@ use crate::cli::sync::sync;
 use clap::ArgAction::SetTrue;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use color_eyre::Result;
+use log::{LevelFilter, debug};
+use std::str::FromStr;
 
 mod add;
 mod init;
@@ -21,7 +23,25 @@ struct Cli {
 }
 
 #[derive(Args, Debug)]
-struct TopLevelArgs {}
+struct TopLevelArgs {
+    /// The log level to use.
+    #[arg(long, short, default_value = "info")]
+    log_level: String,
+
+    /// Output debug logs. Alias for `--log-level debug`.
+    #[arg(long, short)]
+    verbose: bool,
+}
+
+impl TopLevelArgs {
+    fn effective_log_level(&self) -> &str {
+        if self.verbose {
+            "debug"
+        } else {
+            &self.log_level
+        }
+    }
+}
 
 #[derive(Subcommand, Debug)]
 enum Commands {
@@ -99,6 +119,12 @@ struct AddArgs {
 
 pub fn main() -> Result<()> {
     let cli = Cli::parse();
+
+    env_logger::Builder::new()
+        .filter_level(LevelFilter::from_str(cli.top_level.effective_log_level())?)
+        .init();
+
+    debug!("{cli:?}");
 
     match *cli.command {
         Commands::Init(args) => init(args),
