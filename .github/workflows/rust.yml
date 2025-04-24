@@ -10,18 +10,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  check:
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
-      - name: Format
+      - name: Format (cargo fmt)
         run: cargo fmt --verbose
-      - name: Build
+      - name: Build (cargo build)
         run: cargo build --verbose
-      - name: Lint
+      - name: Lint (cargo clippy)
         run: cargo clippy --verbose
-      - name: Run tests
+      - name: Run tests (cargo test)
         run: cargo test --verbose
