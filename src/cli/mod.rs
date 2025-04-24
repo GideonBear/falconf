@@ -93,7 +93,7 @@ pub enum Piece {
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
-    /// An optional comment if the use of the piece is non-obvious
+    /// An optional comment to describe the piece for easier identification.
     #[arg(long, short)]
     pub comment: Option<String>,
 
