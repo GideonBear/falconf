@@ -20,6 +20,7 @@ impl TestRemote {
         // This will get cleaned up automatically when the TestRepository is dropped
         let repos_dir = TempDir::new("test_remote_repos").unwrap();
         let repo = repos_dir.path().join("test_repo.git");
+
         // Initialize the repository
         Command::new("git")
             .arg("init")
@@ -44,7 +45,7 @@ impl TestRemote {
             .unwrap();
 
         // Wait for the daemon to be ready
-        sleep(std::time::Duration::from_millis(100));
+        sleep(std::time::Duration::from_secs(1));
         assert!(daemon.try_wait().unwrap().is_none());
 
         Self { repos_dir, daemon }
