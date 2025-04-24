@@ -1,4 +1,4 @@
-use crate::logging::CommandExt;
+use command_error::CommandExt;
 use libc::{SIGTERM, kill};
 use std::env::set_current_dir;
 use std::io::BufRead;
@@ -65,7 +65,7 @@ impl TestRemote {
         "git://localhost/test_repo.git"
     }
 
-    fn clone_and_enter(&self) -> PathBuf {
+    fn clone_and_enter(&self) -> LocalRepo {
         let tempdir = TempDir::new("test_local_repo").unwrap();
         let local = tempdir.path().join("test_repo");
 
@@ -93,8 +93,19 @@ impl TestRemote {
             .status_checked()
             .unwrap();
 
-        local
+        assert!(local.try_exists().unwrap());
+
+        // We need to return a struct to make sure the TempDir isn't dropped at the end of this function
+        LocalRepo {
+            path: local,
+            _tempdir: tempdir,
+        }
     }
+}
+
+struct LocalRepo {
+    path: PathBuf,
+    _tempdir: TempDir,
 }
 
 impl Drop for TestRemote {
@@ -115,16 +126,18 @@ mod tests {
 
     #[test]
     fn test_test_remote() {
-        let mut remote = TestRemote::new();
+        let remote = TestRemote::new();
 
         // 1
 
         let local_1 = remote.clone_and_enter();
 
+        assert!(local_1.path.try_exists().unwrap()); // Quick test to make sure the tempdir wasn't dropped
+
         OpenOptions::new()
             .create(true)
             .write(true)
-            .open(local_1.join("test_file"))
+            .open(local_1.path.join("test_file"))
             .unwrap()
             .write_all(b"test")
             .unwrap();
@@ -153,9 +166,9 @@ mod tests {
 
         let local_2 = remote.clone_and_enter();
 
-        assert!(local_2.join("test_file").exists());
+        assert!(local_2.path.join("test_file").try_exists().unwrap());
         assert_eq!(
-            std::fs::read_to_string(local_2.join("test_file")).unwrap(),
+            std::fs::read_to_string(local_2.path.join("test_file")).unwrap(),
             "test"
         );
     }
