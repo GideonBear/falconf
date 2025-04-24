@@ -24,7 +24,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     }
 
     // Add the piece
-    pieces.push(FullPiece::from_cli(&args));
+    pieces.push(FullPiece::from_cli(args));
 
     // Push changes
     repo.write_and_push()?;

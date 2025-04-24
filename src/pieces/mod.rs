@@ -6,12 +6,26 @@ use crate::pieces::command::Command;
 use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
 use color_eyre::Result;
+use log::{info, warn};
 use serde::{Deserialize, Serialize};
 
 pub mod apt;
 pub mod command;
 pub mod file;
 pub mod manual;
+
+macro_rules! unknown {
+    ($command:expr, $target:expr) => {{
+        warn!(concat!(
+            "Unknown `",
+            $command,
+            "` command, using 'command' (instead of '",
+            $target,
+            "')"
+        ));
+        PieceEnum::Command(Command::from_cli_autodetected(args))
+    }};
+}
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,19 +90,41 @@ impl PieceEnum {
         (apt, command, file, manual)
     }
 
-    pub fn from_cli(args: &AddArgs) -> Self {
+    pub fn from_cli(args: AddArgs) -> Self {
         match args.piece {
             None => Self::from_cli_autodetect(args),
             Some(piece) => Self::from_cli_known(piece, args),
         }
     }
 
-    fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Self {
-        match piece {
-            cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)),
-            cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
-            cli::Piece::File => PieceEnum::File(File::from_cli(args)),
-            cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
+    fn from_cli_known(piece: cli::Piece, args: AddArgs) -> Self {
+        todo!()
+        // match piece {
+        //     cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)),
+        //     cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
+        //     cli::Piece::File => PieceEnum::File(File::from_cli(args)),
+        //     cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
+        // }
+    }
+
+    fn from_cli_autodetect(args: AddArgs) -> Self {
+        let command = &args.value;
+        match command
+            .iter()
+            .map(|&x| &*x)
+            .collect::<Vec<&str>>()
+            .as_slice()
+        {
+            ["apt", "install", package]
+            | ["apt", "install", package, "-y"]
+            | ["apt", "install", "-y", package]
+            | ["apt", "-y", "install", package] => {
+                info!("Using `apt` piece instead of `command`");
+                PieceEnum::Apt(Apt::from_cli_autodetected(args, package))
+            }
+            ["apt", ..] => unknown!("apt", "apt"),
+            ["ln", ..] => unknown!("ln", "file"),
+            _ => PieceEnum::Command(Command::from_cli_autodetected(args)),
         }
     }
 }

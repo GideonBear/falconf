@@ -119,7 +119,8 @@ impl FullPiece {
         }
     }
 
-    pub fn from_cli(args: &AddArgs) -> Self {
-        Self::new(PieceEnum::from_cli(args), args.comment.clone())
+    pub fn from_cli(args: AddArgs) -> Self {
+        let comment = args.comment.clone();
+        Self::new(PieceEnum::from_cli(args), comment)
     }
 }
