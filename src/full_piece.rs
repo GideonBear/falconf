@@ -1,8 +1,8 @@
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use crate::utils::unordered_eq;
-use serde::{Deserialize, Serialize};
 use color_eyre::Result;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
