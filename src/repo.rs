@@ -14,6 +14,8 @@ impl Repo {
         Repository::clone(remote, path).map(Repo::from_repository)?
     }
 
+    // TODO: pub fn create
+
     pub fn data(&mut self) -> &mut Data {
         &mut self.data
     }
