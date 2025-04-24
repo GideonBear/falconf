@@ -127,7 +127,7 @@ pub struct AddArgs {
     /// The value of the piece. For example the command, the package, etc.
     /// Quoting this is optional; both `falconf add apt install cowsay` and
     /// `falconf add "apt install cowsay"` are allowed.
-    #[arg(trailing_var_arg = true)]
+    #[arg(trailing_var_arg = true, required = true)]
     pub value: Vec<String>,
 }
 
