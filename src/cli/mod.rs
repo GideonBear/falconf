@@ -135,8 +135,7 @@ pub fn main() -> Result<()> {
     let cli = Cli::parse();
 
     env_logger::Builder::new()
-        .filter_level(LevelFilter::from_str(cli.top_level.effective_log_level())?)
-        .init();
+        .filter_level(LevelFilter::from_str(cli.top_level.effective_log_level())?).init();
 
     debug!("{cli:?}");
 
