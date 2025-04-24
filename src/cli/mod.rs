@@ -85,9 +85,9 @@ pub enum Piece {
     Command,
     /// Installs an apt package. Expects a package name as value.
     Apt,
-    /// Tracks a file. Expects an absolute path as value.
+    /// Links a file to the repo. Expects an absolute path as value.
     File,
-    /// Tracks a manual action. Expects a message for the user (description of the action) as value.
+    /// Request the user to perform an action manually *sad robot face*. Expects a message for the user (description of the action) as value.
     Manual,
 }
 

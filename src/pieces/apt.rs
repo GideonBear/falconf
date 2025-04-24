@@ -6,7 +6,6 @@ use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
 use std::process;
 
-/// Install a package with apt
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Apt {
     /// The package to install

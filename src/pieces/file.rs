@@ -9,7 +9,6 @@ use std::fs::remove_file;
 use std::path::PathBuf;
 use std::process::Command;
 
-/// Sym/hardlink a file
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct File {
     /// The location the file should be linked to
@@ -28,6 +27,8 @@ pub struct File {
 
 impl Piece for File {
     fn execute(&self) -> Result<()> {
+        // TODO: do stuff if the file exists
+        
         let target_file = self.target_file()?;
 
         let mut cmd = Command::new("ln");

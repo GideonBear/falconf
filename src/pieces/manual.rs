@@ -4,7 +4,6 @@ use crate::utils::press_enter;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
-/// Request the user to perform an action manually *sad robot face*
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Manual {
     /// The message to show the user

@@ -5,7 +5,6 @@ use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::process;
 
-/// Run an arbitrary command with bash
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Command {
     /// The command to run
