@@ -27,7 +27,7 @@ impl Installation {
         if root.try_exists()? {
             return Err(eyre!("Installation already exists"));
         }
-        fs::create_dir(&root)?;
+        fs::create_dir(root)?;
 
         let machine_path = root.join("machine");
         let repo_path = root.join("repo");

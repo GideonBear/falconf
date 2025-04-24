@@ -1,7 +1,6 @@
 use command_error::CommandExt;
 use libc::{SIGTERM, kill};
 use std::env::set_current_dir;
-use std::io::BufRead;
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
 use std::path::PathBuf;
 use std::process::{Child, Command};
