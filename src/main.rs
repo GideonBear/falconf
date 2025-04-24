@@ -1,3 +1,5 @@
+use color_eyre::eyre;
+
 mod cli;
 mod data;
 mod full_piece;
@@ -11,7 +13,16 @@ mod repo;
 mod testing;
 mod utils;
 
-fn main() {
-    println!("Hello, world!");
-    todo!();
+pub mod built_info {
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
+
+const VERSION: &str = built_info::PKG_VERSION;
+
+fn main() -> Result<(), eyre::Report> {
+    color_eyre::config::HookBuilder::new()
+        .display_location_section(true)
+        .install()?;
+
+    cli::main()
 }
