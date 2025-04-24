@@ -54,7 +54,7 @@ impl TestRemote {
             .unwrap();
 
         // Wait for the daemon to be ready
-        sleep(std::time::Duration::from_secs(1));
+        sleep(std::time::Duration::from_millis(250));
         assert!(daemon.try_wait().unwrap().is_none());
 
         Self { repos_dir, daemon }
