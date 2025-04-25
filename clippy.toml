@@ -1,3 +1,5 @@
+check-private-items = true
+
 [[disallowed-methods]]
 path = "std::process::Command::output"
 reason = "Use command_error::CommandExt::output_checked[_with][_utf8]"

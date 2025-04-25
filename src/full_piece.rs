@@ -49,10 +49,14 @@ impl FullPiece {
         let undo = self.undo;
         let undone = if undo {
             // SAFETY: if `undo && undone_on.is_none` the configuration is in an illegal state
+            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
             Some(self.undone_on.as_ref().unwrap().contains(machine))
         } else {
             // SAFETY: if `!undo && undo_on.is_some` the configuration is in an illegal state
-            assert!(self.undone_on.is_some());
+            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
+            {
+                assert!(self.undone_on.is_some());
+            }
             None
         };
 
@@ -87,8 +91,11 @@ impl FullPiece {
         for piece in to_undo {
             // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undo == true`,
             //  Thus `undone_on` must be `Some`, or the configuration is illegal.
-            assert!(piece.undo);
-            piece.undone_on.as_mut().unwrap().push(*machine);
+            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
+            {
+                assert!(piece.undo);
+                piece.undone_on.as_mut().unwrap().push(*machine);
+            }
         }
 
         Ok(())
@@ -102,6 +109,7 @@ impl FullPiece {
             //  if none of our existing machines need to have it undone
 
             // SAFETY: if self.undo self.undo_on must be Some, or the configuration is in an illegal state
+            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
             let undone_on = self.undone_on.as_ref().unwrap();
             unordered_eq(&self.done_on, undone_on)
         } else if self.one_time {
@@ -110,6 +118,7 @@ impl FullPiece {
             //  one_time piece should not have the piece executed on them.
 
             // SAFETY: if self.one_time self.one_time_todo_on must be Some, or the configuration is in an illegal state
+            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
             let one_time_todo_on = self.one_time_todo_on.as_ref().unwrap();
             unordered_eq(&self.done_on, one_time_todo_on)
         } else {
