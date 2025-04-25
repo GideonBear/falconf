@@ -13,7 +13,7 @@ pub struct Apt {
 }
 
 impl Piece for Apt {
-    fn execute(&self) -> Result<()> {
+    fn _execute(&self) -> Result<()> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
         // Self::execute_bulk(&[self])
@@ -23,7 +23,7 @@ impl Piece for Apt {
         Self::apt_command(&["install"], pieces)
     }
 
-    fn undo(&self) -> Option<Result<()>> {
+    fn _undo(&self) -> Option<Result<()>> {
         // Since execute_bulk is implemented we assume this is never called.
         panic!();
         // Some(Self::undo_bulk(&[self]))

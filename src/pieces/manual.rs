@@ -11,11 +11,11 @@ pub struct Manual {
 }
 
 impl Piece for Manual {
-    fn execute(&self) -> Result<()> {
+    fn _execute(&self) -> Result<()> {
         Self::print_message(&self.message)
     }
 
-    fn undo(&self) -> Option<Result<()>> {
+    fn _undo(&self) -> Option<Result<()>> {
         Some(Self::print_message(&format!(
             "UNDO the following change: {}",
             self.message

@@ -38,23 +38,23 @@ pub enum PieceEnum {
 }
 
 impl PieceEnum {
-    /// Execute the piece
-    pub fn execute(&self) -> Result<()> {
+    /// Execute a single piece. Should not be called.
+    pub fn _execute(&self) -> Result<()> {
         match self {
-            PieceEnum::Apt(p) => p.execute(),
-            PieceEnum::Command(c) => c.execute(),
-            PieceEnum::File(f) => f.execute(),
-            PieceEnum::Manual(m) => m.execute(),
+            PieceEnum::Apt(p) => p._execute(),
+            PieceEnum::Command(c) => c._execute(),
+            PieceEnum::File(f) => f._execute(),
+            PieceEnum::Manual(m) => m._execute(),
         }
     }
 
-    /// Undo the piece. Returns None when the undo is user-defined and has not been defined.
-    pub fn undo(&self) -> Option<Result<()>> {
+    /// Undo a single piece. Should not be called. Returns None when the undo is user-defined and has not been defined.
+    pub fn _undo(&self) -> Option<Result<()>> {
         match self {
-            PieceEnum::Apt(p) => p.undo(),
-            PieceEnum::Command(c) => c.undo(),
-            PieceEnum::File(f) => f.undo(),
-            PieceEnum::Manual(m) => m.undo(),
+            PieceEnum::Apt(p) => p._undo(),
+            PieceEnum::Command(c) => c._undo(),
+            PieceEnum::File(f) => f._undo(),
+            PieceEnum::Manual(m) => m._undo(),
         }
     }
 

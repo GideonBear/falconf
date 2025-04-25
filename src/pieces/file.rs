@@ -26,7 +26,7 @@ pub struct File {
 }
 
 impl Piece for File {
-    fn execute(&self) -> Result<()> {
+    fn _execute(&self) -> Result<()> {
         // TODO: do stuff if the file exists
 
         let target_file = self.target_file()?;
@@ -41,7 +41,7 @@ impl Piece for File {
         Ok(())
     }
 
-    fn undo(&self) -> Option<Result<()>> {
+    fn _undo(&self) -> Option<Result<()>> {
         Some(remove_file(&self.location).map_err(Report::from))
     }
 }

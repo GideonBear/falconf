@@ -14,11 +14,11 @@ pub struct Command {
 }
 
 impl Piece for Command {
-    fn execute(&self) -> Result<()> {
+    fn _execute(&self) -> Result<()> {
         Self::run_command(&self.command)
     }
 
-    fn undo(&self) -> Option<Result<()>> {
+    fn _undo(&self) -> Option<Result<()>> {
         // This will return None if self.undo_command is None
         self.undo_command.as_ref().map(|cmd| Self::run_command(cmd))
     }
