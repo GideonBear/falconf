@@ -14,7 +14,7 @@ pub struct Data {
 }
 
 impl Data {
-    pub fn new() -> Self {
+    pub fn init_new() -> Self {
         Self {
             pieces: vec![],
             machines: HashMap::new(),
