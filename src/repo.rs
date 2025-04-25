@@ -12,11 +12,11 @@ pub struct Repo {
 }
 
 impl Repo {
-    pub fn new(remote: &str, path: &Path) -> Result<Self> {
+    pub fn init_existing(remote: &str, path: &Path) -> Result<Self> {
         Repository::clone(remote, path).map(Repo::from_repository)?
     }
 
-    // TODO: pub fn create
+    // TODO: pub fn new_create
 
     pub fn file_dir(&self) -> Result<PathBuf> {
         Ok(self
@@ -30,7 +30,7 @@ impl Repo {
         &mut self.data
     }
 
-    pub fn from_path(path: &Path) -> Result<Self> {
+    pub fn get_from_path(path: &Path) -> Result<Self> {
         Repository::open(path).map(Repo::from_repository)?
     }
 

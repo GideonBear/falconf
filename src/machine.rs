@@ -17,7 +17,7 @@ pub struct MachineData {
 }
 
 impl MachineData {
-    pub fn new() -> Result<Self> {
+    pub fn new_this() -> Result<Self> {
         Ok(Self {
             hostname: hostname::get()?.to_string_lossy().into_owned(),
         })

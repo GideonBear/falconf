@@ -24,7 +24,9 @@ impl Installation {
         &mut self.repo
     }
 
-    pub fn new(remote: &str, top_level_args: &TopLevelArgs) -> Result<Self> {
+    // TODO: pub fn init_create
+
+    pub fn init_existing(remote: &str, top_level_args: &TopLevelArgs) -> Result<Self> {
         let root = &top_level_args.path;
         debug!("Looking at {root:?}");
 
@@ -39,7 +41,7 @@ impl Installation {
         let machine = Machine::new();
         fs::write(&machine_path, machine.0)?;
 
-        let repo = Repo::new(remote, &repo_path)?;
+        let repo = Repo::init_existing(remote, &repo_path)?;
 
         Ok(Self { machine, repo })
     }
@@ -58,7 +60,7 @@ impl Installation {
                 .wrap_err("`machine` file does not contain a valid UUID".to_string())?,
         );
 
-        let repo = Repo::from_path(&root.join("repo"))?;
+        let repo = Repo::get_from_path(&root.join("repo"))?;
 
         Ok(Self { machine, repo })
     }
