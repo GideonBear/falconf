@@ -1,4 +1,5 @@
 use crate::data::Data;
+use crate::machine::{Machine, MachineData};
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
 use git2::Repository;
@@ -11,12 +12,27 @@ pub struct Repo {
     data: Data,
 }
 
-impl Repo {
-    pub fn init_existing(remote: &str, path: &Path) -> Result<Self> {
-        Repository::clone(remote, path).map(Repo::from_repository)?
-    }
+// TODO: instead of write_and_push, make function that takes in a closure that uses it that must
+//  return it again. After the closure, write it. This makes sure that we never forget to write.
 
-    // TODO: pub fn new_create
+impl Repo {
+    pub fn init(
+        remote: &str,
+        path: &Path,
+        machine: Machine,
+        machine_data: MachineData,
+        new: bool,
+    ) -> Result<Self> {
+        let repository = if new {
+            let repository = Repository::init(path)?;
+            todo!("Put the files in it, and push it to the remote");
+            repository
+        } else {
+            Repository::clone(remote, path)?
+        };
+        let repo = Self::from_repository(repository);
+        todo!("Put the machines in the thing and write (using the closure abstraction)");
+    }
 
     pub fn file_dir(&self) -> Result<PathBuf> {
         Ok(self
@@ -43,6 +59,7 @@ impl Repo {
         Ok(())
     }
 
+    // TODO: rename repo -> repository here and everywhere
     fn from_repository(repo: Repository) -> Result<Self> {
         let data = Self::get_data(&repo)?;
         Ok(Self { repo, data })

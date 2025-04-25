@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::machine::Machine;
+use crate::machine::{Machine, MachineData};
 use crate::repo::Repo;
 use color_eyre::Result;
 use color_eyre::eyre::{WrapErr, eyre};
@@ -24,9 +24,7 @@ impl Installation {
         &mut self.repo
     }
 
-    // TODO: pub fn init_create
-
-    pub fn init_existing(remote: &str, top_level_args: &TopLevelArgs) -> Result<Self> {
+    pub fn init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
         let root = &top_level_args.path;
         debug!("Looking at {root:?}");
 
@@ -40,10 +38,11 @@ impl Installation {
 
         let machine = Machine::new();
         fs::write(&machine_path, machine.0)?;
+        let machine_data = MachineData::new_this()?;
 
-        let repo = Repo::init_existing(remote, &repo_path)?;
+        Repo::init(remote, &repo_path, machine, machine_data, new)?;
 
-        Ok(Self { machine, repo })
+        Ok(())
     }
 
     pub fn get(top_level_args: &TopLevelArgs) -> Result<Self> {
