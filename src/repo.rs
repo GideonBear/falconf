@@ -12,8 +12,9 @@ pub struct Repo {
     data: Data,
 }
 
-// TODO: instead of write_and_push, make function that takes in a closure that uses it that must
-//  return it again. After the closure, write it. This makes sure that we never forget to write.
+// TODO: instead of write_and_push, make function that takes in a closure gets a &mut Data?
+//  After the closure, write it. This makes sure that we never forget to write.
+//  see iso-updater
 
 impl Repo {
     pub fn init(
