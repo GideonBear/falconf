@@ -2,7 +2,7 @@ use crate::cli::AddArgs;
 use crate::installation::Installation;
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
-use crate::utils::unordered_eq;
+use crate::utils::set_eq;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
@@ -111,7 +111,7 @@ impl FullPiece {
             // SAFETY: if self.undo self.undo_on must be Some, or the configuration is in an illegal state
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
             let undone_on = self.undone_on.as_ref().unwrap();
-            unordered_eq(&self.done_on, undone_on)
+            set_eq(&self.done_on, undone_on)
         } else if self.one_time {
             // We do not want to check with a list of all machines here, since
             //  new machines that are added since the addition of the
@@ -120,7 +120,7 @@ impl FullPiece {
             // SAFETY: if self.one_time self.one_time_todo_on must be Some, or the configuration is in an illegal state
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
             let one_time_todo_on = self.one_time_todo_on.as_ref().unwrap();
-            unordered_eq(&self.done_on, one_time_todo_on)
+            set_eq(&self.done_on, one_time_todo_on)
         } else {
             // Any non-undo and non-one time pieces should never be cleaned up,
             //  since they need to be executed on new machines.

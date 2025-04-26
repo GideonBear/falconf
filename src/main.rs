@@ -3,7 +3,7 @@
 #![warn(clippy::print_stderr)]
 #![warn(clippy::panic)]
 #![warn(clippy::missing_panics_doc)] // Catches other panics (unwrap, expect)
-#![allow(dead_code)] // TODO: remove
+// #![allow(dead_code)] // TODO: remove
 
 use color_eyre::eyre;
 

@@ -18,6 +18,6 @@ pub fn press_enter() -> io::Result<()> {
     Ok(())
 }
 
-pub fn unordered_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {
+pub fn set_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {
     vec1.len() == vec2.len() && vec1.iter().all(|x| vec2.contains(x))
 }
