@@ -122,20 +122,61 @@ impl Repo {
         Ok(())
     }
 
-    fn commit(&self) -> Result<(), git2::Error> {
-        let mut index = self.repository.index()?;
+    fn commit(&self) -> Result<()> {
+        let mut index = self.repository.index().wrap_err("Failed to get index")?;
 
-        index.add_all(["."], git2::IndexAddOption::DEFAULT, None)?;
-        index.write()?;
+        index
+            .add_all(["."], git2::IndexAddOption::DEFAULT, None)
+            .wrap_err("Failed to add all")?;
+        index.write().wrap_err("Failed to write index")?;
 
-        let oid = index.write_tree()?;
-        let signature = self.repository.signature()?;
-        let tree = self.repository.find_tree(oid)?;
+        let oid = index.write_tree().wrap_err("Failed to write tree")?;
+        let signature = self
+            .repository
+            .signature()
+            .wrap_err("Failed to get signature")?;
+        let tree = self
+            .repository
+            .find_tree(oid)
+            .wrap_err("Failed to find tree")?;
 
         let message = "Falconf update";
 
-        self.repository
-            .commit(Some("HEAD"), &signature, &signature, message, &tree, &[])?;
+        match self.repository.head() {
+            Ok(_) => {
+                debug!("Head exists");
+                let parents = &[&self
+                    .repository
+                    .head()
+                    .wrap_err("Failed to get head")?
+                    .peel_to_commit()
+                    .wrap_err("Failed to peel head to commit")?];
+
+                self.repository
+                    .commit(
+                        Some("HEAD"),
+                        &signature,
+                        &signature,
+                        message,
+                        &tree,
+                        parents,
+                    )
+                    .wrap_err("Failed to commit")?;
+            }
+            Err(_) => {
+                debug!("Head doesn't exist, creating initial commit");
+
+                let parents = &[];
+                self.repository.commit(
+                    Some("HEAD"),
+                    &signature,
+                    &signature,
+                    message,
+                    &tree,
+                    parents,
+                )?;
+            }
+        }
 
         Ok(())
     }
@@ -149,7 +190,9 @@ impl Repo {
             .repository
             .find_remote("origin")
             .wrap_err("Failed to find remote")?;
-        remote.push(&[BRANCH], None).wrap_err("Failed to push")?;
+        remote
+            .push(&[format!("refs/heads/{BRANCH}")], None)
+            .wrap_err("Failed to push")?;
         Ok(())
     }
 
