@@ -1,9 +1,10 @@
 use crate::data::Data;
 use crate::machine::{Machine, MachineData};
 use color_eyre::Result;
-use color_eyre::eyre::{OptionExt, eyre};
+use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use git2::Repository;
-use std::fs::File;
+use log::debug;
+use std::fs::{File, create_dir};
 use std::path::{Path, PathBuf};
 
 const BRANCH: &str = "main";
@@ -25,23 +26,27 @@ impl Repo {
         machine_data: MachineData,
         new: bool,
     ) -> Result<()> {
-        let repository = Repository::clone(remote, path)?;
+        debug!("Cloning repo");
+        let repository = Repository::clone(remote, path).wrap_err("Failed to clone repository")?;
 
         let mut repo = if new {
+            debug!("New, so initializing new");
             let data = Data::init_new();
             let repo = Self { repository, data };
 
-            File::create(repo.file_dir()?.join(".gitkeep"))?;
+            let file_dir = repo.file_dir().wrap_err("Failed to get file dir")?;
+            create_dir(&file_dir).wrap_err("Failed to create file dir")?;
+            File::create(file_dir.join(".gitkeep")).wrap_err("Failed to create .gitkeep")?;
 
             // We push below
             repo
         } else {
-            Self::from_repository(repository)?
+            Self::from_repository(repository).wrap_err("Failed to construct repo")?
         };
 
         let data = repo.data_mut();
         data.machines_mut().insert(machine, machine_data);
-        repo.write_and_push()?;
+        repo.write_and_push().wrap_err("Failed to write_and_push")?;
         Ok(())
     }
 
@@ -58,7 +63,8 @@ impl Repo {
     }
 
     pub fn get_from_path(path: &Path) -> Result<Self> {
-        Repository::open(path).map(Repo::from_repository)?
+        let repository = Repository::open(path).wrap_err("Failed to open repository")?;
+        Self::from_repository(repository)
     }
 
     fn get_data(repository: &Repository) -> Result<Data> {
@@ -66,21 +72,35 @@ impl Repo {
     }
 
     fn update_data(&mut self) -> Result<()> {
-        self.data = Self::get_data(&self.repository)?;
+        self.data = Self::get_data(&self.repository).wrap_err("Failed to get data")?;
         Ok(())
     }
 
     fn from_repository(repository: Repository) -> Result<Self> {
-        let data = Self::get_data(&repository)?;
+        let data = Self::get_data(&repository).wrap_err("Failed to get data")?;
         Ok(Self { repository, data })
     }
 
     fn pull(&self) -> Result<()> {
-        let mut remote = self.repository.find_remote("origin")?;
-        remote.fetch(&[BRANCH], None, None)?;
-        let fetch_head = self.repository.find_reference("FETCH_HEAD")?;
-        let fetch_commit = self.repository.reference_to_annotated_commit(&fetch_head)?;
-        let analysis = self.repository.merge_analysis(&[&fetch_commit])?;
+        let mut remote = self
+            .repository
+            .find_remote("origin")
+            .wrap_err("Failed to find remote")?;
+        remote
+            .fetch(&[BRANCH], None, None)
+            .wrap_err("Failed to fetch")?;
+        let fetch_head = self
+            .repository
+            .find_reference("FETCH_HEAD")
+            .wrap_err("Failed to find fetch head")?;
+        let fetch_commit = self
+            .repository
+            .reference_to_annotated_commit(&fetch_head)
+            .wrap_err("Failed to convert fetch head to annotated commit")?;
+        let analysis = self
+            .repository
+            .merge_analysis(&[&fetch_commit])
+            .wrap_err("Failed to do merge analysis")?;
         if analysis.0.is_up_to_date() {
             Ok(())
         } else if analysis.0.is_fast_forward() {
@@ -125,21 +145,24 @@ impl Repo {
         //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
         //  > to test whether all the references were pushed successfully.
         //  And return PushPullError::divergence when it fails because of divergence in the remote
-        let mut remote = self.repository.find_remote("origin")?;
-        remote.push(&[BRANCH], None)?;
+        let mut remote = self
+            .repository
+            .find_remote("origin")
+            .wrap_err("Failed to find remote")?;
+        remote.push(&[BRANCH], None).wrap_err("Failed to push")?;
         Ok(())
     }
 
     pub fn pull_and_read(&mut self) -> Result<()> {
-        self.pull()?;
-        self.update_data()?;
+        self.pull().wrap_err("Failed to pull")?;
+        self.update_data().wrap_err("Failed to update data")?;
         Ok(())
     }
 
     pub fn write_and_push(&self) -> Result<()> {
-        self.write_data()?;
-        self.commit()?;
-        self.push()?;
+        self.write_data().wrap_err("Failed to write data")?;
+        self.commit().wrap_err("Failed to commit")?;
+        self.push().wrap_err("Failed to push")?;
         Ok(())
     }
 }
