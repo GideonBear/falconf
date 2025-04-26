@@ -28,7 +28,7 @@ pub struct Cli {
     pub top_level: TopLevelArgs,
 }
 
-#[derive(Args, Debug)]
+#[derive(Args, Debug, Clone)]
 pub struct TopLevelArgs {
     /// The log level to use.
     #[arg(long, short, default_value = "info")]
