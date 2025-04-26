@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 const BRANCH: &str = "main";
 
 pub struct Repo {
-    repo: Repository,
+    repository: Repository,
     data: Data,
 }
 
@@ -29,10 +29,7 @@ impl Repo {
 
         let mut repo = if new {
             let data = Data::init_new();
-            let repo = Self {
-                repo: repository,
-                data,
-            };
+            let repo = Self { repository, data };
 
             File::create(repo.file_dir()?.join(".gitkeep"))?;
 
@@ -50,9 +47,9 @@ impl Repo {
 
     pub fn file_dir(&self) -> Result<PathBuf> {
         Ok(self
-            .repo
+            .repository
             .workdir()
-            .ok_or_eyre("Repo is bare")?
+            .ok_or_eyre("Repository is bare")?
             .join("files"))
     }
 
@@ -64,35 +61,34 @@ impl Repo {
         Repository::open(path).map(Repo::from_repository)?
     }
 
-    fn get_data(repo: &Repository) -> Result<Data> {
-        Data::from_file(&data_path_from_repository(repo)?)
+    fn get_data(repository: &Repository) -> Result<Data> {
+        Data::from_file(&data_path_from_repository(repository)?)
     }
 
     fn update_data(&mut self) -> Result<()> {
-        self.data = Self::get_data(&self.repo)?;
+        self.data = Self::get_data(&self.repository)?;
         Ok(())
     }
 
-    // TODO: rename repo -> repository here and everywhere
-    fn from_repository(repo: Repository) -> Result<Self> {
-        let data = Self::get_data(&repo)?;
-        Ok(Self { repo, data })
+    fn from_repository(repository: Repository) -> Result<Self> {
+        let data = Self::get_data(&repository)?;
+        Ok(Self { repository, data })
     }
 
     fn pull(&self) -> Result<()> {
-        let mut remote = self.repo.find_remote("origin")?;
+        let mut remote = self.repository.find_remote("origin")?;
         remote.fetch(&[BRANCH], None, None)?;
-        let fetch_head = self.repo.find_reference("FETCH_HEAD")?;
-        let fetch_commit = self.repo.reference_to_annotated_commit(&fetch_head)?;
-        let analysis = self.repo.merge_analysis(&[&fetch_commit])?;
+        let fetch_head = self.repository.find_reference("FETCH_HEAD")?;
+        let fetch_commit = self.repository.reference_to_annotated_commit(&fetch_head)?;
+        let analysis = self.repository.merge_analysis(&[&fetch_commit])?;
         if analysis.0.is_up_to_date() {
             Ok(())
         } else if analysis.0.is_fast_forward() {
             let refname = format!("refs/heads/{BRANCH}");
-            let mut reference = self.repo.find_reference(&refname)?;
+            let mut reference = self.repository.find_reference(&refname)?;
             reference.set_target(fetch_commit.id(), "Fast-Forward")?;
-            self.repo.set_head(&refname)?;
-            self.repo
+            self.repository.set_head(&refname)?;
+            self.repository
                 .checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
             Ok(())
         } else {
@@ -101,23 +97,24 @@ impl Repo {
     }
 
     fn write_data(&self) -> Result<()> {
-        self.data.to_file(&data_path_from_repository(&self.repo)?)?;
+        self.data
+            .to_file(&data_path_from_repository(&self.repository)?)?;
         Ok(())
     }
 
     fn commit(&self) -> Result<(), git2::Error> {
-        let mut index = self.repo.index()?;
+        let mut index = self.repository.index()?;
 
         index.add_all(["."], git2::IndexAddOption::DEFAULT, None)?;
         index.write()?;
 
         let oid = index.write_tree()?;
-        let signature = self.repo.signature()?;
-        let tree = self.repo.find_tree(oid)?;
+        let signature = self.repository.signature()?;
+        let tree = self.repository.find_tree(oid)?;
 
         let message = "Falconf update";
 
-        self.repo
+        self.repository
             .commit(Some("HEAD"), &signature, &signature, message, &tree, &[])?;
 
         Ok(())
@@ -128,7 +125,7 @@ impl Repo {
         //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
         //  > to test whether all the references were pushed successfully.
         //  And return PushPullError::divergence when it fails because of divergence in the remote
-        let mut remote = self.repo.find_remote("origin")?;
+        let mut remote = self.repository.find_remote("origin")?;
         remote.push(&[BRANCH], None)?;
         Ok(())
     }

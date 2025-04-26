@@ -5,6 +5,7 @@ use color_eyre::Result;
 use color_eyre::eyre::{WrapErr, eyre};
 use log::debug;
 use std::fs;
+use std::path::{Path, PathBuf};
 
 pub struct Installation {
     machine: Machine,
@@ -34,13 +35,13 @@ impl Installation {
         fs::create_dir(root)?;
 
         let machine_path = root.join("machine");
-        let repo_path = root.join("repo");
+        let repository_path = Self::get_repository_path(root);
 
         let machine = Machine::new();
         fs::write(&machine_path, machine.0)?;
         let machine_data = MachineData::new_this()?;
 
-        Repo::init(remote, &repo_path, machine, machine_data, new)?;
+        Repo::init(remote, &repository_path, machine, machine_data, new)?;
 
         Ok(())
     }
@@ -61,8 +62,12 @@ impl Installation {
                 .wrap_err("`machine` file does not contain a valid UUID".to_string())?,
         );
 
-        let repo = Repo::get_from_path(&root.join("repo"))?;
+        let repo = Repo::get_from_path(&Self::get_repository_path(root))?;
 
         Ok(Self { machine, repo })
+    }
+
+    fn get_repository_path(root: &Path) -> PathBuf {
+        root.join("repository")
     }
 }

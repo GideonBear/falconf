@@ -21,7 +21,7 @@ pub struct File {
     // // TODO: note that this comment is weird
     // /// If the file should be created as sudo
     // sudo: bool,
-    /// The directory where the files are stored in the repo
+    /// The directory where the files are stored in the repository
     target_dir: PathBuf,
 }
 
