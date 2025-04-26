@@ -50,7 +50,9 @@ impl Installation {
         debug!("Looking at {root:?}");
 
         if !root.is_dir() {
-            return Err(eyre!("No installation found"));
+            return Err(eyre!(
+                "No installation found at {root:?}. Run `falconf init` first!"
+            ));
         }
 
         let machine = Machine(
