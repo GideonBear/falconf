@@ -29,6 +29,10 @@ impl Data {
         self.machines.keys().collect()
     }
 
+    pub fn machines_mut(&mut self) -> &mut HashMap<Machine, MachineData> {
+        &mut self.machines
+    }
+
     pub fn from_file(path: &Path) -> Result<Self> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);

@@ -3,6 +3,7 @@ use crate::machine::{Machine, MachineData};
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
 use git2::Repository;
+use std::fs::File;
 use std::path::{Path, PathBuf};
 
 const BRANCH: &str = "main";
@@ -23,16 +24,28 @@ impl Repo {
         machine: Machine,
         machine_data: MachineData,
         new: bool,
-    ) -> Result<Self> {
-        let repository = if new {
-            let repository = Repository::init(path)?;
-            todo!("Put the files in it, and push it to the remote");
-            repository
+    ) -> Result<()> {
+        let repository = Repository::clone(remote, path)?;
+
+        let mut repo = if new {
+            let data = Data::init_new();
+            let repo = Self {
+                repo: repository,
+                data,
+            };
+
+            File::create(repo.file_dir()?.join(".gitkeep"))?;
+
+            // We push below
+            repo
         } else {
-            Repository::clone(remote, path)?
+            Self::from_repository(repository)?
         };
-        let repo = Self::from_repository(repository);
-        todo!("Put the machines in the thing and write (using the closure abstraction)");
+
+        let data = repo.data_mut();
+        data.machines_mut().insert(machine, machine_data);
+        repo.write_and_push()?;
+        Ok(())
     }
 
     pub fn file_dir(&self) -> Result<PathBuf> {
