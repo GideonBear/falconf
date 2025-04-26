@@ -4,7 +4,7 @@ use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, BufWriter};
+use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -32,14 +32,15 @@ impl Data {
     pub fn from_file(path: &Path) -> Result<Self> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
-        let data = serde_json::from_reader(reader)?;
+        let data = ron::de::from_reader(reader)?;
         Ok(data)
     }
 
     pub fn to_file(&self, path: &Path) -> Result<()> {
         let file = File::create(path)?;
-        let writer = BufWriter::new(file);
-        serde_json::to_writer(writer, self)?;
+        let string = ron::ser::to_string_pretty(self, ron::ser::PrettyConfig::default())?;
+        let mut writer = BufWriter::new(file);
+        writer.write_all(string.as_bytes())?;
         Ok(())
     }
 }
