@@ -77,7 +77,7 @@ impl TestRemote {
         "git://localhost/test_repo.git"
     }
 
-    pub fn clone_and_enter(&self) -> Result<LocalRepo> {
+    fn clone_and_enter(&self) -> Result<LocalRepo> {
         let tempdir = TempDir::new("test_local_repo")?;
         let local = tempdir.path().join("test_repo");
 
@@ -89,6 +89,7 @@ impl TestRemote {
 
         set_current_dir(&local)?;
 
+        // This is normally handled by Repo::init but we do it manually here
         Command::new("git")
             .arg("config")
             .arg("user.email")

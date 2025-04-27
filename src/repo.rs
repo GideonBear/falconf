@@ -44,6 +44,14 @@ impl Repo {
             Self::from_repository(repository).wrap_err("Failed to construct repo")?
         };
 
+        let mut config = repo.repository.config().wrap_err("Failed to get config")?;
+        config
+            .set_str("user.name", "falconf")
+            .wrap_err("Failed to set user.name")?;
+        config
+            .set_str("user.email", "falconf@example.com")
+            .wrap_err("Failed to set user.email")?;
+
         let data = repo.data_mut();
         data.machines_mut().insert(machine, machine_data);
         repo.write_and_push().wrap_err("Failed to write_and_push")?;
