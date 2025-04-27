@@ -55,7 +55,7 @@ impl FullPiece {
             // SAFETY: if `!undo && undo_on.is_some` the configuration is in an illegal state
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
             {
-                assert!(self.undone_on.is_some());
+                assert!(self.undone_on.is_none());
             }
             None
         };
