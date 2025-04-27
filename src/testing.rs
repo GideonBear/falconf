@@ -36,8 +36,8 @@ impl TestRemote {
             .arg(&repo)
             .status_checked()?;
 
-        // TODO: is this necessary?
-        // Make sure the branch is called "main"
+        // Make sure the branch is called "main". Even though the client also has to set the branch,
+        //  this still seems to be necessary. I really don't want to research why. This works.
         Command::new("git")
             .arg("-C")
             .arg(&repo)
