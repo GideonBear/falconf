@@ -89,7 +89,7 @@ impl Piece for File {
     }
 
     fn _undo(&self) -> Option<Result<()>> {
-        Some(remove_file(&self.location).map_err(Report::from))
+        Some(remove_file(&self.location).wrap_err("Failed to remove file as part of undo"))
     }
 }
 
