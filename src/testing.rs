@@ -114,6 +114,16 @@ impl TestRemote {
     }
 }
 
+impl Drop for TestRemote {
+    fn drop(&mut self) {
+        // Necessary to kill all its children as well
+        let pgid = self.daemon.id() as i32;
+        unsafe {
+            kill(-pgid, SIGTERM);
+        }
+    }
+}
+
 /// A subpath of a `TempDir` that owns the `TempDir` so it drops only when the `TempDirSub` is dropped
 pub struct TempDirSub {
     path: PathBuf,
@@ -135,16 +145,6 @@ impl TempDirSub {
 
     pub fn path(&self) -> &PathBuf {
         &self.path
-    }
-}
-
-impl Drop for TestRemote {
-    fn drop(&mut self) {
-        // Necessary to kill all its children as well
-        let pgid = self.daemon.id() as i32;
-        unsafe {
-            kill(-pgid, SIGTERM);
-        }
     }
 }
 
