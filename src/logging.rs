@@ -23,6 +23,7 @@ impl CommandExt for Command {
 
     fn output_fallible(&mut self) -> Result<Output> {
         log_execution(self);
+        #[allow(clippy::disallowed_methods)]
         self.output().map_err(Into::into)
     }
 }
