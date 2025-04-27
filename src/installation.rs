@@ -38,7 +38,7 @@ impl Installation {
         let repository_path = Self::get_repository_path(root);
 
         let machine = Machine::new();
-        fs::write(&machine_path, machine.0)?;
+        fs::write(&machine_path, machine.0.to_string())?;
         let machine_data = MachineData::new_this()?;
 
         Repo::init(remote, &repository_path, machine, machine_data, new)?;
