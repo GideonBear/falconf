@@ -80,7 +80,7 @@ impl TestRemote {
         "git://localhost/test_repo.git"
     }
 
-    fn clone_and_enter(&self) -> Result<LocalRepo> {
+    fn clone_and_enter(&self) -> Result<TempDirSub> {
         let tempdir = TempDir::new("test_local_repo")?;
         let local = tempdir.path().join("test_repo");
 
@@ -110,17 +110,32 @@ impl TestRemote {
             return Err(eyre!("Local repo should exist after cloning"));
         }
 
-        // We need to return a struct to make sure the TempDir isn't dropped at the end of this function
-        Ok(LocalRepo {
-            path: local,
-            _tempdir: tempdir,
-        })
+        Ok(TempDirSub::new(tempdir, local))
     }
 }
 
-pub struct LocalRepo {
+/// A subpath of a `TempDir` that owns the `TempDir` so it drops only when the `TempDirSub` is dropped
+pub struct TempDirSub {
     path: PathBuf,
     _tempdir: TempDir,
+}
+
+impl TempDirSub {
+    pub fn new(tempdir: TempDir, path: PathBuf) -> Self {
+        Self {
+            path,
+            _tempdir: tempdir,
+        }
+    }
+
+    pub fn new_join(tempdir: TempDir, subpath: &str) -> Self {
+        let path = tempdir.path().join(subpath);
+        Self::new(tempdir, path)
+    }
+
+    pub fn path(&self) -> &PathBuf {
+        &self.path
+    }
 }
 
 impl Drop for TestRemote {

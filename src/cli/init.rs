@@ -11,52 +11,58 @@ pub fn init(top_level_args: TopLevelArgs, args: InitArgs) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::TestRemote;
+    use crate::testing::{TempDirSub, TestRemote};
+    use log::debug;
     use tempdir::TempDir;
+
+    pub fn init_new(remote: &TestRemote) -> Result<TempDirSub> {
+        let temp = TempDir::new("test_falconf")?;
+        let falconf_path = temp.path().join(".falconf");
+
+        let top_level_args = TopLevelArgs {
+            log_level: "".to_string(),
+            verbose: false,
+            path: falconf_path.clone(),
+        };
+
+        let args = InitArgs {
+            new: true,
+            remote: remote.address().to_string(),
+        };
+
+        debug!("Initting new repository...");
+        init(top_level_args, args)?;
+
+        Ok(TempDirSub::new(temp, falconf_path))
+    }
+
+    pub fn init_existing(remote: &TestRemote) -> Result<TempDirSub> {
+        let temp = TempDir::new("test_falconf")?;
+        let falconf_path = temp.path().join(".falconf");
+
+        let top_level_args = TopLevelArgs {
+            log_level: "".to_string(),
+            verbose: false,
+            path: falconf_path.clone(),
+        };
+
+        let args = InitArgs {
+            new: false,
+            remote: remote.address().to_string(),
+        };
+
+        debug!("Initting existing repository...");
+        init(top_level_args, args)?;
+
+        Ok(TempDirSub::new(temp, falconf_path))
+    }
 
     #[test]
     fn test_init() -> Result<()> {
         let remote = TestRemote::new()?;
 
-        // New
-        {
-            let temp = TempDir::new("test_falconf")?;
-            let falconf_path = temp.path().join(".falconf");
-
-            let top_level_args = TopLevelArgs {
-                log_level: "".to_string(),
-                verbose: false,
-                path: falconf_path,
-            };
-
-            let args = InitArgs {
-                new: true,
-                remote: remote.address().to_string(),
-            };
-
-            println!("Initting new repository...");
-            init(top_level_args, args)?;
-        }
-
-        // Existing
-        {
-            let temp = TempDir::new("test_falconf")?;
-            let falconf_path = temp.path().join(".falconf");
-
-            let top_level_args = TopLevelArgs {
-                log_level: "".to_string(),
-                verbose: false,
-                path: falconf_path,
-            };
-
-            let args = InitArgs {
-                new: false,
-                remote: remote.address().to_string(),
-            };
-
-            println!("Initting existing repository...");
-            init(top_level_args, args)?;
-        }
+        init_new(&remote)?;
+        init_existing(&remote)?;
 
         Ok(())
     }
