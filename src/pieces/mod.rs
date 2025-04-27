@@ -61,20 +61,36 @@ impl PieceEnum {
     /// Execute multiple pieces
     pub fn execute_bulk(pieces: Vec<&Self>) -> Result<()> {
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
-        Apt::execute_bulk(&apt)?;
-        Command::execute_bulk(&command)?;
-        File::execute_bulk(&file)?;
-        Manual::execute_bulk(&manual)?;
+        if !apt.is_empty() {
+            Apt::execute_bulk(&apt)?;
+        }
+        if !command.is_empty() {
+            Command::execute_bulk(&command)?;
+        }
+        if !file.is_empty() {
+            File::execute_bulk(&file)?;
+        }
+        if !manual.is_empty() {
+            Manual::execute_bulk(&manual)?;
+        }
         Ok(())
     }
 
     /// Undo multiple pieces.
     pub fn undo_bulk(pieces: Vec<&Self>) -> Result<()> {
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
-        Apt::undo_bulk(&apt)?;
-        Command::undo_bulk(&command)?;
-        File::undo_bulk(&file)?;
-        Manual::undo_bulk(&manual)?;
+        if !apt.is_empty() {
+            Apt::undo_bulk(&apt)?;
+        }
+        if !command.is_empty() {
+            Command::undo_bulk(&command)?;
+        }
+        if !file.is_empty() {
+            File::undo_bulk(&file)?;
+        }
+        if !manual.is_empty() {
+            Manual::undo_bulk(&manual)?;
+        }
         Ok(())
     }
 
