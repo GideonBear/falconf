@@ -36,8 +36,15 @@ impl TestRemote {
             .arg(&repo)
             .status_checked()?;
 
-        // Setting the branch to main here (with `git branch -m main`) is useless since there are
-        //  no commits. A client would push to their default (possibly `master`) anyway.
+        // TODO: is this necessary?
+        // Make sure the branch is called "main"
+        Command::new("git")
+            .arg("-C")
+            .arg(&repo)
+            .arg("branch")
+            .arg("-m")
+            .arg("main")
+            .status_checked()?;
 
         // Start the git daemon
         let mut daemon = Command::new("git")
