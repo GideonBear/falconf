@@ -38,25 +38,26 @@ pub enum PieceEnum {
 }
 
 impl PieceEnum {
-    /// Execute a single piece. Should not be called.
-    pub fn _execute(&self) -> Result<()> {
-        match self {
-            PieceEnum::Apt(p) => p._execute(),
-            PieceEnum::Command(c) => c._execute(),
-            PieceEnum::File(f) => f._execute(),
-            PieceEnum::Manual(m) => m._execute(),
-        }
-    }
-
-    /// Undo a single piece. Should not be called. Returns None when the undo is user-defined and has not been defined.
-    pub fn _undo(&self) -> Option<Result<()>> {
-        match self {
-            PieceEnum::Apt(p) => p._undo(),
-            PieceEnum::Command(c) => c._undo(),
-            PieceEnum::File(f) => f._undo(),
-            PieceEnum::Manual(m) => m._undo(),
-        }
-    }
+    // TODO: looks to be unnecessary?
+    // /// Execute a single piece. Should not be called.
+    // pub fn _execute(&self) -> Result<()> {
+    //     match self {
+    //         PieceEnum::Apt(p) => p._execute(),
+    //         PieceEnum::Command(c) => c._execute(),
+    //         PieceEnum::File(f) => f._execute(),
+    //         PieceEnum::Manual(m) => m._execute(),
+    //     }
+    // }
+    //
+    // /// Undo a single piece. Should not be called. Returns None when the undo is user-defined and has not been defined.
+    // pub fn _undo(&self) -> Option<Result<()>> {
+    //     match self {
+    //         PieceEnum::Apt(piece) => piece._undo(),
+    //         PieceEnum::Command(piece) => piece._undo(),
+    //         PieceEnum::File(piece) => piece._undo(),
+    //         PieceEnum::Manual(piece) => piece._undo(),
+    //     }
+    // }
 
     /// Execute multiple pieces
     pub fn execute_bulk(pieces: Vec<&Self>) -> Result<()> {
