@@ -34,13 +34,13 @@ impl Piece for File {
     fn _execute(&self) -> Result<()> {
         let target_file = self.target_file()?;
 
-        if target_file.exists() {
-            if target_file.is_symlink() {
+        if self.location.exists() {
+            if self.location.is_symlink() {
                 return Err(eyre!("File already exists and is a symlink."));
             }
 
             if let Some(expected_previous_content) = &self.expected_previous_content {
-                let actual_content = std::fs::read_to_string(&target_file)?;
+                let actual_content = std::fs::read_to_string(&self.location)?;
                 if actual_content != *expected_previous_content {
                     return Err(eyre!(
                         "File already exists and has different content than expected. Expected content: '{expected_previous_content}', actual content: '{actual_content}'."
