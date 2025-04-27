@@ -172,7 +172,7 @@ impl Repo {
                     .wrap_err("Failed to commit")?;
             }
             Err(_) => {
-                debug!("Head doesn't exist, creating initial commit");
+                debug!("Head doesn't exist, this is the initial commit");
 
                 // Because there are no commits we need to make sure we're on `main` and not `master`
                 self.repository
