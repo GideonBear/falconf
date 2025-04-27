@@ -17,6 +17,7 @@ expanduser = "1.2.2"
 ron = "0.10.1"
 
 [dev-dependencies]
+ctor = "0.4.2"
 libc = "0.2.172"
 tempdir = "0.3.7"
 

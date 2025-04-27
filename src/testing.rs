@@ -1,7 +1,9 @@
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
 use command_error::CommandExt;
+use ctor::ctor;
 use libc::{SIGTERM, kill};
+use log::LevelFilter;
 use std::env::set_current_dir;
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
 use std::path::PathBuf;
@@ -131,6 +133,15 @@ impl Drop for TestRemote {
     }
 }
 
+#[ctor]
+fn setup_test() {
+    color_eyre::install().unwrap();
+
+    env_logger::Builder::new()
+        .filter_level(LevelFilter::Debug)
+        .init();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,8 +150,6 @@ mod tests {
 
     #[test]
     fn test_test_remote() -> Result<()> {
-        color_eyre::install().ok();
-
         let remote = TestRemote::new()?;
 
         // 1

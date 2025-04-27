@@ -12,17 +12,10 @@ pub fn init(top_level_args: TopLevelArgs, args: InitArgs) -> Result<()> {
 mod tests {
     use super::*;
     use crate::testing::TestRemote;
-    use log::LevelFilter;
     use tempdir::TempDir;
 
     #[test]
     fn test_init() -> Result<()> {
-        color_eyre::install().ok();
-
-        env_logger::Builder::new()
-            .filter_level(LevelFilter::Debug)
-            .init();
-
         let remote = TestRemote::new()?;
 
         // New
