@@ -35,9 +35,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
 pub mod tests {
     use super::*;
     use crate::cli;
-    use crate::testing::TestRemote;
     use std::path::PathBuf;
-    use tempdir::TempDir;
 
     pub fn add_util_file(falconf_path: &PathBuf, file: String) -> Result<()> {
         debug!("Adding File piece: {file}");
