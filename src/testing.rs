@@ -36,6 +36,7 @@ impl TestRemote {
             .arg(&repo)
             .status_checked()?;
 
+        // TODO: is this necessary?
         // Make sure the branch is called "main"
         Command::new("git")
             .arg("-C")
