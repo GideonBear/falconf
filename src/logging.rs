@@ -10,13 +10,37 @@ pub trait CommandExt {
 
 impl CommandExt for Command {
     fn status_checked(&mut self) -> Result<ExitStatus> {
-        info!("Executing: {self:?}");
+        log_execution(self);
         command_error::CommandExt::status_checked(self).map_err(Into::into)
     }
 
     fn output_checked(&mut self) -> Result<Output> {
-        info!("Executing: {self:?}");
+        log_execution(self);
         command_error::CommandExt::output_checked(self).map_err(Into::into)
+    }
+}
+
+fn log_execution(command: &Command) {
+    info!("Executing: `{}`", as_string(command));
+}
+
+fn as_string(command: &Command) -> String {
+    format!(
+        "{} {}",
+        command.get_program().to_string_lossy(),
+        command
+            .get_args()
+            .map(|arg| quoted(arg.to_string_lossy().to_string()))
+            .collect::<Vec<_>>()
+            .join(" ")
+    )
+}
+
+fn quoted(s: String) -> String {
+    if s.contains(' ') {
+        format!("\"{s}\"")
+    } else {
+        s
     }
 }
 
