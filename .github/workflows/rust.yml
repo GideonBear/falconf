@@ -24,7 +24,8 @@ jobs:
       - name: Build (cargo build)
         run: cargo build --verbose
       - name: Lint (cargo clippy)
-        # Has to be nightly because the `clippy::missing_panics_doc` lint works differently
+        # Has to be nightly because https://github.com/rust-lang/rust-clippy/pull/14407 is not released on stable yet
+        # TODO: remove dependency on nightly when this PR is released to stable
         run: cargo +nightly clippy --verbose --all-features -- -D warnings
       - name: Run tests (cargo test)
         run: cargo test --verbose
