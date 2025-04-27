@@ -30,3 +30,32 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
 
     Ok(())
 }
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use crate::cli;
+    use crate::testing::TestRemote;
+    use std::path::PathBuf;
+    use tempdir::TempDir;
+
+    pub fn add_util_file(falconf_path: &PathBuf, file: String) -> Result<()> {
+        debug!("Adding File piece: {file}");
+
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.clone());
+
+        let args = AddArgs {
+            comment: None,
+            piece: Some(cli::Piece::File),
+            _command: (),
+            _apt: (),
+            _file: (),
+            _manual: (),
+            value: vec![file],
+        };
+
+        add(top_level_args, args)?;
+
+        Ok(())
+    }
+}
