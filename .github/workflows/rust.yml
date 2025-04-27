@@ -22,6 +22,7 @@ jobs:
       - name: Build (cargo build)
         run: cargo build --verbose
       - name: Lint (cargo clippy)
-        run: cargo clippy --verbose --all-features -- -D warnings
+        # Has to be nightly because the `clippy::missing_panics_doc` lint works differently
+        run: cargo +nightly clippy --verbose --all-features -- -D warnings
       - name: Run tests (cargo test)
         run: cargo test --verbose
