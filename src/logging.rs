@@ -6,6 +6,8 @@ pub trait CommandExt {
     fn status_checked(&mut self) -> Result<ExitStatus>;
 
     fn output_checked(&mut self) -> Result<Output>;
+
+    fn output_fallible(&mut self) -> Result<Output>;
 }
 
 impl CommandExt for Command {
@@ -17,6 +19,11 @@ impl CommandExt for Command {
     fn output_checked(&mut self) -> Result<Output> {
         log_execution(self);
         command_error::CommandExt::output_checked(self).map_err(Into::into)
+    }
+
+    fn output_fallible(&mut self) -> Result<Output> {
+        log_execution(self);
+        self.output().map_err(Into::into)
     }
 }
 

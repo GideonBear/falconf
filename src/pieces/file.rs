@@ -51,7 +51,7 @@ impl Piece for File {
                 let diff = Command::new("diff")
                     .arg(&target_file)
                     .arg(&self.location)
-                    .output_checked()?;
+                    .output_fallible()?;
 
                 #[allow(clippy::collapsible_else_if)] // Clearer this way
                 if diff.status.success() {
