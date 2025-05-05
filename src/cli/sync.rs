@@ -24,6 +24,8 @@ pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
     use super::*;
     use crate::testing::TestRemote;
     use color_eyre::eyre::OptionExt;

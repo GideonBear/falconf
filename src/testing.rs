@@ -1,6 +1,6 @@
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
-use command_error::CommandExt;
+use command_error::{ChildExt, CommandExt};
 use ctor::ctor;
 use libc::{SIGTERM, kill};
 use log::LevelFilter;
@@ -24,6 +24,10 @@ pub struct TestRemote {
 impl TestRemote {
     pub fn new() -> Result<Self> {
         // Wait until the port is available
+        #[expect(
+            clippy::missing_panics_doc,
+            reason = "Panic in test is allowed, and cannot `?` here"
+        )]
         let port_mutex = PORT_MUTEX.lock().unwrap();
 
         // Create a temporary directory for the repositories
@@ -63,15 +67,17 @@ impl TestRemote {
             .arg("--enable=receive-pack")
             .arg("--verbose")
             .process_group(0) // See Drop implementation below
-            .spawn()?;
+            .spawn_checked()?;
 
         // Wait for the daemon to be ready
         sleep(std::time::Duration::from_millis(250));
-        assert!(daemon.try_wait()?.is_none());
+        if daemon.try_wait_checked()?.is_some() {
+            return Err(eyre!("git daemon died"));
+        }
 
         Ok(Self {
             repos_dir,
-            daemon,
+            daemon: daemon.into_child(),
             port_mutex,
         })
     }
@@ -159,6 +165,8 @@ fn setup_test() {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
     use super::*;
     use std::fs::OpenOptions;
     use std::io::Write;

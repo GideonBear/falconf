@@ -33,14 +33,16 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
 
 #[cfg(test)]
 pub mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
     use super::*;
     use crate::cli;
-    use std::path::PathBuf;
+    use std::path::Path;
 
-    pub fn add_util_file(falconf_path: &PathBuf, file: String) -> Result<()> {
+    pub fn add_util_file(falconf_path: &Path, file: String) -> Result<()> {
         debug!("Adding File piece: {file}");
 
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.clone());
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
 
         let args = AddArgs {
             comment: None,
