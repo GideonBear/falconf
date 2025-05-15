@@ -6,7 +6,6 @@ use log::debug;
 
 pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let read_only_installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
@@ -23,7 +22,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     }
 
     // Add the piece
-    pieces.push(FullPiece::from_cli(args, &read_only_installation)?);
+    pieces.push(FullPiece::from_cli(args)?);
 
     // Push changes
     repo.write_and_push()?;

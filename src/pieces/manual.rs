@@ -1,4 +1,5 @@
 use crate::cli::AddArgs;
+use crate::execution_data::ExecutionData;
 use crate::piece::Piece;
 use crate::utils::press_enter;
 use color_eyre::Result;
@@ -11,11 +12,11 @@ pub struct Manual {
 }
 
 impl Piece for Manual {
-    fn _execute(&self) -> Result<()> {
+    fn _execute(&self, _execution_data: &ExecutionData) -> Result<()> {
         Self::print_message(&self.message)
     }
 
-    fn _undo(&self) -> Option<Result<()>> {
+    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
         Some(Self::print_message(&format!(
             "UNDO the following change: {}",
             self.message

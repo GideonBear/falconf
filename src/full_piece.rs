@@ -1,5 +1,5 @@
 use crate::cli::AddArgs;
-use crate::installation::Installation;
+use crate::execution_data::ExecutionData;
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use crate::utils::set_eq;
@@ -70,7 +70,11 @@ impl FullPiece {
         }
     }
 
-    pub fn do_todo(pieces: Vec<&mut Self>, machine: &Machine) -> Result<()> {
+    pub fn do_todo(
+        pieces: Vec<&mut Self>,
+        machine: &Machine,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
         let mut to_execute = vec![];
         let mut to_undo = vec![];
 
@@ -82,12 +86,15 @@ impl FullPiece {
             }
         }
 
-        PieceEnum::execute_bulk(to_execute.iter().map(|x| &x.piece).collect())?;
+        PieceEnum::execute_bulk(
+            to_execute.iter().map(|x| &x.piece).collect(),
+            execution_data,
+        )?;
         for piece in to_execute {
             piece.done_on.push(*machine);
         }
 
-        PieceEnum::undo_bulk(to_undo.iter().map(|x| &x.piece).collect())?;
+        PieceEnum::undo_bulk(to_undo.iter().map(|x| &x.piece).collect(), execution_data)?;
         for piece in to_undo {
             // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undo == true`,
             //  Thus `undone_on` must be `Some`, or the configuration is illegal.
@@ -129,8 +136,8 @@ impl FullPiece {
         }
     }
 
-    pub fn from_cli(args: AddArgs, installation: &Installation) -> Result<Self> {
+    pub fn from_cli(args: AddArgs) -> Result<Self> {
         let comment = args.comment.clone();
-        Ok(Self::new(PieceEnum::from_cli(args, installation)?, comment))
+        Ok(Self::new(PieceEnum::from_cli(args)?, comment))
     }
 }

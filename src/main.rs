@@ -9,6 +9,7 @@ use color_eyre::eyre;
 
 mod cli;
 mod data;
+mod execution_data;
 mod full_piece;
 mod installation;
 mod logging;

@@ -1,5 +1,5 @@
 use crate::cli::AddArgs;
-use crate::installation::Installation;
+use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use crate::utils::confirm;
@@ -24,15 +24,13 @@ pub struct File {
     // // TODO: note that this comment is weird
     // /// If the file should be created as sudo
     // sudo: bool,
-    /// The directory where the files are stored in the repository
-    target_dir: PathBuf,
     /// What the file should look like before the operation if it exists
     expected_previous_content: Option<String>,
 }
 
 impl Piece for File {
-    fn _execute(&self) -> Result<()> {
-        let target_file = self.target_file()?;
+    fn _execute(&self, execution_data: &ExecutionData) -> Result<()> {
+        let target_file = self.target_file(execution_data)?;
 
         if self.location.exists() {
             if self.location.is_symlink() {
@@ -88,21 +86,21 @@ impl Piece for File {
         Ok(())
     }
 
-    fn _undo(&self) -> Option<Result<()>> {
+    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
         Some(remove_file(&self.location).wrap_err("Failed to remove file as part of undo"))
     }
 }
 
 impl File {
-    fn target_file(&self) -> Result<PathBuf> {
-        Ok(self.target_dir.join(
+    fn target_file(&self, execution_data: &ExecutionData) -> Result<PathBuf> {
+        Ok(execution_data.file_dir.join(
             self.location
                 .strip_prefix("/")
                 .wrap_err("Invalid file location (no leading slash). Unreachable, we checked for this at construction time.")?,
         ))
     }
 
-    pub fn from_cli(args: AddArgs, installation: &Installation) -> Result<Self> {
+    pub fn from_cli(args: AddArgs) -> Result<Self> {
         if args.value.len() != 1 {
             return Err(eyre!(
                 "Expected a singular value (file location) for 'file' piece, got '{:?}'.",
@@ -117,11 +115,8 @@ impl File {
         }
         let location = location.into();
 
-        let target_dir = installation.repo().file_dir()?;
-
         Ok(Self {
             location,
-            target_dir,
             expected_previous_content: None,
         })
     }

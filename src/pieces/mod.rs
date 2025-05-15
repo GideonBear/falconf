@@ -1,6 +1,6 @@
 use crate::cli;
 use crate::cli::AddArgs;
-use crate::installation::Installation;
+use crate::execution_data::ExecutionData;
 use crate::piece::Piece;
 use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
@@ -60,37 +60,37 @@ impl PieceEnum {
     // }
 
     /// Execute multiple pieces
-    pub fn execute_bulk(pieces: Vec<&Self>) -> Result<()> {
+    pub fn execute_bulk(pieces: Vec<&Self>, execution_data: &ExecutionData) -> Result<()> {
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
         if !apt.is_empty() {
-            Apt::execute_bulk(&apt)?;
+            Apt::execute_bulk(&apt, execution_data)?;
         }
         if !command.is_empty() {
-            Command::execute_bulk(&command)?;
+            Command::execute_bulk(&command, execution_data)?;
         }
         if !file.is_empty() {
-            File::execute_bulk(&file)?;
+            File::execute_bulk(&file, execution_data)?;
         }
         if !manual.is_empty() {
-            Manual::execute_bulk(&manual)?;
+            Manual::execute_bulk(&manual, execution_data)?;
         }
         Ok(())
     }
 
     /// Undo multiple pieces.
-    pub fn undo_bulk(pieces: Vec<&Self>) -> Result<()> {
+    pub fn undo_bulk(pieces: Vec<&Self>, execution_data: &ExecutionData) -> Result<()> {
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
         if !apt.is_empty() {
-            Apt::undo_bulk(&apt)?;
+            Apt::undo_bulk(&apt, execution_data)?;
         }
         if !command.is_empty() {
-            Command::undo_bulk(&command)?;
+            Command::undo_bulk(&command, execution_data)?;
         }
         if !file.is_empty() {
-            File::undo_bulk(&file)?;
+            File::undo_bulk(&file, execution_data)?;
         }
         if !manual.is_empty() {
-            Manual::undo_bulk(&manual)?;
+            Manual::undo_bulk(&manual, execution_data)?;
         }
         Ok(())
     }
@@ -108,22 +108,18 @@ impl PieceEnum {
         (apt, command, file, manual)
     }
 
-    pub fn from_cli(args: AddArgs, installation: &Installation) -> Result<Self> {
+    pub fn from_cli(args: AddArgs) -> Result<Self> {
         Ok(match args.piece {
             None => Self::from_cli_autodetect(args),
-            Some(piece) => Self::from_cli_known(piece, args, installation)?,
+            Some(piece) => Self::from_cli_known(piece, args)?,
         })
     }
 
-    fn from_cli_known(
-        piece: cli::Piece,
-        args: AddArgs,
-        installation: &Installation,
-    ) -> Result<Self> {
+    fn from_cli_known(piece: cli::Piece, args: AddArgs) -> Result<Self> {
         Ok(match piece {
             cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)?),
             cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
-            cli::Piece::File => PieceEnum::File(File::from_cli(args, installation)?),
+            cli::Piece::File => PieceEnum::File(File::from_cli(args)?),
             cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
         })
     }

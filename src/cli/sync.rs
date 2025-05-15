@@ -1,4 +1,5 @@
 use crate::cli::{SyncArgs, TopLevelArgs};
+use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use color_eyre::Result;
@@ -6,6 +7,7 @@ use color_eyre::Result;
 pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let machine = *installation.machine();
+    let execution_data = ExecutionData::new(&installation)?;
     let repo = installation.repo_mut();
 
     // Pull the repo
@@ -14,7 +16,11 @@ pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let data = repo.data_mut();
 
     // Do out-of-sync (todo) changes
-    FullPiece::do_todo(data.pieces_mut().iter_mut().collect(), &machine)?;
+    FullPiece::do_todo(
+        data.pieces_mut().iter_mut().collect(),
+        &machine,
+        &execution_data,
+    )?;
 
     // Push changes
     repo.write_and_push()?;

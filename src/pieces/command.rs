@@ -1,4 +1,5 @@
 use crate::cli::AddArgs;
+use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use color_eyre::Result;
@@ -14,11 +15,11 @@ pub struct Command {
 }
 
 impl Piece for Command {
-    fn _execute(&self) -> Result<()> {
+    fn _execute(&self, _execution_data: &ExecutionData) -> Result<()> {
         Self::run_command(&self.command)
     }
 
-    fn _undo(&self) -> Option<Result<()>> {
+    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
         // This will return None if self.undo_command is None
         self.undo_command.as_ref().map(|cmd| Self::run_command(cmd))
     }

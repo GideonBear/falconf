@@ -1,4 +1,5 @@
 use crate::cli::AddArgs;
+use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::Piece;
 use color_eyre::Result;
@@ -13,7 +14,7 @@ pub struct Apt {
 }
 
 impl Piece for Apt {
-    fn _execute(&self) -> Result<()> {
+    fn _execute(&self, _execution_data: &ExecutionData) -> Result<()> {
         // SAFETY: Since execute_bulk is implemented we assume this is never called.
         #[expect(clippy::panic)]
         {
@@ -22,11 +23,11 @@ impl Piece for Apt {
         // Self::execute_bulk(&[self])
     }
 
-    fn execute_bulk(pieces: &[&Self]) -> Result<()> {
+    fn execute_bulk(pieces: &[&Self], _execution_data: &ExecutionData) -> Result<()> {
         Self::apt_command(&["install"], pieces)
     }
 
-    fn _undo(&self) -> Option<Result<()>> {
+    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
         // SAFETY: Since execute_bulk is implemented we assume this is never called.
         #[expect(clippy::panic)]
         {
@@ -35,7 +36,7 @@ impl Piece for Apt {
         // Some(Self::undo_bulk(&[self]))
     }
 
-    fn undo_bulk(pieces: &[&Self]) -> Result<()> {
+    fn undo_bulk(pieces: &[&Self], _execution_data: &ExecutionData) -> Result<()> {
         Self::apt_command(&["remove", "--autoremove"], pieces)
     }
 }
