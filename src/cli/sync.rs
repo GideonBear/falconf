@@ -57,6 +57,8 @@ mod tests {
             test1.to_str().ok_or_eyre("Invalid path")?.to_string(),
         )?;
 
+        assert!(!test1.exists());
+
         let local_2 = crate::cli::init::tests::init_util(&remote, false)?;
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone());
         let args = SyncArgs {};
