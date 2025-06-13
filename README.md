@@ -41,3 +41,4 @@ TODO: Chezmoi
 | Also a package manager                                |    ❌    |  ✅  |    ❌    |
 | Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |
 | Run arbitrary commands and edit arbitrary files       |    ✅    |  ➖  |    ✅    |
+| Watch files (or dconf) and notify                     |    check |  no  |    no    |
