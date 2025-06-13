@@ -29,7 +29,7 @@ TODO: how to sync, Topgrade
 - ➖: Possible but not built-in and/or against philosophy
 
 TODO: Chezmoi
-| Characteristic                                        | Falconf | Nix | Ansible | Chezmoi |
+| Characteristic                                        | Falconf | Nix | Ansible | Chezmoi | GNU Stow |
 |-------------------------------------------------------|:-------:|:---:|:-------:|
 | Reproducible                                          |    ✅    |  ✅  |    ✅    |
 | Full functionality on all Linux distros               |    ✅    |  ❌  |    ✅    |
