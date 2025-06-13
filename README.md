@@ -29,6 +29,8 @@ TODO: how to sync, Topgrade
 - ➖: Possible but not built-in and/or against philosophy
 
 TODO: Chezmoi
+TODO: Stor
+TODO: watch
 | Characteristic                                        | Falconf | Nix | Ansible | Chezmoi | GNU Stow |
 |-------------------------------------------------------|:-------:|:---:|:-------:|
 | Reproducible                                          |    ✅    |  ✅  |    ✅    |
@@ -42,3 +44,5 @@ TODO: Chezmoi
 | Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |
 | Run arbitrary commands and edit arbitrary files       |    ✅    |  ➖  |    ✅    |
 | Watch files (or dconf) and notify                     |    check |  no  |    no    |
+
+Feel free to add more tools to the table!
