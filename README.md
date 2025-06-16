@@ -24,6 +24,13 @@ TODO: how to sync, Topgrade
 
 ## Comparison to similar tools
 
+If you want to compare Falconf to Ansible, there are two main differences:
+1. Falconf tracks if a change is done, and does the change if it is not done yet,
+regardless of any system state. Ansible does not track this, and instead determines
+if the change is necessary based on the system state.
+2. In Ansible, tasks are managed in a file that you need to edit. In Falconf, pieces
+are managed (added, removed) on the command line, and only stored in a file internally.
+
 - ✅: Yes
 - ❌: No
 - ➖: Possible but not built-in and/or against philosophy
