@@ -4,10 +4,13 @@ use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use crate::utils::set_eq;
 use color_eyre::Result;
+use color_eyre::owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
+use std::io::Write;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
+    // TODO: Make illegal states unrepresentable (bools weg, in de options)
     piece: PieceEnum,
     /// An optional comment to clarify the use of the piece
     comment: Option<String>,
@@ -139,5 +142,21 @@ impl FullPiece {
     pub fn from_cli(args: AddArgs) -> Result<Self> {
         let comment = args.comment.clone();
         Ok(Self::new(PieceEnum::from_cli(args)?, comment))
+    }
+
+    /// Display information about this piece in the console
+    pub fn print<W: Write>(&self, writer: &mut W) -> Result<()> {
+        let text = if let Some(comment) = &self.comment {
+            format!("{} // {}", self.piece, comment)
+        } else {
+            self.piece.to_string()
+        };
+        if self.undo {
+            write!(writer, "{}", text.strikethrough())?;
+        } else {
+            write!(writer, "{text}")?;
+        }
+
+        Ok(())
     }
 }

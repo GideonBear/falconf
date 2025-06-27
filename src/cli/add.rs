@@ -14,7 +14,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     // we still get the expected result
     if args.value.len() == 1 {
         args.value = args.value[0]
-            .split_whitespace()  // TODO: this should split shell-like
+            .split_whitespace() // TODO: this should split shell-like
             .map(|x| x.to_owned())
             .collect();
 
@@ -38,19 +38,17 @@ pub mod tests {
     use crate::cli;
     use std::path::Path;
 
-    pub fn add_util_file(falconf_path: &Path, file: String) -> Result<()> {
-        debug!("Adding File piece: {file}");
-
+    pub fn add_util(falconf_path: &Path, piece: cli::Piece, value: Vec<String>) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
 
         let args = AddArgs {
             comment: None,
-            piece: Some(cli::Piece::File),
+            piece: Some(piece),
             _command: (),
             _apt: (),
             _file: (),
             _manual: (),
-            value: vec![file],
+            value,
         };
 
         add(top_level_args, args)?;

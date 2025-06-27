@@ -5,6 +5,7 @@ use crate::piece::Piece;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::process;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,5 +64,11 @@ impl Apt {
 
     pub fn from_cli_autodetected(_args: AddArgs, package: String) -> Self {
         Self { package }
+    }
+}
+
+impl Display for Apt {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "apt install {}", self.package)
     }
 }

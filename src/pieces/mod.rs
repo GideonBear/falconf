@@ -9,6 +9,7 @@ use crate::pieces::manual::Manual;
 use color_eyre::Result;
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
 pub mod apt;
 pub mod command;
@@ -143,5 +144,20 @@ impl PieceEnum {
             ["ln", ..] => unknown!("ln", "file", args),
             _ => PieceEnum::Command(Command::from_cli(args)),
         }
+    }
+}
+
+impl Display for PieceEnum {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                PieceEnum::Apt(piece) => piece.to_string(),
+                PieceEnum::Command(piece) => piece.to_string(),
+                PieceEnum::File(piece) => piece.to_string(),
+                PieceEnum::Manual(piece) => piece.to_string(),
+            }
+        )
     }
 }

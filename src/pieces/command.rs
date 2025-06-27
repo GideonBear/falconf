@@ -4,6 +4,7 @@ use crate::logging::CommandExt;
 use crate::piece::Piece;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::process;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,5 +40,11 @@ impl Command {
             command: args.value.join(" "),
             undo_command: None,
         }
+    }
+}
+
+impl Display for Command {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.command)
     }
 }

@@ -4,6 +4,7 @@ use crate::piece::Piece;
 use crate::utils::press_enter;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Manual {
@@ -25,7 +26,7 @@ impl Piece for Manual {
 }
 
 impl Manual {
-    #[allow(clippy::print_stdout)]
+    #[allow(clippy::print_stdout)] // TODO
     fn print_message(message: &str) -> Result<()> {
         println!("Manual action required");
         println!("{message}");
@@ -38,5 +39,11 @@ impl Manual {
         Self {
             message: args.value.join(" "),
         }
+    }
+}
+
+impl Display for Manual {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Manual action: {}", self.message)
     }
 }

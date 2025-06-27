@@ -7,6 +7,7 @@ use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use log::info;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::fs::remove_file;
 use std::path::PathBuf;
 use std::process::Command;
@@ -119,5 +120,11 @@ impl File {
             location,
             expected_previous_content: None,
         })
+    }
+}
+
+impl Display for File {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Tracking file at: {}", self.location.display())
     }
 }

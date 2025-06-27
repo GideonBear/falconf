@@ -1,9 +1,10 @@
 use crate::execution_data::ExecutionData;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
+use std::fmt::Display;
 
 /// A single piece of configuration
-pub trait Piece: Sized {
+pub trait Piece: Sized + Display {
     /// Execute a single piece. Should not be called.
     fn _execute(&self, execution_data: &ExecutionData) -> Result<()>;
 

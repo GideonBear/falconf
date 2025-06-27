@@ -1,16 +1,19 @@
 use crate::cli::add::add;
 use crate::cli::init::init;
+use crate::cli::list::list;
 use crate::cli::sync::sync;
 use clap::ArgAction::SetTrue;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use color_eyre::Result;
 use expanduser::expanduser;
 use log::{LevelFilter, debug};
+use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 mod add;
 mod init;
+mod list;
 mod sync;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
@@ -72,6 +75,9 @@ enum Commands {
 
     #[command(after_help = "Add a new piece to your configuration")]
     Add(AddArgs),
+
+    #[command(after_help = "List all pieces")]
+    List(ListArgs),
 }
 
 #[derive(Args, Debug)]
@@ -140,6 +146,9 @@ pub struct AddArgs {
     pub value: Vec<String>,
 }
 
+#[derive(Args, Debug)]
+struct ListArgs {}
+
 pub fn main() -> Result<()> {
     let cli = Cli::parse();
 
@@ -155,5 +164,6 @@ pub fn main() -> Result<()> {
         Commands::Init(args) => init(top_level, args),
         Commands::Sync(args) => sync(top_level, args),
         Commands::Add(args) => add(top_level, args),
+        Commands::List(args) => list(top_level, args, &mut io::stdout().lock()),
     }
 }

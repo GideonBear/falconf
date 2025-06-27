@@ -33,6 +33,9 @@ mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
+    use crate::cli;
+    use crate::cli::add::tests::add_util;
+    use crate::cli::init::tests::init_util;
     use crate::testing::TestRemote;
     use color_eyre::eyre::OptionExt;
     use log::debug;
@@ -46,7 +49,7 @@ mod tests {
         let temp = TempDir::new("test_falconf_files")?;
         let test1 = temp.path().join("test1.txt");
 
-        let local_1 = crate::cli::init::tests::init_util(&remote, true)?;
+        let local_1 = init_util(&remote, true)?;
         let test1_repository = local_1
             .path()
             .join("repository/files")
@@ -58,14 +61,15 @@ mod tests {
         )?;
         debug!("Created {test1_repository:?}");
         File::create(test1_repository)?.write_all(b"test1")?;
-        crate::cli::add::tests::add_util_file(
+        add_util(
             local_1.path(),
-            test1.to_str().ok_or_eyre("Invalid path")?.to_string(),
+            cli::Piece::File,
+            vec![test1.to_str().ok_or_eyre("Invalid path")?.to_string()],
         )?;
 
         assert!(!test1.exists());
 
-        let local_2 = crate::cli::init::tests::init_util(&remote, false)?;
+        let local_2 = init_util(&remote, false)?;
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone());
         let args = SyncArgs {};
         sync(top_level_args, args)?;
