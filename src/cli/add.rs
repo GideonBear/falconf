@@ -14,7 +14,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     // we still get the expected result
     if args.value.len() == 1 {
         args.value = args.value[0]
-            .split_whitespace()
+            .split_whitespace()  // TODO: this should split shell-like
             .map(|x| x.to_owned())
             .collect();
 
