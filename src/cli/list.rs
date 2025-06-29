@@ -39,12 +39,15 @@ pub mod tests {
         let remote = TestRemote::new()?;
         let local = init_util(&remote, true)?;
 
+        // Apt
         add_util(local.path(), cli::Piece::Apt, vec![String::from("htop")])?;
+        // Command
         add_util(
             local.path(),
             cli::Piece::Command,
             vec![String::from("echo"), String::from("some text")],
         )?;
+        // File
         let temp = TempDir::new("test_falconf_files")?;
         let test1 = temp.path().join("test1.txt");
         add_util(
@@ -52,11 +55,13 @@ pub mod tests {
             cli::Piece::File,
             vec![test1.display().to_string()],
         )?;
+        // Manual
         add_util(
             local.path(),
             cli::Piece::Manual,
             vec![String::from("some"), String::from("message")],
         )?;
+        // With comment
         add_util_comment(
             local.path(),
             cli::Piece::Apt,
