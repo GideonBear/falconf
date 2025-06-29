@@ -25,7 +25,7 @@ macro_rules! unknown {
             $target,
             "')"
         ));
-        PieceEnum::Command(Command::from_cli($args))
+        PieceEnum::Command(Command::from_cli($args)?)
     }};
 }
 
@@ -119,7 +119,7 @@ impl PieceEnum {
 
     pub fn from_cli(args: &AddArgs) -> Result<Self> {
         Ok(match args.piece {
-            None => Self::from_cli_autodetect(args),
+            None => Self::from_cli_autodetect(args)?,
             Some(piece) => Self::from_cli_known(piece, args)?,
         })
     }
@@ -127,32 +127,34 @@ impl PieceEnum {
     fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Result<Self> {
         Ok(match piece {
             cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)?),
-            cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
+            cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)?),
             cli::Piece::File => PieceEnum::File(File::from_cli(args)?),
             cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
         })
     }
 
-    fn from_cli_autodetect(args: &AddArgs) -> Self {
+    fn from_cli_autodetect(args: &AddArgs) -> Result<Self> {
         let command = args.value.clone();
-        match command
-            .iter()
-            .map(|x| x.as_str())
-            .collect::<Vec<&str>>()
-            .as_slice()
-        {
-            // TODO: test
-            ["apt", "install", package]
-            | ["apt", "install", package, "-y"]
-            | ["apt", "install", "-y", package]
-            | ["apt", "-y", "install", package] => {
-                info!("Using `apt` piece instead of `command`");
-                PieceEnum::Apt(Apt::from_cli_autodetected(args, package.to_string()))
-            }
-            ["apt", ..] => unknown!("apt", "apt", args),
-            ["ln", ..] => unknown!("ln", "file", args),
-            _ => PieceEnum::Command(Command::from_cli(args)),
-        }
+        Ok(
+            match command
+                .iter()
+                .map(|x| x.as_str())
+                .collect::<Vec<&str>>()
+                .as_slice()
+            {
+                // TODO: test
+                ["apt", "install", package]
+                | ["apt", "install", package, "-y"]
+                | ["apt", "install", "-y", package]
+                | ["apt", "-y", "install", package] => {
+                    info!("Using `apt` piece instead of `command`");
+                    PieceEnum::Apt(Apt::from_cli_autodetected(args, package.to_string()))
+                }
+                ["apt", ..] => unknown!("apt", "apt", args),
+                ["ln", ..] => unknown!("ln", "file", args),
+                _ => PieceEnum::Command(Command::from_cli(args)?),
+            },
+        )
     }
 }
 

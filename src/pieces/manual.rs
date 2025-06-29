@@ -37,7 +37,7 @@ impl Manual {
 
     pub fn from_cli(args: &AddArgs) -> Self {
         Self {
-            message: args.value.join(" "),
+            message: shell_words::join(&args.value),
         }
     }
 }

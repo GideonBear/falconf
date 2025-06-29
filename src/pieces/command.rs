@@ -35,10 +35,18 @@ impl Command {
         Ok(())
     }
 
-    pub fn from_cli(args: &AddArgs) -> Self {
-        Self {
-            command: shell_words::join(&args.value),
+    pub fn from_cli(args: &AddArgs) -> Result<Self> {
+        Ok(Self {
+            command: Self::parse_value(&args.value)?,
             undo_command: None,
+        })
+    }
+
+    fn parse_value(mut value: &Vec<String>) -> Result<String> {
+        if value.len() == 1 {
+            Ok(shell_words::join(shell_words::split(&value[0])?))
+        } else {
+            Ok(shell_words::join(value))
         }
     }
 }
@@ -55,19 +63,24 @@ mod tests {
 
     use super::*;
 
+    fn testcase(input: Vec<&str>, output: &str) -> Result<()> {
+        assert_eq!(
+            Command::parse_value(&input.into_iter().map(|s| s.to_string()).collect())?,
+            output,
+        );
+        Ok(())
+    }
+
     #[test]
-    fn test_command_from_cli() {
-        assert_eq!(
-            shell_words::join(vec!["echo", "one two"]),
-            r#"echo 'one two'"#
-        );
-        assert_eq!(
-            shell_words::join(vec!["echo", "'one two'"]),
-            r#"echo ''\''one two'\'''"#
-        );
-        assert_eq!(
-            shell_words::join(vec!["echo", r#""one two""#]),
-            r#"echo '"one two"'"#
-        );
+    fn test_parse_value() -> Result<()> {
+        testcase(vec!["echo", "one two"], r#"echo 'one two'"#)?;
+        testcase(vec!["echo", "'one two'"], r#"echo ''\''one two'\'''"#)?;
+        testcase(vec!["echo", r#""one two""#], r#"echo '"one two"'"#)?;
+        testcase(vec!["echo 'one two'"], r#"echo 'one two'"#)?;
+        testcase(vec!["echo"], r#"echo"#)?;
+        testcase(vec!["echo one"], r#"echo one"#)?;
+        testcase(vec!["'echo one'"], r#"'echo one'"#)?;
+
+        Ok(())
     }
 }

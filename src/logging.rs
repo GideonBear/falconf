@@ -36,20 +36,12 @@ fn as_string(command: &Command) -> String {
     format!(
         "{} {}",
         command.get_program().to_string_lossy(),
-        command
-            .get_args()
-            .map(|arg| quoted(arg.to_string_lossy().to_string()))
-            .collect::<Vec<_>>()
-            .join(" ")
+        shell_words::join(
+            command
+                .get_args()
+                .map(|arg| arg.to_string_lossy().to_string())
+        )
     )
-}
-
-fn quoted(s: String) -> String {
-    if s.contains(' ') {
-        format!("\"{s}\"")
-    } else {
-        s
-    }
 }
 
 // TODO: log everywhere!
