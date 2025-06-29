@@ -1,3 +1,6 @@
+use crate::cli::TopLevelArgs;
+use crate::execution_data::ExecutionData;
+use crate::installation::Installation;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
 use command_error::{ChildExt, CommandExt};
@@ -6,7 +9,7 @@ use libc::{SIGTERM, kill};
 use log::LevelFilter;
 use std::env::set_current_dir;
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
 use std::sync::{LazyLock, Mutex, MutexGuard};
 use std::thread::sleep;
@@ -152,6 +155,21 @@ impl TempDirSub {
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
+}
+
+pub fn get_last_piece(falconf_dir: &Path) -> Result<u32> {
+    let top_level_args = TopLevelArgs::new_testing(falconf_dir.to_path_buf());
+    let mut installation = Installation::get(&top_level_args)?;
+    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
+    let repo = installation.repo_mut();
+    let data = repo.data_mut();
+    let pieces = data.pieces_mut();
+
+    let (&id, _piece) = pieces
+        .last()
+        .ok_or_eyre("Asked for last piece, but there are no pieces")?;
+
+    Ok(id)
 }
 
 #[ctor]

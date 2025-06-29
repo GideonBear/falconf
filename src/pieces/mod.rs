@@ -62,6 +62,10 @@ impl PieceEnum {
 
     /// Execute multiple pieces
     pub fn execute_bulk(pieces: Vec<&Self>, execution_data: &ExecutionData) -> Result<()> {
+        if execution_data.dry_run {
+            warn!("Dry run! Not doing anything.");
+            return Ok(());
+        }
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
         if !apt.is_empty() {
             Apt::execute_bulk(&apt, execution_data)?;
@@ -80,6 +84,10 @@ impl PieceEnum {
 
     /// Undo multiple pieces.
     pub fn undo_bulk(pieces: Vec<&Self>, execution_data: &ExecutionData) -> Result<()> {
+        if execution_data.dry_run {
+            warn!("Dry run! Not doing anything.");
+            return Ok(());
+        }
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
         if !apt.is_empty() {
             Apt::undo_bulk(&apt, execution_data)?;

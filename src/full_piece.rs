@@ -113,14 +113,16 @@ impl FullPiece {
         Ok(())
     }
 
-    pub fn add(args: AddArgs) -> Result<(u32, Self)> {
-        let piece = Self::from_cli(args)?;
+    pub fn add(args: AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
+        let mut piece = Self::from_cli(args)?;
 
-        // TODO: Execute it
+        piece.done_on.push(execution_data.machine);
+        PieceEnum::execute_bulk(vec![&piece.piece], execution_data)?;
+
         Ok((Self::new_id(), piece))
     }
 
-    pub fn undo(&mut self, execution_data: ExecutionData) -> Result<()> {
+    pub fn undo(&mut self, execution_data: &ExecutionData) -> Result<()> {
         if self.undo {
             return Err(eyre!("This piece is already undone"));
         }
@@ -131,7 +133,7 @@ impl FullPiece {
             assert!(self.undone_on.is_none());
         }
         self.undone_on = Some(vec![execution_data.machine]);
-        PieceEnum::undo_bulk(vec![&self.piece], &execution_data)?;
+        PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;
 
         Ok(())
     }

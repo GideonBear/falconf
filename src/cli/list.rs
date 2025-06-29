@@ -27,7 +27,8 @@ pub mod tests {
     use crate::cli;
     use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::init::tests::init_util;
-    use crate::testing::TestRemote;
+    use crate::cli::undo::tests::undo_util;
+    use crate::testing::{TestRemote, get_last_piece};
     use assert_matches_regex::assert_matches_regex;
     use color_eyre::Result;
     use log::debug;
@@ -71,13 +72,9 @@ pub mod tests {
             String::from("This is a comment!"),
         )?;
         // Undone
-        let id = add_util_comment(
-            local.path(),
-            cli::Piece::Apt,
-            vec![String::from("htop")],
-            String::from("This is a comment!"),
-        )?;
-        undo_util(id); // TODO
+        add_util(local.path(), cli::Piece::Apt, vec![String::from("htop")])?;
+        let id = get_last_piece(local.path())?;
+        undo_util(local.path(), id)?;
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone());
         let args = ListArgs {};

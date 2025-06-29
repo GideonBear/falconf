@@ -7,7 +7,7 @@ use color_eyre::Result;
 pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let machine = *installation.machine();
-    let execution_data = ExecutionData::new(&installation)?;
+    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     let repo = installation.repo_mut();
 
     // Pull the repo

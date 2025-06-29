@@ -1,4 +1,5 @@
 use crate::cli::{AddArgs, TopLevelArgs};
+use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use color_eyre::Result;
@@ -6,6 +7,7 @@ use log::debug;
 
 pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
+    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
@@ -22,7 +24,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     }
 
     // Add the piece
-    let (id, piece) = FullPiece::add(args)?;
+    let (id, piece) = FullPiece::add(args, &execution_data)?;
     pieces.insert(id, piece);
 
     // Push changes

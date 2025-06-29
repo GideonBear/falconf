@@ -6,7 +6,7 @@ use color_eyre::eyre::OptionExt;
 
 pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let execution_data = ExecutionData::new(&installation)?;
+    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
@@ -15,7 +15,7 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
         .get_mut(&args.piece_id)
         .ok_or_eyre("Piece id not found")?;
 
-    piece.undo(execution_data)?;
+    piece.undo(&execution_data)?;
 
     // Push changes
     repo.write_and_push()?;
@@ -28,8 +28,17 @@ pub mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli;
     use std::path::Path;
+
+    pub fn undo_util(falconf_path: &Path, id: u32) -> Result<()> {
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
+
+        let args = UndoArgs { piece_id: id };
+
+        undo(top_level_args, args)?;
+
+        Ok(())
+    }
 
     pub fn test_undo() -> Result<()> {
         todo!()

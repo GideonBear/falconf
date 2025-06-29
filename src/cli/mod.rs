@@ -46,6 +46,11 @@ pub struct TopLevelArgs {
     /// The path to the falconf directory.
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
+
+    /// If true, don't execute any commands. WARNING: this will make falconf think the commands
+    /// were executed, even when they aren't
+    #[arg(long, short)]
+    pub dry_run: bool,
 }
 
 impl TopLevelArgs {
@@ -63,6 +68,7 @@ impl TopLevelArgs {
             log_level: "".to_string(),
             verbose: false,
             path: falconf_path,
+            dry_run: true,
         }
     }
 }
