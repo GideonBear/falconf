@@ -23,7 +23,10 @@ pub trait Piece: Sized + Display {
     fn undo_bulk(pieces: &[&Self], execution_data: &ExecutionData) -> Result<()> {
         for piece in pieces {
             match piece._undo(execution_data) {
-                None => return Err(eyre!("Undefined undo for piece; unreachable")),
+                None => {
+                    // TODO: Flag to add undo parameter
+                    todo!("Undefined undo for piece; we should prompt then retry with that");
+                }
                 Some(Err(e)) => return Err(e),
                 Some(Ok(())) => {}
             }
