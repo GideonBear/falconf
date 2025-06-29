@@ -160,7 +160,6 @@ impl TempDirSub {
 pub fn get_last_piece(falconf_dir: &Path) -> Result<u32> {
     let top_level_args = TopLevelArgs::new_testing(falconf_dir.to_path_buf(), true);
     let mut installation = Installation::get(&top_level_args)?;
-    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
