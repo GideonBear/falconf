@@ -69,7 +69,7 @@ pub mod tests {
             vec![String::from("cowsay")],
             String::from("This is a comment!"),
         )?;
-        // Undone
+        // Undone & unused
         add_util(local.path(), cli::Piece::Apt, vec![String::from("cowsay")])?;
         let id = get_last_piece(local.path())?;
         undo_util(local.path(), id)?;
@@ -94,7 +94,7 @@ pub mod tests {
 {ID_RE} Tracking file at: {}
 {ID_RE} Manual action: some message
 {ID_RE} apt install cowsay // This is a comment!
-\u{{1b}}\[9m{ID_RE} apt install cowsay\u{{1b}}\[0m
+\u{{1b}}\[9m{ID_RE} apt install cowsay \(unused\)\u{{1b}}\[0m
 $"#,
                 test1.display()
             )

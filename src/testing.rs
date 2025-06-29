@@ -18,9 +18,9 @@ static PORT_MUTEX: LazyLock<Mutex<()>> = LazyLock::new(Mutex::default);
 
 #[derive(Debug)]
 pub struct TestRemote {
-    repos_dir: TempDir,
+    _repos_dir: TempDir,
     daemon: Child,
-    port_mutex: MutexGuard<'static, ()>,
+    _port_mutex: MutexGuard<'static, ()>,
 }
 
 impl TestRemote {
@@ -78,9 +78,9 @@ impl TestRemote {
         }
 
         Ok(Self {
-            repos_dir,
+            _repos_dir: repos_dir,
             daemon: daemon.into_child(),
-            port_mutex,
+            _port_mutex: port_mutex,
         })
     }
 
