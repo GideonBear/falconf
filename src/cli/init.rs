@@ -19,7 +19,7 @@ pub mod tests {
         let temp = TempDir::new("test_falconf")?;
         let falconf_path = temp.path().join("test_.falconf_dir");
 
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.clone());
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.clone(), true);
 
         let args = InitArgs {
             new,

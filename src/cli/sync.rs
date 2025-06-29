@@ -70,7 +70,7 @@ mod tests {
         assert!(!test1.exists());
 
         let local_2 = init_util(&remote, false)?;
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone());
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
         let args = SyncArgs {};
         sync(top_level_args, args)?;
 

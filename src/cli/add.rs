@@ -47,7 +47,7 @@ pub mod tests {
         value: Vec<String>,
         comment: Option<String>,
     ) -> Result<()> {
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
 
         let args = AddArgs {
             comment,

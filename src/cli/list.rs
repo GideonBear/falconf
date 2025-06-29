@@ -76,7 +76,7 @@ pub mod tests {
         let id = get_last_piece(local.path())?;
         undo_util(local.path(), id)?;
 
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone());
+        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
         let args = ListArgs {};
         let mut writer = io::Cursor::new(vec![]);
 

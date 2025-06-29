@@ -31,7 +31,7 @@ pub mod tests {
     use std::path::Path;
 
     pub fn undo_util(falconf_path: &Path, id: u32) -> Result<()> {
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
 
         let args = UndoArgs {
             piece_id: id,

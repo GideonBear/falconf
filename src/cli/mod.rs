@@ -63,12 +63,12 @@ impl TopLevelArgs {
     }
 
     #[cfg(test)]
-    pub fn new_testing(falconf_path: PathBuf) -> Self {
+    pub fn new_testing(falconf_path: PathBuf, dry_run: bool) -> Self {
         Self {
             log_level: "".to_string(),
             verbose: false,
             path: falconf_path,
-            dry_run: true,
+            dry_run,
         }
     }
 }
