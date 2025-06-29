@@ -70,6 +70,14 @@ pub mod tests {
             vec![String::from("htop")],
             String::from("This is a comment!"),
         )?;
+        // Undone
+        let id = add_util_comment(
+            local.path(),
+            cli::Piece::Apt,
+            vec![String::from("htop")],
+            String::from("This is a comment!"),
+        )?;
+        undo_util(id); // TODO
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone());
         let args = ListArgs {};

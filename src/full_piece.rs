@@ -113,6 +113,13 @@ impl FullPiece {
         Ok(())
     }
 
+    pub fn add(args: AddArgs) -> Result<(u32, Self)> {
+        let piece = Self::from_cli(args)?;
+
+        // TODO: Execute it
+        Ok((Self::new_id(), piece))
+    }
+
     pub fn undo(&mut self, execution_data: ExecutionData) -> Result<()> {
         if self.undo {
             return Err(eyre!("This piece is already undone"));
@@ -157,9 +164,13 @@ impl FullPiece {
         }
     }
 
-    pub fn from_cli(args: AddArgs) -> Result<Self> {
+    fn from_cli(args: AddArgs) -> Result<Self> {
         let comment = args.comment.clone();
         Ok(Self::new(PieceEnum::from_cli(args)?, comment))
+    }
+
+    fn new_id() -> u32 {
+        rand::rng().next_u32()
     }
 
     /// Display information about this piece in the console
@@ -177,9 +188,5 @@ impl FullPiece {
 
         writeln!(writer)?;
         Ok(())
-    }
-
-    pub fn new_id() -> u32 {
-        rand::rng().next_u32()
     }
 }

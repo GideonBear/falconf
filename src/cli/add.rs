@@ -22,8 +22,8 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     }
 
     // Add the piece
-    let piece = FullPiece::from_cli(args)?;
-    pieces.insert(FullPiece::new_id(), piece);
+    let (id, piece) = FullPiece::add(args)?;
+    pieces.insert(id, piece);
 
     // Push changes
     repo.write_and_push()?;
