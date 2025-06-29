@@ -182,11 +182,16 @@ impl FullPiece {
 
     /// Display information about this piece in the console
     pub fn print<W: Write>(&self, writer: &mut W, id: u32) -> Result<()> {
-        let text = if let Some(comment) = &self.comment {
-            format!("[{id:08x}] {} // {}", self.piece, comment)
+        let comment_suffix = if let Some(comment) = &self.comment {
+            format!(" // {comment}")
         } else {
-            format!("[{id:08x}] {}", self.piece)
+            String::new()
         };
+        let unused_suffix = if self.unused() { " (unused)" } else { "" };
+        let text = format!(
+            "[{id:08x}] {}{}{}",
+            self.piece, comment_suffix, unused_suffix
+        );
         if self.undo {
             write!(writer, "{}", text.strikethrough())?;
         } else {
