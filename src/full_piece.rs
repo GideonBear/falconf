@@ -164,7 +164,7 @@ impl FullPiece {
             let one_time_todo_on = self.one_time_todo_on.as_ref().unwrap();
             set_eq(&self.done_on, one_time_todo_on)
         } else {
-            // Any non-undo and non-one time pieces should never be cleaned up,
+            // Any non-undo and non-one_time pieces should never be cleaned up,
             //  since they need to be executed on new machines.
 
             false

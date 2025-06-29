@@ -6,7 +6,7 @@ use std::process::{Command, ExitStatus, Output};
 pub trait CommandExt {
     fn status_checked(&mut self) -> Result<ExitStatus>;
 
-    fn output_checked(&mut self) -> Result<Output>;
+    // fn output_checked(&mut self) -> Result<Output>;
 
     fn output_fallible(&mut self) -> Result<Output>;
 }
@@ -17,10 +17,10 @@ impl CommandExt for Command {
         command_error::CommandExt::status_checked(self).map_err(Into::into)
     }
 
-    fn output_checked(&mut self) -> Result<Output> {
-        log_execution(self);
-        command_error::CommandExt::output_checked(self).map_err(Into::into)
-    }
+    // fn output_checked(&mut self) -> Result<Output> {
+    //     log_execution(self);
+    //     command_error::CommandExt::output_checked(self).map_err(Into::into)
+    // }
 
     fn output_fallible(&mut self) -> Result<Output> {
         log_execution(self);

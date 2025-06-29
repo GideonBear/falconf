@@ -1,14 +1,14 @@
-use std::{io, process};
+use std::io;
 
-pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
-    if sudo {
-        let mut cmd = process::Command::new("sudo");
-        cmd.arg(program);
-        cmd
-    } else {
-        process::Command::new(program)
-    }
-}
+// pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
+//     if sudo {
+//         let mut cmd = process::Command::new("sudo");
+//         cmd.arg(program);
+//         cmd
+//     } else {
+//         process::Command::new(program)
+//     }
+// }
 
 #[allow(clippy::print_stdout)]
 pub fn press_enter() -> io::Result<()> {
