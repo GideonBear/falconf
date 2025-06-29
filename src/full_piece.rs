@@ -148,9 +148,9 @@ impl FullPiece {
     /// Display information about this piece in the console
     pub fn print<W: Write>(&self, writer: &mut W, id: u32) -> Result<()> {
         let text = if let Some(comment) = &self.comment {
-            format!("[{id:x}] {} // {}", self.piece, comment)
+            format!("[{id:08x}] {} // {}", self.piece, comment)
         } else {
-            format!("[{id:x}] {}", self.piece)
+            format!("[{id:08x}] {}", self.piece)
         };
         if self.undo {
             write!(writer, "{}", text.strikethrough())?;
