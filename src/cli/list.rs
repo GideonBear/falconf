@@ -25,7 +25,7 @@ pub mod tests {
 
     use super::*;
     use crate::cli;
-    use crate::cli::add::tests::add_util;
+    use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::init::tests::init_util;
     use crate::testing::TestRemote;
     use assert_matches_regex::assert_matches_regex;
@@ -56,9 +56,9 @@ pub mod tests {
             cli::Piece::Manual,
             vec![String::from("some"), String::from("message")],
         )?;
+        add_util_comment(local.path(), cli::Piece::Apt, vec!["htop"], "This is a comment!")
 
         // TODO: test comments
-        // TODO: test all piece types
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone());
         let args = ListArgs {};

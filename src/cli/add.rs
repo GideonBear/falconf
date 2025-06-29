@@ -39,11 +39,16 @@ pub mod tests {
     use crate::cli;
     use std::path::Path;
 
-    pub fn add_util(falconf_path: &Path, piece: cli::Piece, value: Vec<String>) -> Result<()> {
+    pub fn _add_util(
+        falconf_path: &Path,
+        piece: cli::Piece,
+        value: Vec<String>,
+        comment: Option<String>,
+    ) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
 
         let args = AddArgs {
-            comment: None,
+            comment,
             piece: Some(piece),
             _command: (),
             _apt: (),
@@ -55,5 +60,18 @@ pub mod tests {
         add(top_level_args, args)?;
 
         Ok(())
+    }
+
+    pub fn add_util(falconf_path: &Path, piece: cli::Piece, value: Vec<String>) -> Result<()> {
+        _add_util(falconf_path, piece, value, None)
+    }
+
+    pub fn add_util_comment(
+        falconf_path: &Path,
+        piece: cli::Piece,
+        value: Vec<String>,
+        comment: String,
+    ) -> Result<()> {
+        _add_util(falconf_path, piece, value, Some(comment))
     }
 }
