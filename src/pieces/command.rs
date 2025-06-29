@@ -37,7 +37,6 @@ impl Command {
 
     pub fn from_cli(args: AddArgs) -> Self {
         Self {
-            // TODO: Extensive testing of this
             command: shell_words::join(args.value),
             undo_command: None,
         }
@@ -47,5 +46,28 @@ impl Command {
 impl Display for Command {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.command)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
+    use super::*;
+
+    #[test]
+    fn test_command_from_cli() {
+        assert_eq!(
+            shell_words::join(vec!["echo", "one two"]),
+            r#"echo 'one two'"#
+        );
+        assert_eq!(
+            shell_words::join(vec!["echo", "'one two'"]),
+            r#"echo ''\''one two'\'''"#
+        );
+        assert_eq!(
+            shell_words::join(vec!["echo", r#""one two""#]),
+            r#"echo '"one two"'"#
+        );
     }
 }
