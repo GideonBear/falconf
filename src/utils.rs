@@ -10,7 +10,7 @@ pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
     }
 }
 
-#[allow(clippy::print_stdout)] // TODO
+#[allow(clippy::print_stdout)]
 pub fn press_enter() -> io::Result<()> {
     println!("Press Enter to continue...");
     let mut input = String::new();
@@ -18,7 +18,7 @@ pub fn press_enter() -> io::Result<()> {
     Ok(())
 }
 
-#[allow(clippy::print_stdout)] // TODO
+#[allow(clippy::print_stdout)]
 pub fn confirm(question: &str) -> io::Result<bool> {
     loop {
         println!("{question} (y/n)");
