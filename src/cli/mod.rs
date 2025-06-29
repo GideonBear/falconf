@@ -47,9 +47,9 @@ pub struct TopLevelArgs {
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
 
-    /// If true, don't execute any commands. WARNING: this will make falconf think the commands
-    /// were executed, even when they aren't
-    #[arg(long, short)]
+    /// If true, don't execute any commands. WARNING: this is not safe to run, as this will
+    /// make falconf still think the commands were executed
+    #[arg(long)]
     pub dry_run: bool,
 }
 
