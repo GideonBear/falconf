@@ -101,7 +101,7 @@ impl File {
         ))
     }
 
-    pub fn from_cli(args: AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &AddArgs) -> Result<Self> {
         if args.value.len() != 1 {
             return Err(eyre!(
                 "Expected a singular value (file location) for 'file' piece, got '{:?}'.",

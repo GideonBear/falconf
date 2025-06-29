@@ -35,9 +35,9 @@ impl Command {
         Ok(())
     }
 
-    pub fn from_cli(args: AddArgs) -> Self {
+    pub fn from_cli(args: &AddArgs) -> Self {
         Self {
-            command: shell_words::join(args.value),
+            command: shell_words::join(&args.value),
             undo_command: None,
         }
     }

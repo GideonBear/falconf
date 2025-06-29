@@ -117,14 +117,14 @@ impl PieceEnum {
         (apt, command, file, manual)
     }
 
-    pub fn from_cli(args: AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &AddArgs) -> Result<Self> {
         Ok(match args.piece {
             None => Self::from_cli_autodetect(args),
             Some(piece) => Self::from_cli_known(piece, args)?,
         })
     }
 
-    fn from_cli_known(piece: cli::Piece, args: AddArgs) -> Result<Self> {
+    fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Result<Self> {
         Ok(match piece {
             cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)?),
             cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)),
@@ -133,7 +133,7 @@ impl PieceEnum {
         })
     }
 
-    fn from_cli_autodetect(args: AddArgs) -> Self {
+    fn from_cli_autodetect(args: &AddArgs) -> Self {
         let command = args.value.clone();
         match command
             .iter()

@@ -1,4 +1,4 @@
-use crate::cli::AddArgs;
+use crate::cli::{AddArgs, UndoArgs};
 use crate::execution_data::ExecutionData;
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;
@@ -113,16 +113,18 @@ impl FullPiece {
         Ok(())
     }
 
-    pub fn add(args: AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
+    pub fn add(args: &AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
         let mut piece = Self::from_cli(args)?;
 
         piece.done_on.push(execution_data.machine);
-        PieceEnum::execute_bulk(vec![&piece.piece], execution_data)?;
+        if args.not_done_here {
+            PieceEnum::execute_bulk(vec![&piece.piece], execution_data)?;
+        }
 
         Ok((Self::new_id(), piece))
     }
 
-    pub fn undo(&mut self, execution_data: &ExecutionData) -> Result<()> {
+    pub fn undo(&mut self, args: &UndoArgs, execution_data: &ExecutionData) -> Result<()> {
         if self.undo {
             return Err(eyre!("This piece is already undone"));
         }
@@ -133,7 +135,9 @@ impl FullPiece {
             assert!(self.undone_on.is_none());
         }
         self.undone_on = Some(vec![execution_data.machine]);
-        PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;
+        if args.not_done_here {
+            PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;
+        }
 
         Ok(())
     }
@@ -166,7 +170,7 @@ impl FullPiece {
         }
     }
 
-    fn from_cli(args: AddArgs) -> Result<Self> {
+    fn from_cli(args: &AddArgs) -> Result<Self> {
         let comment = args.comment.clone();
         Ok(Self::new(PieceEnum::from_cli(args)?, comment))
     }

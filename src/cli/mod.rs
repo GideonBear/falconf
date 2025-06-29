@@ -155,17 +155,25 @@ pub struct AddArgs {
     /// `falconf add "apt install cowsay"` are allowed.
     #[arg(trailing_var_arg = true, required = true)]
     pub value: Vec<String>,
+
+    /// If true, runs the piece here (on this machine) immediately
+    #[arg(long, short)]
+    pub not_done_here: bool,
 }
 
 #[derive(Args, Debug)]
 struct ListArgs {}
 
 #[derive(Args, Debug)]
-struct UndoArgs {
+pub struct UndoArgs {
     #[clap(
         value_parser = parse_piece_id
     )]
     piece_id: u32,
+
+    /// If true, runs the piece here (on this machine) immediately
+    #[arg(long, short)]
+    pub not_done_here: bool,
 }
 
 fn parse_piece_id(s: &str) -> Result<u32, String> {

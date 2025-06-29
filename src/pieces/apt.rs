@@ -51,7 +51,7 @@ impl Apt {
         Ok(())
     }
 
-    pub fn from_cli(args: AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &AddArgs) -> Result<Self> {
         if args.value.len() != 1 {
             return Err(eyre!(
                 "Expected a singular value (package name) for 'apt' piece, got '{:?}'.",
@@ -62,7 +62,7 @@ impl Apt {
         Ok(Self { package })
     }
 
-    pub fn from_cli_autodetected(_args: AddArgs, package: String) -> Self {
+    pub fn from_cli_autodetected(_args: &AddArgs, package: String) -> Self {
         Self { package }
     }
 }

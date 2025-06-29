@@ -35,7 +35,7 @@ impl Manual {
         Ok(())
     }
 
-    pub fn from_cli(args: AddArgs) -> Self {
+    pub fn from_cli(args: &AddArgs) -> Self {
         Self {
             message: args.value.join(" "),
         }

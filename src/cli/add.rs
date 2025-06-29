@@ -24,7 +24,7 @@ pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
     }
 
     // Add the piece
-    let (id, piece) = FullPiece::add(args, &execution_data)?;
+    let (id, piece) = FullPiece::add(&args, &execution_data)?;
     pieces.insert(id, piece);
 
     // Push changes

@@ -15,7 +15,7 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
         .get_mut(&args.piece_id)
         .ok_or_eyre("Piece id not found")?;
 
-    piece.undo(&execution_data)?;
+    piece.undo(&args, &execution_data)?;
 
     // Push changes
     repo.write_and_push()?;
