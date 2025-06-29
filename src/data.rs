@@ -30,10 +30,6 @@ impl Data {
         &mut self.pieces
     }
 
-    pub fn machines(&self) -> Vec<&Machine> {
-        self.machines.keys().collect()
-    }
-
     pub fn machines_mut(&mut self) -> &mut HashMap<Machine, MachineData> {
         &mut self.machines
     }
