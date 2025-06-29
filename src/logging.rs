@@ -1,5 +1,6 @@
 use color_eyre::Result;
 use log::info;
+use std::iter;
 use std::process::{Command, ExitStatus, Output};
 
 pub trait CommandExt {
@@ -33,14 +34,12 @@ fn log_execution(command: &Command) {
 }
 
 fn as_string(command: &Command) -> String {
-    format!(
-        "{} {}",
-        command.get_program().to_string_lossy(),
-        shell_words::join(
+    shell_words::join(
+        iter::once(command.get_program().to_string_lossy().to_string()).chain(
             command
                 .get_args()
-                .map(|arg| arg.to_string_lossy().to_string())
-        )
+                .map(|arg| arg.to_string_lossy().to_string()),
+        ),
     )
 }
 
