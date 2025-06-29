@@ -1,6 +1,5 @@
 use crate::execution_data::ExecutionData;
 use color_eyre::Result;
-use color_eyre::eyre::eyre;
 use std::fmt::Display;
 
 /// A single piece of configuration
