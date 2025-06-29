@@ -20,7 +20,7 @@ mod repo;
 mod testing;
 mod utils;
 
-pub mod built_info {
+mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
 
