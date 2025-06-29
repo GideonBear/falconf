@@ -42,7 +42,7 @@ impl Command {
         })
     }
 
-    fn parse_value(mut value: &Vec<String>) -> Result<String> {
+    fn parse_value(value: &Vec<String>) -> Result<String> {
         if value.len() == 1 {
             Ok(shell_words::join(shell_words::split(&value[0])?))
         } else {

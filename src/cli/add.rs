@@ -3,9 +3,8 @@ use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use color_eyre::Result;
-use log::debug;
 
-pub fn add(top_level_args: TopLevelArgs, mut args: AddArgs) -> Result<()> {
+pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     let repo = installation.repo_mut();
