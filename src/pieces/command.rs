@@ -37,7 +37,8 @@ impl Command {
 
     pub fn from_cli(args: AddArgs) -> Self {
         Self {
-            command: args.value.join(" "),
+            // TODO: Extensive testing of this
+            command: shell_words::join(args.value),
             undo_command: None,
         }
     }

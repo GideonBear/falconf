@@ -15,7 +15,6 @@ pub fn list<W: Write>(
     for (id, piece) in pieces {
         piece.print(writer, *id)?;
     }
-    writeln!(writer)?;
 
     Ok(())
 }
@@ -32,6 +31,7 @@ pub mod tests {
     use assert_matches_regex::assert_matches_regex;
     use color_eyre::Result;
     use std::io;
+    use tempdir::TempDir;
 
     #[test]
     fn test_list() -> Result<()> {
@@ -39,6 +39,23 @@ pub mod tests {
         let local = init_util(&remote, true)?;
 
         add_util(local.path(), cli::Piece::Apt, vec![String::from("htop")])?;
+        add_util(
+            local.path(),
+            cli::Piece::Command,
+            vec![String::from("echo"), String::from("some text")],
+        )?;
+        let temp = TempDir::new("test_falconf_files")?;
+        let test1 = temp.path().join("test1.txt");
+        add_util(
+            local.path(),
+            cli::Piece::File,
+            vec![test1.display().to_string()],
+        )?;
+        add_util(
+            local.path(),
+            cli::Piece::Manual,
+            vec![String::from("some"), String::from("message")],
+        )?;
 
         // TODO: test comments
         // TODO: test all piece types
@@ -52,10 +69,15 @@ pub mod tests {
         static ID_RE: &str = r#"\[[0-9a-f]{8}\]"#;
 
         assert_matches_regex!(
-            String::from_utf8(writer.into_inner())?,
+            format!("\n{}", String::from_utf8(writer.into_inner())?),
             format!(
-                r#"{ID_RE} apt install htop
-"#
+                r#"
+{ID_RE} apt install htop
+{ID_RE} echo 'some text'
+{ID_RE} Tracking file at: {}
+{ID_RE} Manual action: some message
+"#,
+                test1.display()
             )
         );
 

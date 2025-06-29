@@ -158,6 +158,7 @@ impl FullPiece {
             write!(writer, "{text}")?;
         }
 
+        writeln!(writer)?;
         Ok(())
     }
 

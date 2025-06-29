@@ -16,6 +16,8 @@ hostname = "0.4.1"
 expanduser = "1.2.2"
 ron = "0.10.1"
 rand = "0.9.1"
+shell-words = "1.1.0"
+indexmap = { version = "2.10.0", features = ["serde"] }
 
 [dev-dependencies]
 assert_matches_regex = "0.1.0"
