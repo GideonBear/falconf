@@ -12,9 +12,8 @@ pub fn list<W: Write>(
     let data = repo.data();
     let pieces = data.pieces();
 
-    // TODO: some kind of piece identifier
-    for piece in pieces {
-        piece.print(writer)?;
+    for (id, piece) in pieces {
+        piece.print(writer, *id)?;
     }
     writeln!(writer)?;
 
@@ -30,6 +29,7 @@ pub mod tests {
     use crate::cli::add::tests::add_util;
     use crate::cli::init::tests::init_util;
     use crate::testing::TestRemote;
+    use assert_matches_regex::assert_matches_regex;
     use color_eyre::Result;
     use std::io;
 
@@ -49,10 +49,12 @@ pub mod tests {
 
         list(top_level_args, args, &mut writer)?;
 
-        assert_eq!(
+        static ID_RE: &str = r#"\[[0-9a-f]{8}\]"#;
+
+        assert_matches_regex!(
             String::from_utf8(writer.into_inner())?,
-            String::from(
-                r#"apt install htop
+            format!(
+                r#"{ID_RE} apt install htop
 "#
             )
         );

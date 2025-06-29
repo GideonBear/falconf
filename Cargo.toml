@@ -15,8 +15,10 @@ env_logger = "0.11.8"
 hostname = "0.4.1"
 expanduser = "1.2.2"
 ron = "0.10.1"
+rand = "0.9.1"
 
 [dev-dependencies]
+assert_matches_regex = "0.1.0"
 ctor = "0.4.2"
 libc = "0.2.172"
 tempdir = "0.3.7"

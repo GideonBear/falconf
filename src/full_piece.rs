@@ -5,6 +5,7 @@ use crate::pieces::PieceEnum;
 use crate::utils::set_eq;
 use color_eyre::Result;
 use color_eyre::owo_colors::OwoColorize;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 
@@ -145,11 +146,11 @@ impl FullPiece {
     }
 
     /// Display information about this piece in the console
-    pub fn print<W: Write>(&self, writer: &mut W) -> Result<()> {
+    pub fn print<W: Write>(&self, writer: &mut W, id: u32) -> Result<()> {
         let text = if let Some(comment) = &self.comment {
-            format!("{} // {}", self.piece, comment)
+            format!("[{id:x}] {} // {}", self.piece, comment)
         } else {
-            self.piece.to_string()
+            format!("[{id:x}] {}", self.piece)
         };
         if self.undo {
             write!(writer, "{}", text.strikethrough())?;
@@ -158,5 +159,9 @@ impl FullPiece {
         }
 
         Ok(())
+    }
+
+    pub fn new_id() -> u32 {
+        rand::rng().next_u32()
     }
 }

@@ -2,30 +2,30 @@ use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Data {
-    pieces: Vec<FullPiece>,
+    pieces: BTreeMap<u32, FullPiece>,
     machines: HashMap<Machine, MachineData>,
 }
 
 impl Data {
     pub fn init_new() -> Self {
         Self {
-            pieces: vec![],
+            pieces: BTreeMap::new(),
             machines: HashMap::new(),
         }
     }
 
-    pub fn pieces(&self) -> &Vec<FullPiece> {
+    pub fn pieces(&self) -> &BTreeMap<u32, FullPiece> {
         &self.pieces
     }
 
-    pub fn pieces_mut(&mut self) -> &mut Vec<FullPiece> {
+    pub fn pieces_mut(&mut self) -> &mut BTreeMap<u32, FullPiece> {
         &mut self.pieces
     }
 

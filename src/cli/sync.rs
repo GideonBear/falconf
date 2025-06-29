@@ -17,7 +17,7 @@ pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
 
     // Do out-of-sync (todo) changes
     FullPiece::do_todo(
-        data.pieces_mut().iter_mut().collect(),
+        data.pieces_mut().values_mut().collect(),
         &machine,
         &execution_data,
     )?;
