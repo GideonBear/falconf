@@ -96,6 +96,7 @@ pub mod tests {
 {ID_RE} Tracking file at: {}
 {ID_RE} Manual action: some message
 {ID_RE} apt install cowsay // This is a comment!
+\u{{1b}}\[9m{ID_RE} apt install cowsay\u{{1b}}\[0m
 $"#,
                 test1.display()
             )

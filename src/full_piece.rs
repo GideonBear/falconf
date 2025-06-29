@@ -134,6 +134,7 @@ impl FullPiece {
         {
             assert!(self.undone_on.is_none());
         }
+        self.undo = true;
         self.undone_on = Some(vec![execution_data.machine]);
         if args.not_done_here {
             PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;

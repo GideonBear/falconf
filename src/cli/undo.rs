@@ -33,7 +33,10 @@ pub mod tests {
     pub fn undo_util(falconf_path: &Path, id: u32) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf());
 
-        let args = UndoArgs { piece_id: id };
+        let args = UndoArgs {
+            piece_id: id,
+            not_done_here: false,
+        };
 
         undo(top_level_args, args)?;
 

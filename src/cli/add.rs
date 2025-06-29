@@ -57,6 +57,7 @@ pub mod tests {
             _file: (),
             _manual: (),
             value,
+            not_done_here: false,
         };
 
         add(top_level_args, args)?;
