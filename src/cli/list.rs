@@ -30,6 +30,7 @@ pub mod tests {
     use crate::testing::TestRemote;
     use assert_matches_regex::assert_matches_regex;
     use color_eyre::Result;
+    use log::debug;
     use std::io;
     use tempdir::TempDir;
 
@@ -56,9 +57,12 @@ pub mod tests {
             cli::Piece::Manual,
             vec![String::from("some"), String::from("message")],
         )?;
-        add_util_comment(local.path(), cli::Piece::Apt, vec!["htop"], "This is a comment!")
-
-        // TODO: test comments
+        add_util_comment(
+            local.path(),
+            cli::Piece::Apt,
+            vec![String::from("htop")],
+            String::from("This is a comment!"),
+        )?;
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone());
         let args = ListArgs {};
@@ -66,17 +70,21 @@ pub mod tests {
 
         list(top_level_args, args, &mut writer)?;
 
+        let output = String::from_utf8(writer.into_inner())?;
+        debug!("\n{output}");
+
         static ID_RE: &str = r#"\[[0-9a-f]{8}\]"#;
 
         assert_matches_regex!(
-            format!("\n{}", String::from_utf8(writer.into_inner())?),
+            format!("\n{}", output),
             format!(
-                r#"
+                r#"^
 {ID_RE} apt install htop
 {ID_RE} echo 'some text'
 {ID_RE} Tracking file at: {}
 {ID_RE} Manual action: some message
-"#,
+{ID_RE} apt install htop // This is a comment!
+$"#,
                 test1.display()
             )
         );

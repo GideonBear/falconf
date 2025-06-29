@@ -133,6 +133,7 @@ impl PieceEnum {
             .collect::<Vec<&str>>()
             .as_slice()
         {
+            // TODO: test
             ["apt", "install", package]
             | ["apt", "install", package, "-y"]
             | ["apt", "install", "-y", package]
