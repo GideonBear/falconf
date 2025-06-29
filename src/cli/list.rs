@@ -43,7 +43,7 @@ pub mod tests {
         // TODO: test for undone pieces
 
         // Apt
-        add_util(local.path(), cli::Piece::Apt, vec![String::from("htop")])?;
+        add_util(local.path(), cli::Piece::Apt, vec![String::from("cowsay")])?;
         // Command
         add_util(
             local.path(),
@@ -68,11 +68,11 @@ pub mod tests {
         add_util_comment(
             local.path(),
             cli::Piece::Apt,
-            vec![String::from("htop")],
+            vec![String::from("cowsay")],
             String::from("This is a comment!"),
         )?;
         // Undone
-        add_util(local.path(), cli::Piece::Apt, vec![String::from("htop")])?;
+        add_util(local.path(), cli::Piece::Apt, vec![String::from("cowsay")])?;
         let id = get_last_piece(local.path())?;
         undo_util(local.path(), id)?;
 
@@ -91,11 +91,11 @@ pub mod tests {
             format!("\n{}", output),
             format!(
                 r#"^
-{ID_RE} apt install htop
+{ID_RE} apt install cowsay
 {ID_RE} echo 'some text'
 {ID_RE} Tracking file at: {}
 {ID_RE} Manual action: some message
-{ID_RE} apt install htop // This is a comment!
+{ID_RE} apt install cowsay // This is a comment!
 $"#,
                 test1.display()
             )
