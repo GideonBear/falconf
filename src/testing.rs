@@ -1,5 +1,4 @@
 use crate::cli::TopLevelArgs;
-use crate::execution_data::ExecutionData;
 use crate::installation::Installation;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
