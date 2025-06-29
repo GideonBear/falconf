@@ -17,9 +17,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
       - name: Update toolchain
-        run: rustup update stable
+        run: rustup install stable
+      - uses: Swatinem/rust-cache@v2
       - name: Format (cargo fmt)
         run: cargo fmt --verbose --all -- --check
       - name: Build (cargo build)
