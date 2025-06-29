@@ -25,11 +25,9 @@ jobs:
       - name: Build (cargo build)
         run: cargo build --verbose
       - name: Lint (cargo clippy)
-        # Has to be nightly because https://github.com/rust-lang/rust-clippy/pull/14407 is not released on stable yet
-        # TODO: remove dependency on nightly when this PR is released to stable (below as well)
-        run: cargo +nightly clippy --verbose --all-features -- -D warnings
-      # Lint tests seperately, since `--tests` ignores any `cfg(not(test))` code
+        run: cargo clippy --verbose --all-features -- -D warnings
+      # Lint tests seperately, since `--tests` ignores any `cfg(not(test))` code, and "unused"s can slip by
       - name: Lint tests (cargo clippy)
-        run: cargo +nightly clippy --verbose --all-features --tests -- -D warnings
+        run: cargo clippy --verbose --all-features --tests -- -D warnings
       - name: Run tests (cargo test)
         run: cargo test --verbose
