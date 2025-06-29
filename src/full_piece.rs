@@ -4,6 +4,7 @@ use crate::machine::Machine;
 use crate::pieces::PieceEnum;
 use crate::utils::set_eq;
 use color_eyre::Result;
+use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
@@ -108,6 +109,22 @@ impl FullPiece {
                 piece.undone_on.as_mut().unwrap().push(*machine);
             }
         }
+
+        Ok(())
+    }
+
+    pub fn undo(&mut self, execution_data: ExecutionData) -> Result<()> {
+        if self.undo {
+            return Err(eyre!("This piece is already undone"));
+        }
+        // SAFETY: self.undo == false, thus `undone_on` must be `None`,
+        //  or the configuration is illegal.
+        #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
+        {
+            assert!(self.undone_on.is_none());
+        }
+        self.undone_on = Some(vec![execution_data.machine]);
+        PieceEnum::undo_bulk(vec![&self.piece], &execution_data)?;
 
         Ok(())
     }

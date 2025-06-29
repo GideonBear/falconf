@@ -2,6 +2,7 @@ use crate::cli::add::add;
 use crate::cli::init::init;
 use crate::cli::list::list;
 use crate::cli::sync::sync;
+use crate::cli::undo::undo;
 use clap::ArgAction::SetTrue;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use color_eyre::Result;
@@ -15,6 +16,7 @@ mod add;
 mod init;
 mod list;
 mod sync;
+mod undo;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
     Ok(expanduser(s)?)
@@ -67,17 +69,20 @@ impl TopLevelArgs {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[command(after_help = "Intialize a new or existing Falconf repo on this machine")]
+    #[command(about = "Intialize a new or existing Falconf repo on this machine")]
     Init(InitArgs),
 
-    #[command(after_help = "Synchronize this machine with the repo")]
+    #[command(about = "Synchronize changes in the repo to this machine")]
     Sync(SyncArgs),
 
-    #[command(after_help = "Add a new piece to your configuration")]
+    #[command(about = "Add a new piece to your configuration")]
     Add(AddArgs),
 
-    #[command(after_help = "List all pieces")]
+    #[command(about = "List all pieces")]
     List(ListArgs),
+
+    #[command(about = "Undo a piece")]
+    Undo(UndoArgs),
 }
 
 #[derive(Args, Debug)]
@@ -149,6 +154,21 @@ pub struct AddArgs {
 #[derive(Args, Debug)]
 struct ListArgs {}
 
+#[derive(Args, Debug)]
+struct UndoArgs {
+    #[clap(
+        value_parser = parse_piece_id
+    )]
+    piece_id: u32,
+}
+
+fn parse_piece_id(s: &str) -> Result<u32, String> {
+    if s.len() != 8 {
+        return Err("Value must be exactly 8 hex digits".to_string());
+    }
+    u32::from_str_radix(s, 16).map_err(|_| "Invalid hex format".to_string())
+}
+
 pub fn main() -> Result<()> {
     let cli = Cli::parse();
 
@@ -165,5 +185,6 @@ pub fn main() -> Result<()> {
         Commands::Sync(args) => sync(top_level, args),
         Commands::Add(args) => add(top_level, args),
         Commands::List(args) => list(top_level, args, &mut io::stdout().lock()),
+        Commands::Undo(args) => undo(top_level, args),
     }
 }

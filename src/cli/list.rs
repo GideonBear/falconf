@@ -39,6 +39,8 @@ pub mod tests {
         let remote = TestRemote::new()?;
         let local = init_util(&remote, true)?;
 
+        // TODO: test for undone pieces
+
         // Apt
         add_util(local.path(), cli::Piece::Apt, vec![String::from("htop")])?;
         // Command
