@@ -146,11 +146,6 @@ impl TempDirSub {
         }
     }
 
-    pub fn new_join(tempdir: TempDir, subpath: &str) -> Self {
-        let path = tempdir.path().join(subpath);
-        Self::new(tempdir, path)
-    }
-
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
