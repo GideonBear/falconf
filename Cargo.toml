@@ -1,5 +1,12 @@
 [package]
 name = "falconf"
+description = "TODO description here"
+readme = "README.md"
+license = "GPL-3"
+repository = "https://github.com/GideonBear/falconf"
+keywords = ["configuration", "synchronization"]
+categories = ["command-line-utilities"]
+authors = ["GideonBear"]
 version = "0.1.2"
 edition = "2024"
 
