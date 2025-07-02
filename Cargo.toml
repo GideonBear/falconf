@@ -2,7 +2,7 @@
 name = "falconf"
 description = "TODO description here"
 readme = "README.md"
-license = "GPL-3"
+license = "GPL-3.0-only"
 repository = "https://github.com/GideonBear/falconf"
 keywords = ["configuration", "synchronization"]
 categories = ["command-line-utilities"]
