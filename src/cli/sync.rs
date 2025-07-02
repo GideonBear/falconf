@@ -82,10 +82,7 @@ mod tests {
             "test1"
         );
 
-        let top_level_args = TopLevelArgs::new_testing(local_1.path().clone(), false);
-        let args = SyncArgs {};
-        sync(top_level_args, args)?;
-        assert!(test1.exists());
+        // Explicitly do not pull local 1 here to test auto-syncing
 
         undo_util(local_1.path(), get_last_piece(local_1.path())?)?;
         assert!(test1.exists());

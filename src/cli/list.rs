@@ -7,8 +7,12 @@ pub fn list<W: Write>(
     _args: ListArgs,
     writer: &mut W,
 ) -> color_eyre::Result<()> {
-    let installation = Installation::get(&top_level_args)?;
-    let repo = installation.repo();
+    let mut installation = Installation::get(&top_level_args)?;
+    let repo = installation.repo_mut();
+
+    // Pull the repo
+    repo.pull_and_read()?;
+
     let data = repo.data();
     let pieces = data.pieces();
 
