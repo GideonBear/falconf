@@ -65,4 +65,6 @@ pub mod tests {
     ) -> Result<()> {
         _add_util(falconf_path, piece, value, Some(comment))
     }
+
+    // Add is tested in sync
 }

@@ -43,8 +43,5 @@ pub mod tests {
         Ok(())
     }
 
-    // #[test]
-    // pub fn test_undo() -> Result<()> {
-    //     todo!();
-    // }
+    // Undo is tested in sync
 }

@@ -45,4 +45,6 @@ pub mod tests {
 
         Ok(())
     }
+
+    // Init is tested more extensively in sync
 }

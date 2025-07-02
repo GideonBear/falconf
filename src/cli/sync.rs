@@ -36,7 +36,8 @@ mod tests {
     use crate::cli;
     use crate::cli::add::tests::add_util;
     use crate::cli::init::tests::init_util;
-    use crate::testing::TestRemote;
+    use crate::cli::undo::tests::undo_util;
+    use crate::testing::{TestRemote, get_last_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
     use std::fs::{File, create_dir_all};
@@ -80,6 +81,20 @@ mod tests {
             std::fs::read_to_string(temp.path().join("test1.txt"))?,
             "test1"
         );
+
+        let top_level_args = TopLevelArgs::new_testing(local_1.path().clone(), false);
+        let args = SyncArgs {};
+        sync(top_level_args, args)?;
+        assert!(test1.exists());
+
+        undo_util(local_1.path(), get_last_piece(local_1.path())?)?;
+        assert!(test1.exists());
+
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let args = SyncArgs {};
+        sync(top_level_args, args)?;
+
+        assert!(!test1.exists());
 
         Ok(())
     }
