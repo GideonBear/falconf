@@ -1,0 +1,27 @@
+name: Rust
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+
+  publish_crates_io:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: "cargo publish"
+        run: cargo publish
