@@ -3,8 +3,9 @@ use crate::machine::{Machine, MachineData};
 use crate::repo::Repo;
 use color_eyre::Result;
 use color_eyre::eyre::{WrapErr, eyre};
-use log::debug;
+use log::{debug, info};
 use std::fs;
+use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 
 pub struct Installation {
@@ -26,6 +27,19 @@ impl Installation {
     }
 
     pub fn init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
+        match Self::_init(top_level_args, remote, new) {
+            Ok(()) => Ok(()),
+            Err(e) => {
+                info!(
+                    "Found error during init; removing newly created .falconf directory to avoid half-initialized state"
+                );
+                remove_dir_all(top_level_args.path.clone())?;
+                Err(e)
+            }
+        }
+    }
+
+    fn _init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
         let root = &top_level_args.path;
         debug!("Looking at {root:?}");
 

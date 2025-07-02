@@ -25,6 +25,7 @@ ron = "0.10.1"
 rand = "0.9.1"
 shell-words = "1.1.0"
 indexmap = { version = "2.10.0", features = ["serde"] }
+auth-git2 = "0.5.8"
 
 [dev-dependencies]
 assert_matches_regex = "0.1.0"

@@ -1,5 +1,6 @@
 use crate::data::Data;
 use crate::machine::{Machine, MachineData};
+use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use git2::Repository;
@@ -11,6 +12,7 @@ const BRANCH: &str = "main";
 
 pub struct Repo {
     repository: Repository,
+    auth: GitAuthenticator,
     data: Data,
 }
 
@@ -26,13 +28,20 @@ impl Repo {
         machine_data: MachineData,
         new: bool,
     ) -> Result<()> {
+        let auth = GitAuthenticator::default();
         debug!("Cloning repo");
-        let repository = Repository::clone(remote, path).wrap_err("Failed to clone repository")?;
+        let repository = auth
+            .clone_repo(remote, path)
+            .wrap_err("Failed to clone repository")?;
 
         let mut repo = if new {
             debug!("New, so initializing new");
             let data = Data::init_new();
-            let repo = Self { repository, data };
+            let repo = Self {
+                auth,
+                repository,
+                data,
+            };
 
             let file_dir = repo.file_dir().wrap_err("Failed to get file dir")?;
             create_dir(&file_dir).wrap_err("Failed to create file dir")?;
@@ -41,6 +50,13 @@ impl Repo {
             // We push below
             repo
         } else {
+            debug!("Not new, so initializing existing");
+            let data_path = data_path_from_repository(&repository)?;
+            if !data_path.exists() {
+                return Err(eyre!(
+                    "This is not a falconf repo. Maybe you forgot `--new`? ({data_path:?} does not exist)"
+                ));
+            }
             Self::from_repository(repository).wrap_err("Failed to construct repo")?
         };
 
@@ -89,8 +105,13 @@ impl Repo {
     }
 
     fn from_repository(repository: Repository) -> Result<Self> {
+        let auth = GitAuthenticator::default();
         let data = Self::get_data(&repository).wrap_err("Failed to get data")?;
-        Ok(Self { repository, data })
+        Ok(Self {
+            auth,
+            repository,
+            data,
+        })
     }
 
     fn pull(&self) -> Result<()> {
@@ -98,9 +119,10 @@ impl Repo {
             .repository
             .find_remote("origin")
             .wrap_err("Failed to find remote")?;
-        remote
-            .fetch(&[BRANCH], None, None)
+        self.auth
+            .fetch(&self.repository, &mut remote, &[BRANCH], None)
             .wrap_err("Failed to fetch")?;
+
         let fetch_head = self
             .repository
             .find_reference("FETCH_HEAD")
@@ -113,6 +135,7 @@ impl Repo {
             .repository
             .merge_analysis(&[&fetch_commit])
             .wrap_err("Failed to do merge analysis")?;
+
         if analysis.0.is_up_to_date() {
             Ok(())
         } else if analysis.0.is_fast_forward() {
@@ -207,8 +230,12 @@ impl Repo {
             .repository
             .find_remote("origin")
             .wrap_err("Failed to find remote")?;
-        remote
-            .push(&[format!("refs/heads/{BRANCH}")], None)
+        self.auth
+            .push(
+                &self.repository,
+                &mut remote,
+                &[&format!("refs/heads/{BRANCH}")],
+            )
             .wrap_err("Failed to push")?;
         Ok(())
     }
@@ -232,5 +259,5 @@ fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
     Ok(repo
         .workdir()
         .ok_or_eyre("Git repository is bare")?
-        .join("data.json"))
+        .join("data.ron"))
 }
