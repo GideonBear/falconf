@@ -37,7 +37,7 @@ jobs:
       - name: Determine tag name
         id: determine_tag_name
         shell: bash # Or it won't work on Windows
-        run: echo "tag_name=${{ github.event.push.tag_name }}" >> $GITHUB_OUTPUT
+        run: echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Rename Release (Unix)
         run: |
