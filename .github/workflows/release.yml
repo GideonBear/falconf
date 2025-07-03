@@ -37,12 +37,7 @@ jobs:
       - name: Determine tag name
         id: determine_tag_name
         shell: bash # Or it won't work on Windows
-        run: |
-          if [ -n "${{ github.event.release.tag_name }}" ]; then
-            echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag_name=${{ github.event.inputs.existing_tag }}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "tag_name=${{ github.event.push.tag_name }}" >> $GITHUB_OUTPUT
 
       - name: Rename Release (Unix)
         run: |
