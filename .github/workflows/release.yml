@@ -17,6 +17,63 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
 
+  native_build:
+    needs: create_release
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ ubuntu-22.04 ]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build in Release profile with all features enabled
+        run: cargo build --release --all-features
+
+      - name: Determine tag name
+        id: determine_tag_name
+        shell: bash # Or it won't work on Windows
+        run: |
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag_name=${{ github.event.inputs.existing_tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Rename Release (Unix)
+        run: |
+          cargo install default-target
+          mkdir -p assets
+          FILENAME=falconf-${{ steps.determine_tag_name.outputs.tag_name }}-$(default-target)
+          mv target/release/falconf assets
+          cd assets
+          tar --format=ustar -czf $FILENAME.tar.gz falconf
+          rm falconf
+          ls .
+        if: ${{ matrix.platform != 'windows-latest' }}
+        shell: bash
+
+      #      - name: Rename Release (Windows)
+      #        run: |
+      #          cargo install default-target
+      #          mkdir assets
+      #          FILENAME=falconf-${{steps.determine_tag_name.outputs.tag_name}}-$(default-target)
+      #          mv target/release/falconf.exe assets/falconf.exe
+      #          cd assets
+      #          powershell Compress-Archive -Path * -Destination ${FILENAME}.zip
+      #          rm falconf.exe
+      #          ls .
+      #        if: ${{ matrix.platform == 'windows-latest' }}
+      #        shell: bash
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.determine_tag_name.outputs.tag_name }}
+          files: assets/*
+  
   publish_crates_io:
     runs-on: ubuntu-latest
 
