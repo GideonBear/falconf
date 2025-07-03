@@ -52,28 +52,26 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 - ⏳: Planned
   [//]: # (- ❓: Unknown, contribution welcome)
 
-TODO: "a"s
-
 | Characteristic                                        | Falconf | Nix | Ansible | Chezmoi | GNU Stow |
 |-------------------------------------------------------|:-------:|:---:|:-------:|:-------:|:--------:|
-| Reproducible                                          |    ✅    |  ✅  |    ✅    |    a    |    ✅     |
-| Full functionality on all Linux distros               |    ✅    |  ❌  |    ✅    |    a    |    ✅     |
+| Reproducible                                          |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
+| Full functionality on all Linux distros               |    ✅    |  ❌  |    ✅    |    ✅    |    ✅     |
 | Run arbitrary commands                                |    ✅    |  ➖  |    ➖    |    ✅    |    ❌     |
 | Interact (run commands, add files) via CLI            |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
-| Edit arbitrary files                                  |    ✅    |  ➖  |    ✅    |    a    |    ✅     |
-| (Smart) undo                                          |    ✅    |  ➖  |    ➖    |    a    |    ❌     |
+| Edit arbitrary files                                  |    ✅    |  ➖  |    ✅    |    ✅    |    ✅     |
+| (Smart) undo                                          |    ✅    |  ➖  |    ➖    |    ❌    |    ❌     |
 | Runs without Git installation                         |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
-| Built-in synchronization                              |    ✅    |  ❌  |    ❌    |    a    |    ❌     |
+| Built-in synchronization                              |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
 | GSettings/dconf support                               |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Temporary one-time pieces                             |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
-| Watch configuration (files, dconf)                    |    ⏳    |  ❌  |    ❌    |    a    |    ❌     |
+| Watch configuration (files, dconf)                    |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Secret management                                     |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
 | Windows support                                       |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
 | Topgrade integration                                  |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
 | Single-binary distribution with self-updating         |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
 | Machine-to-machine differences (templates)            |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
 | Supports use on servers                               |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
-| Also a package manager                                |    ❌    |  ✅  |    ❌    |    a    |    ❌     |
-| Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |    a    |    ❌     |
+| Also a package manager                                |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
+| Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
 
 Feel free to add more tools to the table!
