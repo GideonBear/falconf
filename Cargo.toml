@@ -7,7 +7,7 @@ repository = "https://github.com/GideonBear/falconf"
 keywords = ["configuration", "synchronization"]
 categories = ["command-line-utilities"]
 authors = ["GideonBear"]
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 
 [dependencies]
