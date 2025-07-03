@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
@@ -46,12 +44,13 @@ jobs:
       - name: Rename Release (Unix)
         run: |
           cargo install default-target
+          CRATE_NAME=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].name')
           mkdir -p assets
-          FILENAME=falconf-${{ steps.determine_tag_name.outputs.tag_name }}-$(default-target)
-          mv target/release/falconf assets
+          FILENAME=${CRATE_NAME}-${{ steps.determine_tag_name.outputs.tag_name }}-$(default-target)
+          mv target/release/$CRATE_NAME assets
           cd assets
-          tar --format=ustar -czf $FILENAME.tar.gz falconf
-          rm falconf
+          tar --format=ustar -czf $FILENAME.tar.gz $CRATE_NAME
+          rm $CRATE_NAME
           ls .
         if: ${{ matrix.platform != 'windows-latest' }}
         shell: bash
@@ -59,12 +58,13 @@ jobs:
       #      - name: Rename Release (Windows)
       #        run: |
       #          cargo install default-target
+      #          CRATE_NAME=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].name')
       #          mkdir assets
-      #          FILENAME=falconf-${{steps.determine_tag_name.outputs.tag_name}}-$(default-target)
-      #          mv target/release/falconf.exe assets/falconf.exe
+      #          FILENAME=${CRATE_NAME}-${{steps.determine_tag_name.outputs.tag_name}}-$(default-target)
+      #          mv target/release/${CRATE_NAME}.exe assets
       #          cd assets
       #          powershell Compress-Archive -Path * -Destination ${FILENAME}.zip
-      #          rm falconf.exe
+      #          rm ${CRATE_NAME}.exe
       #          ls .
       #        if: ${{ matrix.platform == 'windows-latest' }}
       #        shell: bash
