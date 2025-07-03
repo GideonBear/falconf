@@ -20,14 +20,19 @@ jobs:
       - name: Update toolchain
         run: rustup install stable
       - uses: Swatinem/rust-cache@v2
+
       - name: Format (cargo fmt)
         run: cargo fmt --verbose --all -- --check
+
       - name: Build (cargo build)
         run: cargo build --verbose
+
       - name: Lint (cargo clippy)
         run: cargo clippy --verbose --all-features -- -D warnings
+
       # Lint tests seperately, since `--tests` ignores any `cfg(not(test))` code, and "unused"s can slip by
       - name: Lint tests (cargo clippy)
         run: cargo clippy --verbose --all-features --tests -- -D warnings
+
       - name: Run tests (cargo test)
         run: cargo test --verbose

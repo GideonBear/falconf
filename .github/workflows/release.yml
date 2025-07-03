@@ -29,6 +29,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Update toolchain
+        run: rustup install stable
       - uses: Swatinem/rust-cache@v2
 
       - name: Build in Release profile with all features enabled
