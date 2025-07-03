@@ -14,42 +14,66 @@ you think!
 
 ## Installation
 
-TODO
+```bash
+# Using cargo-binstall:
+cargo binstall falconf
+# Using cargo:
+cargo install falconf
+```
+
+You can also manually download the binary from the releases page.
 
 ## Quickstart
 
-TODO
+1. Create a remote Git repository, for example on GitHub.
+   A good name is `my-falconf`. This repository can be private.
+2. Run `falconf init --new <remote_url>`, where `<remote_url>`
+   is the Git url of the remote.
+3. On other machines, run `falconf init <remote_url>`, then `falconf sync`.
 
-TODO: how to sync, Topgrade
+Any changes are automatically pulled from and pushed to the Git repository,
+but not automatically executed. For that, use `falconf sync`.
+[Topgrade](https://github.com/topgrade-rs/topgrade) can also do this for you.
 
 ## Comparison to similar tools
 
-If you want to compare Falconf to Ansible, there are two main differences:
+The most similar tool to falconf is Ansible, but there are two main differences:
+
 1. Falconf tracks if a change is done, and does the change if it is not done yet,
-regardless of any system state. Ansible does not track this, and instead determines
-if the change is necessary based on the system state.
+   regardless of any system state. Ansible does not track this, and instead determines
+   if the change is necessary based on the system state. This means that falconf is less
+   reliable, but also easier to use.
 2. In Ansible, tasks are managed in a file that you need to edit. In Falconf, pieces
-are managed (added, removed) on the command line, and only stored in a file internally.
+   are managed (added, removed) on the command line, and only stored in a file internally.
 
 - ✅: Yes
 - ❌: No
 - ➖: Possible but not built-in and/or against philosophy
+- ⏳: Planned
+  [//]: # (- ❓: Unknown, contribution welcome)
 
-TODO: Chezmoi
-TODO: Stor
-TODO: watch
+TODO: "a"s
+
 | Characteristic                                        | Falconf | Nix | Ansible | Chezmoi | GNU Stow |
-|-------------------------------------------------------|:-------:|:---:|:-------:|
-| Reproducible                                          |    ✅    |  ✅  |    ✅    |
-| Full functionality on all Linux distros               |    ✅    |  ❌  |    ✅    |
-| (Smart) undo                                          |    ✅    |  ➖  |    ➖    |
-| One-time                                              |    ✅    |  ❌  |    ❌    |
-| Interact via CLI                                      |    ✅    |  ❌  |    ❌    |
-| Built-in synchronization                              |    ✅    |  ❌  |    ❌    |
-| Supports use on servers                               |    ❌    |  ✅  |    ✅    |
-| Also a package manager                                |    ❌    |  ✅  |    ❌    |
-| Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |
-| Run arbitrary commands and edit arbitrary files       |    ✅    |  ➖  |    ✅    |
-| Watch files (or dconf) and notify                     |    check |  no  |    no    |
+|-------------------------------------------------------|:-------:|:---:|:-------:|:-------:|:--------:|
+| Reproducible                                          |    ✅    |  ✅  |    ✅    |    a    |    ✅     |
+| Full functionality on all Linux distros               |    ✅    |  ❌  |    ✅    |    a    |    ✅     |
+| Run arbitrary commands                                |    ✅    |  ➖  |    ➖    |    ✅    |    ❌     |
+| Interact (run commands, add files) via CLI            |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Edit arbitrary files                                  |    ✅    |  ➖  |    ✅    |    a    |    ✅     |
+| (Smart) undo                                          |    ✅    |  ➖  |    ➖    |    a    |    ❌     |
+| Runs without Git installation                         |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
+| Built-in synchronization                              |    ✅    |  ❌  |    ❌    |    a    |    ❌     |
+| GSettings/dconf support                               |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Temporary one-time pieces                             |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Watch configuration (files, dconf)                    |    ⏳    |  ❌  |    ❌    |    a    |    ❌     |
+| Secret management                                     |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
+| Windows support                                       |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
+| Topgrade integration                                  |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
+| Single-binary distribution with self-updating         |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
+| Machine-to-machine differences (templates)            |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
+| Supports use on servers                               |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
+| Also a package manager                                |    ❌    |  ✅  |    ❌    |    a    |    ❌     |
+| Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |    a    |    ❌     |
 
 Feel free to add more tools to the table!
