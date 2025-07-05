@@ -50,29 +50,37 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 - ❌: No
 - ➖: Possible but not built-in and/or against philosophy
 - ⏳: Planned
-  [//]: # (- ❓: Unknown, contribution welcome)
 
-| Characteristic                                        | Falconf | Nix | Ansible | Chezmoi | GNU Stow |
-|-------------------------------------------------------|:-------:|:---:|:-------:|:-------:|:--------:|
-| Reproducible                                          |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
-| Full functionality on all Linux distros               |    ✅    |  ❌  |    ✅    |    ✅    |    ✅     |
-| Run arbitrary commands                                |    ✅    |  ➖  |    ➖    |    ✅    |    ❌     |
-| Interact (run commands, add files) via CLI            |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
-| Edit arbitrary files                                  |    ✅    |  ➖  |    ✅    |    ✅    |    ✅     |
-| (Smart) undo                                          |    ✅    |  ➖  |    ➖    |    ❌    |    ❌     |
-| Runs without Git installation                         |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
-| Built-in synchronization                              |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
-| dconf support (specific paths)*                       |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
-| Temporary one-time pieces                             |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
-| Watch configuration (files, dconf)                    |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
-| Secret management                                     |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
-| Windows support                                       |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
-| Topgrade integration                                  |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
-| Self-updating                                         |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
-| Machine-to-machine differences (templates)            |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
-| Supports use on servers                               |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
-| Also a package manager                                |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
-| Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
+[//]: # (- ❓: Unknown, contribution welcome)
+
+[//]: # (TODO: Everything that's ⏳ needs to be implemented)
+
+| Characteristic                                   | Falconf | Nix | Ansible | Chezmoi | GNU Stow |
+|--------------------------------------------------|:-------:|:---:|:-------:|:-------:|:--------:|
+| Reproducible                                     |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
+| Idempotent design                                |    ❌    |  ✅  |    ✅    |    ✅    |    ✅     |
+| Run arbitrary idempotent commands                |    ✅    |  ✅  |    ✅    |    ✅    |    ❌     |
+| Run arbitrary non-idempotent commands            |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Works with your previous configuration           |    ✅    |  ❌  |    ✅    |    ✅    |    ✅     |
+| Full functionality on all Linux distros          |    ✅    |  ❌  |    ✅    |    ✅    |    ✅     |
+| Interact (run commands, add files) via CLI       |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Edit arbitrary files                             |    ✅    |  ➖  |    ✅    |    ✅    |    ✅     |
+| Undo commands (with commands)                    |    ✅    |  ➖  |    ➖    |    ➖    |    ❌     |
+| Undo changes (automatically, without commands)   |    ✅    |  ✅  |    ➖    |    ❌    |    ❌     |
+| Runs without Git installation                    |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
+| Built-in synchronization                         |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
+| dconf support (specific paths)*                  |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Temporary one-time pieces                        |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Watch configuration (files, dconf)               |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Secret management                                |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
+| Windows support                                  |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
+| Topgrade integration                             |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
+| Self-updating                                    |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
+| Machine-to-machine differences (templates)       |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
+| Supports use on servers                          |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
+| Made specifically for managing personal machines |    ✅    |  ✅  |    ❌    |    ✅    |    ✅     |
+| Also a package manager                           |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
+| Extensive built-in support for specific programs |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
 
 \* Chezmoi supports syncing the entire dconf file via onchange scripts, but this is not always desired, because
 things like window positions are stored in there as well. Falconf supports syncing specific dconf paths natively.
