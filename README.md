@@ -62,16 +62,17 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 | (Smart) undo                                          |    ✅    |  ➖  |    ➖    |    ❌    |    ❌     |
 | Runs without Git installation                         |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
 | Built-in synchronization                              |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
-| GSettings/dconf support                               |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
+| dconf support (specific paths)*                       |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Temporary one-time pieces                             |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Watch configuration (files, dconf)                    |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Secret management                                     |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
 | Windows support                                       |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
 | Topgrade integration                                  |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
-| Single-binary distribution with self-updating         |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
+| Self-updating                                         |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
 | Machine-to-machine differences (templates)            |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
 | Supports use on servers                               |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
 | Also a package manager                                |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
 | Extensive built-in support for specific programs etc. |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
 
-Feel free to add more tools to the table!
+\* Chezmoi supports syncing the entire dconf file via onchange scripts, but this is not always desired, because
+things like window positions are stored in there as well. Falconf supports syncing specific dconf paths natively.
