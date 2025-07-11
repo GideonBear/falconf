@@ -3,7 +3,8 @@
 Falconf is a tool to manage your personal Linux machine(s). It is an imperative
 alternative to [Nix](https://nixos.org/)
 and [Ansible](https://www.ansible.com/), to make tweaking your computers
-seamless without needing to edit files in a specialized syntax.
+seamless without needing to edit files in a specialized syntax. Falconf puts
+usability and speed of iteration before idempotency and correctness.
 
 Falconf can track configuration files, and run arbitrary commands. These changes
 are tracked and can be undone, and are synchronized with all your machines
@@ -45,6 +46,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
    reliable, but also easier to use.
 2. In Ansible, tasks are managed in a file that you need to edit. In Falconf, pieces
    are managed (added, removed) on the command line, and only stored in a file internally.
+   You can still edit this file if you want to, but do this at your own risk.
 
 - ✅: Yes
 - ❌: No
