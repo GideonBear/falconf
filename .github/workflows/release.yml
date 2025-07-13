@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-22.04 ]
+        platform: [ ubuntu-22.04 ]  # Old version of Ubuntu to build with an older version of glibc
     runs-on: ${{ matrix.platform }}
     permissions:
       contents: write
