@@ -202,7 +202,7 @@ impl FullPiece {
                 " ".strikethrough(),
                 self.piece.strikethrough(),
                 comment_suffix.strikethrough(),
-                unused_suffix.strikethrough(),
+                unused_suffix,
             )?;
         } else {
             write!(
