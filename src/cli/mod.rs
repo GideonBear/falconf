@@ -1,6 +1,7 @@
 use crate::cli::add::add;
 use crate::cli::init::init;
 use crate::cli::list::list;
+use crate::cli::remove::remove;
 use crate::cli::sync::sync;
 use crate::cli::undo::undo;
 use clap::ArgAction::SetTrue;
@@ -15,6 +16,7 @@ use std::str::FromStr;
 mod add;
 mod init;
 mod list;
+mod remove;
 mod sync;
 mod undo;
 
@@ -88,6 +90,9 @@ enum Commands {
 
     #[command(about = "Undo a piece")]
     Undo(UndoArgs),
+
+    #[command(about = "Remove a piece")]
+    Remove(RemoveArgs),
 }
 
 #[derive(Args, Debug)]
@@ -175,6 +180,18 @@ pub struct UndoArgs {
     pub not_done_here: bool,
 }
 
+#[derive(Args, Debug)]
+pub struct RemoveArgs {
+    #[clap(
+        value_parser = parse_piece_id
+    )]
+    piece_ids: Vec<u32>,
+
+    /// If true, remove the piece even if it is not unused
+    #[arg(long, short)]
+    pub force: bool,
+}
+
 fn parse_piece_id(s: &str) -> Result<u32, String> {
     if s.len() != 8 {
         return Err("Value must be exactly 8 hex digits".to_string());
@@ -199,5 +216,6 @@ pub fn main() -> Result<()> {
         Commands::Add(args) => add(top_level, args),
         Commands::List(args) => list(top_level, args, &mut io::stdout().lock()),
         Commands::Undo(args) => undo(top_level, args),
+        Commands::Remove(args) => remove(top_level, args),
     }
 }

@@ -144,7 +144,7 @@ impl FullPiece {
     }
 
     /// Returns true if the piece is safe to clean up
-    fn unused(&self) -> bool {
+    pub fn unused(&self) -> bool {
         if self.undo {
             // If it's something to undo (whether it's one_time or not),
             //  we don't want to execute it on new machines and can remove it
