@@ -188,6 +188,7 @@ impl FullPiece {
             String::new()
         };
         let unused_suffix = if self.unused() { " (unused)" } else { "" };
+        let unused_suffix = unused_suffix.italic();
         let text = format!(
             "[{id:08x}] {}{}{}",
             self.piece, comment_suffix, unused_suffix
