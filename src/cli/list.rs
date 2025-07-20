@@ -106,7 +106,7 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m\u{1b}[0m
+\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[0m\u{1b}[9m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m\u{1b}[0m
 ",
                 test1.display()
             )

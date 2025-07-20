@@ -193,14 +193,23 @@ impl FullPiece {
         let unused_suffix = if self.unused() { " (unused)" } else { "" };
         let unused_suffix = unused_suffix.italic();
         let unused_suffix = unused_suffix.bright_cyan();
-        let text = format!(
-            "{} {}{}{}",
-            id_prefix, self.piece, comment_suffix, unused_suffix
-        );
+        // TODO: Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
         if self.undo {
-            write!(writer, "{}", text.strikethrough())?;
+            write!(
+                writer,
+                "{}{}{}{}{}",
+                id_prefix.strikethrough(),
+                " ".strikethrough(),
+                self.piece.strikethrough(),
+                comment_suffix.strikethrough(),
+                unused_suffix.strikethrough(),
+            )?;
         } else {
-            write!(writer, "{text}")?;
+            write!(
+                writer,
+                "{} {}{}{}",
+                id_prefix, self.piece, comment_suffix, unused_suffix,
+            )?;
         }
 
         writeln!(writer)?;
