@@ -39,7 +39,7 @@ pub mod tests {
 
         let args = UndoArgs {
             piece_id: id,
-            not_done_here: false,
+            done_here: true,
         };
 
         undo(top_level_args, args)?;

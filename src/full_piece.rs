@@ -136,7 +136,7 @@ impl FullPiece {
         }
         self.undo = true;
         self.undone_on = Some(vec![execution_data.machine]);
-        if args.not_done_here {
+        if !args.done_here {
             PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;
         }
 

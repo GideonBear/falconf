@@ -48,7 +48,7 @@ pub struct TopLevelArgs {
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
 
-    /// If true, don't execute any commands. WARNING: this is not safe to run, as this will
+    /// Don't execute any commands. WARNING: this is not safe to run, as this will
     /// still make falconf think the commands were executed
     #[arg(long)]
     pub dry_run: bool,
@@ -160,7 +160,7 @@ pub struct AddArgs {
     #[arg(trailing_var_arg = true, required = true)]
     pub value: Vec<String>,
 
-    /// If true, runs the piece here (on this machine) immediately
+    /// Run the piece here (on this machine) immediately
     #[arg(long, short)]
     pub not_done_here: bool,
 }
@@ -175,9 +175,9 @@ pub struct UndoArgs {
     )]
     piece_id: u32,
 
-    /// If true, runs the piece here (on this machine) immediately
+    /// Do not undo the piece here (on this machine) immediately
     #[arg(long, short)]
-    pub not_done_here: bool,
+    pub done_here: bool,
 }
 
 #[derive(Args, Debug)]
@@ -187,7 +187,7 @@ pub struct RemoveArgs {
     )]
     piece_ids: Vec<u32>,
 
-    /// If true, remove the piece even if it is not unused
+    /// Remove the piece even if it is not unused
     #[arg(long, short)]
     pub force: bool,
 }
