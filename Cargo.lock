@@ -89,15 +89,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
-name = "assert_matches_regex"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e70935b6ba10be6dca5b618ac1a32af31604580c9508135e797fd49478a0e9a"
-dependencies = [
- "regex",
-]
-
-[[package]]
 name = "auth-git2"
 version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -432,7 +423,6 @@ dependencies = [
 name = "falconf"
 version = "0.2.10"
 dependencies = [
- "assert_matches_regex",
  "auth-git2",
  "built",
  "clap",
@@ -447,6 +437,7 @@ dependencies = [
  "libc",
  "log",
  "rand 0.9.1",
+ "regex",
  "ron",
  "serde",
  "shell-words",

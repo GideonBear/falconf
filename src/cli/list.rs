@@ -33,9 +33,9 @@ pub mod tests {
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
     use crate::testing::{TestRemote, get_last_piece};
-    use assert_matches_regex::assert_matches_regex;
     use color_eyre::Result;
     use log::debug;
+    use regex::Regex;
     use std::io;
     use tempdir::TempDir;
 
@@ -84,22 +84,30 @@ pub mod tests {
 
         list(top_level_args, args, &mut writer)?;
 
+        let id_re = Regex::new(r"[0-9a-fA-F]{8}").unwrap();
         let output = String::from_utf8(writer.into_inner())?;
         debug!("\n{output}");
+        let output = output
+            .lines()
+            .map(|line| id_re.replace(line, "ID_WAS_HERE").to_string())
+            .collect::<Vec<_>>()
+            .join("\n");
+        debug!(
+            "\n{}",
+            format!("{output:?}").trim_matches('"').replace("\\n", "\n")
+        );
 
-        static ID_RE: &str = r#"\[[0-9a-f]{8}\]"#;
-
-        assert_matches_regex!(
-            format!("\n{}", output),
+        assert_eq!(
+            format!("\n{output}\n"),
             format!(
-                r#"^
-{ID_RE} apt install cowsay
-{ID_RE} echo 'some text'
-{ID_RE} Tracking file at: {}
-{ID_RE} Manual action: some message
-{ID_RE} apt install cowsay // This is a comment!
-\u{{1b}}\[9m{ID_RE} apt install cowsay \(unused\)\u{{1b}}\[0m
-$"#,
+                "
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m\u{1b}[0m
+",
                 test1.display()
             )
         );

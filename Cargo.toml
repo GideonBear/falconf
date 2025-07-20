@@ -28,9 +28,9 @@ indexmap = { version = "2.10.0", features = ["serde"] }
 auth-git2 = "0.5.8"
 
 [dev-dependencies]
-assert_matches_regex = "0.1.0"
 ctor = "0.4.2"
 libc = "0.2.172"
+regex = "1.11.1"
 tempdir = "0.3.7"
 
 [build-dependencies]
