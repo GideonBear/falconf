@@ -12,7 +12,6 @@ use std::io::Write;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
-    // TODO: Make illegal states unrepresentable (bools weg, in de options)
     piece: PieceEnum,
     /// An optional comment to clarify the use of the piece
     comment: Option<String>,
