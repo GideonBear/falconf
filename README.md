@@ -25,7 +25,8 @@ cargo binstall falconf
 cargo install falconf
 ```
 
-You can also manually download the binary from the releases page.
+You can also manually download the binary from the releases page, but that can't
+update itself (yet).
 
 ## Usage
 
