@@ -54,7 +54,7 @@ and installs `duf`.
 If you decide you actually want to use a different tool, like
 [dysk](https://github.com/canop/dysk), run `falconf list` to find the `apt install duf`
 piece, and run `falconf undo -n <piece id>`, where `<piece id>` is the 8-digit hexadecimal
-ID noted in brackets in the `falconf list` output. This automatically runs `apt autoremove duf`
+ID noted in brackets in the `falconf list` output. This automatically runs `apt remove --autoremove duf`
 for you, and on your other machines, and marks the piece for deletion when every machine has.
 This way you don't clutter your pieces with install and remove commands. You can then edit
 `~/.bash_aliases` again, and run `falconf add -n cargo binstall dysk`. The next sync on the other
