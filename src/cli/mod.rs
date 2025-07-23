@@ -139,7 +139,7 @@ pub struct AddArgs {
     pub piece: Option<Piece>,
 
     /// Shorthand for `--piece=command`
-    #[arg(long="command", action=SetTrue)]
+    #[arg(long="command", short="c", action=SetTrue)]
     _command: (),
 
     /// Shorthand for `--piece=apt`
@@ -147,11 +147,11 @@ pub struct AddArgs {
     _apt: (),
 
     /// Shorthand for `--piece=file`
-    #[arg(long="file", action=SetTrue)]
+    #[arg(long="file", short="f", action=SetTrue)]
     _file: (),
 
     /// Shorthand for `--piece=manual`
-    #[arg(long="manual", action=SetTrue)]
+    #[arg(long="manual", short="m", action=SetTrue)]
     _manual: (),
 
     /// The value of the piece. For example the command, the package, etc.
