@@ -6,6 +6,9 @@ and [Ansible](https://www.ansible.com/), to make tweaking your computers
 seamless without needing to edit files in a specialized syntax. Falconf puts
 usability and speed of iteration before idempotency and correctness.
 
+Falconf keeps track of changes done on top of your base Linux install, and syncs
+then across your machines.
+
 Falconf can track configuration files, and run arbitrary commands. These changes
 are tracked and can be undone, and are synchronized with all your machines
 through a Git repository. The ultimate goal is to be able to bring a clean Linux
@@ -24,7 +27,9 @@ cargo install falconf
 
 You can also manually download the binary from the releases page.
 
-## Quickstart
+## Usage
+
+### Quickstart
 
 1. Create a remote Git repository, for example on GitHub.
    A good name is `my-falconf`. This repository can be private.
@@ -35,6 +40,30 @@ You can also manually download the binary from the releases page.
 Any changes are automatically pulled from and pushed to the Git repository,
 but not automatically executed. For that, use `falconf sync`.
 [Topgrade](https://github.com/topgrade-rs/topgrade) can also do this for you.
+
+### Example usage
+
+Let's say you just discovered [duf](https://github.com/muesli/duf), and want
+to use it insteead of `df`. You add an alias `alias df=duf` to `~/.bash_aliases`,
+which is tracked with `falconf add -f ~/.bash_aliases`. You then run
+`falconf add -n apt install duf`, which installs `duf`. When you then
+run `falconf sync` on your other machine, it adds the alias to `~/.bash_aliases`,
+and installs `duf`.
+
+If you decide you actually want to use a different tool, like
+[dysk](https://github.com/canop/dysk), run `falconf list` to find the `apt install duf`
+piece, and run `falconf undo -n <piece id>`, where `<piece id>` is the 8-digit hexadecimal
+ID noted in brackets in the `falconf list` output. This automatically runs `apt autoremove duf`
+for you, and on your other machines, and marks the piece for deletion when every machine has.
+This way you don't clutter your pieces with install and remove commands. You can then edit
+`~/.bash_aliases` again, and run `falconf add -n cargo binstall dysk`. The next sync on the other
+machine will then update `~/.bash_aliases`, uninstall `duf`, and install `dysk`.
+
+### Tips
+
+* Running `falconf add` without `--not-done-here` (`-n`) will assume you've already ran the command
+  here. You can for example run any command, and then run `falconf add !!`. The `!!` expands to the
+  previous command you ran.
 
 ## Comparison to similar tools
 
