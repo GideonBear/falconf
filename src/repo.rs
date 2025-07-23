@@ -175,6 +175,8 @@ impl Repo {
             .find_tree(oid)
             .wrap_err("Failed to find tree")?;
 
+        // TODO: at the moment, commits can contain changes to tracked files; we should check if the working tree is clean before committing maybe?
+        // TODO: good commit message
         let message = "Falconf update";
 
         match self.repository.head() {
