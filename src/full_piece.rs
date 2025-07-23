@@ -18,12 +18,10 @@ pub struct FullPiece {
     comment: Option<String>,
     /// The machines on which this piece is already done
     done_on: Vec<Machine>,
-    /// Whether this piece should be undone
-    undo: bool,
+    /// `Some` if this piece should be undone
     /// The machines on which this piece is already undone
     undone_on: Option<Vec<Machine>>,
-    /// Whether this piece should be executed just once (so not on new machines)
-    one_time: bool,
+    /// `Some` if this piece should be executed just once (so not on new machines)
     /// The machines to do it on if one_time is true
     one_time_todo_on: Option<Vec<Machine>>,
 }
@@ -36,42 +34,34 @@ pub enum Todo {
 }
 
 impl FullPiece {
-    // TODO: one-time support
+    // TODO: one-time support (in all below methods)
     pub fn new(piece: PieceEnum, comment: Option<String>) -> Self {
         Self {
             piece,
             comment,
             done_on: vec![],
-            undo: false,
             undone_on: None,
-            one_time: false,
             one_time_todo_on: None,
         }
     }
 
     fn todo(&self, machine: &Machine) -> Todo {
         let done = self.done_on.contains(machine);
-        let undo = self.undo;
-        let undone = if undo {
-            // SAFETY: if `undo && undone_on.is_none` the configuration is in an illegal state
-            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-            Some(self.undone_on.as_ref().unwrap().contains(machine))
-        } else {
-            // SAFETY: if `!undo && undo_on.is_some` the configuration is in an illegal state
-            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-            {
-                assert!(self.undone_on.is_none());
-            }
-            None
-        };
+        // `Some` if undo, contains `true` if it was undone on this machine
+        let undone = self
+            .undone_on
+            .as_ref()
+            .map(|undone_on| undone_on.contains(machine));
 
-        match (done, undo, undone) {
-            (false, false, _) => Todo::Execute, // Not done, not to undo: Execute (undone is `None`)
-            (false, true, _) => Todo::Noop, // Not done, but to undo: Noop (undone must be `Some(false)`)
-            (true, false, _) => Todo::Noop, // Done, not to undo: Noop (undone is `None`)
-            (true, true, Some(false)) => Todo::Undo, // Done, but to undo, and not undone yet: Undo
-            (true, true, Some(true)) => Todo::Noop, // Done, but to undo, but already undone: Noop
-            (_, true, None) => unreachable!(), // SAFETY: We just accounted for this
+        match (done, undone) {
+            (false, None) => Todo::Execute,     // Not done, not to undo: Execute
+            (false, Some(false)) => Todo::Noop, // Not done, but to undo: Noop
+            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
+            #[expect(clippy::panic, reason = "illegal configuration")]
+            (false, Some(true)) => panic!("illegal configuration"), // SAFETY: bad config; not done, but also undone
+            (true, None) => Todo::Noop,        // Done, not to undo: Noop
+            (true, Some(false)) => Todo::Undo, // Done, but to undo, and not undone yet: Undo
+            (true, Some(true)) => Todo::Noop,  // Done, but to undo, but already undone: Noop
         }
     }
 
@@ -101,13 +91,9 @@ impl FullPiece {
 
         PieceEnum::undo_bulk(to_undo.iter().map(|x| &x.piece).collect(), execution_data)?;
         for piece in to_undo {
-            // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undo == true`,
-            //  Thus `undone_on` must be `Some`, or the configuration is illegal.
-            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-            {
-                assert!(piece.undo);
-                piece.undone_on.as_mut().unwrap().push(*machine);
-            }
+            // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undone_one.is_some()`
+            #[expect(clippy::missing_panics_doc, reason = "code path")]
+            piece.undone_on.as_mut().unwrap().push(*machine);
         }
 
         Ok(())
@@ -125,16 +111,10 @@ impl FullPiece {
     }
 
     pub fn undo(&mut self, args: &UndoArgs, execution_data: &ExecutionData) -> Result<()> {
-        if self.undo {
+        if self.undone_on.is_some() {
             return Err(eyre!("This piece is already undone"));
         }
-        // SAFETY: self.undo == false, thus `undone_on` must be `None`,
-        //  or the configuration is illegal.
-        #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-        {
-            assert!(self.undone_on.is_none());
-        }
-        self.undo = true;
+
         self.undone_on = Some(vec![execution_data.machine]);
         if !args.done_here {
             PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;
@@ -145,23 +125,17 @@ impl FullPiece {
 
     /// Returns true if the piece is safe to clean up
     pub fn unused(&self) -> bool {
-        if self.undo {
+        if let Some(undone_on) = &self.undone_on {
             // If it's something to undo (whether it's one_time or not),
             //  we don't want to execute it on new machines and can remove it
             //  if none of our existing machines need to have it undone
 
-            // SAFETY: if self.undo self.undo_on must be Some, or the configuration is in an illegal state
-            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-            let undone_on = self.undone_on.as_ref().unwrap();
             set_eq(&self.done_on, undone_on)
-        } else if self.one_time {
+        } else if let Some(one_time_todo_on) = &self.one_time_todo_on {
             // We do not want to check with a list of all machines here, since
             //  new machines that are added since the addition of the
             //  one_time piece should not have the piece executed on them.
 
-            // SAFETY: if self.one_time self.one_time_todo_on must be Some, or the configuration is in an illegal state
-            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-            let one_time_todo_on = self.one_time_todo_on.as_ref().unwrap();
             set_eq(&self.done_on, one_time_todo_on)
         } else {
             // Any non-undo and non-one_time pieces should never be cleaned up,
@@ -194,7 +168,7 @@ impl FullPiece {
         let unused_suffix = unused_suffix.italic();
         let unused_suffix = unused_suffix.bright_cyan();
         // TODO: Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
-        if self.undo {
+        if self.undone_on.is_some() {
             write!(
                 writer,
                 "{}{}{}{}{}",
