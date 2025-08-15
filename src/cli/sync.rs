@@ -1,8 +1,12 @@
-use crate::cli::{SyncArgs, TopLevelArgs};
+use crate::cli::TopLevelArgs;
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
+use clap::Args;
 use color_eyre::Result;
+
+#[derive(Args, Debug)]
+pub struct SyncArgs {}
 
 pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
@@ -34,6 +38,7 @@ mod tests {
 
     use super::*;
     use crate::cli;
+    use crate::cli::add;
     use crate::cli::add::tests::add_util;
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
@@ -64,7 +69,7 @@ mod tests {
         File::create(test1_repository)?.write_all(b"test1")?;
         add_util(
             local_1.path(),
-            cli::Piece::File,
+            add::Piece::File,
             vec![test1.to_str().ok_or_eyre("Invalid path")?.to_string()],
         )?;
 

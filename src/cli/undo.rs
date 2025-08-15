@@ -1,8 +1,22 @@
-use crate::cli::{TopLevelArgs, UndoArgs};
+use crate::cli::TopLevelArgs;
+use crate::cli::parse_piece_id;
 use crate::execution_data::ExecutionData;
 use crate::installation::Installation;
+use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt;
+
+#[derive(Args, Debug)]
+pub struct UndoArgs {
+    #[clap(
+        value_parser = parse_piece_id
+    )]
+    piece_id: u32,
+
+    /// Do not undo the piece here (on this machine) immediately
+    #[arg(long, short)]
+    pub done_here: bool,
+}
 
 pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;

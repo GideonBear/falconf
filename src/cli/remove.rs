@@ -1,8 +1,22 @@
-use crate::cli::{RemoveArgs, TopLevelArgs};
+use crate::cli::TopLevelArgs;
+use crate::cli::parse_piece_id;
 use crate::installation::Installation;
+use clap::Args;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt;
 use color_eyre::eyre::Result;
+
+#[derive(Args, Debug)]
+pub struct RemoveArgs {
+    #[clap(
+        value_parser = parse_piece_id
+    )]
+    piece_ids: Vec<u32>,
+
+    /// Remove the piece even if it is not unused
+    #[arg(long, short)]
+    pub force: bool,
+}
 
 pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> color_eyre::Result<()> {
     let mut installation = Installation::get(&top_level_args)?;

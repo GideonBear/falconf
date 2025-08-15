@@ -1,4 +1,5 @@
-use crate::cli::{AddArgs, UndoArgs};
+use crate::cli::AddArgs;
+use crate::cli::UndoArgs;
 use crate::execution_data::ExecutionData;
 use crate::machine::Machine;
 use crate::pieces::PieceEnum;

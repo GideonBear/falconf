@@ -1,6 +1,10 @@
-use crate::cli::{ListArgs, TopLevelArgs};
+use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
+use clap::Args;
 use std::io::Write;
+
+#[derive(Args, Debug)]
+pub struct ListArgs {}
 
 pub fn list<W: Write>(
     top_level_args: TopLevelArgs,
@@ -29,6 +33,7 @@ pub mod tests {
 
     use super::*;
     use crate::cli;
+    use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
@@ -45,11 +50,11 @@ pub mod tests {
         let local = init_util(&remote, true)?;
 
         // Apt
-        add_util(local.path(), cli::Piece::Apt, vec![String::from("cowsay")])?;
+        add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
         // Command
         add_util(
             local.path(),
-            cli::Piece::Command,
+            add::Piece::Command,
             vec![String::from("echo"), String::from("some text")],
         )?;
         // File
@@ -57,24 +62,24 @@ pub mod tests {
         let test1 = temp.path().join("test1.txt");
         add_util(
             local.path(),
-            cli::Piece::File,
+            add::Piece::File,
             vec![test1.display().to_string()],
         )?;
         // Manual
         add_util(
             local.path(),
-            cli::Piece::Manual,
+            add::Piece::Manual,
             vec![String::from("some"), String::from("message")],
         )?;
         // With comment
         add_util_comment(
             local.path(),
-            cli::Piece::Apt,
+            add::Piece::Apt,
             vec![String::from("cowsay")],
             String::from("This is a comment!"),
         )?;
         // Undone & unused
-        add_util(local.path(), cli::Piece::Apt, vec![String::from("cowsay")])?;
+        add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
         let id = get_last_piece(local.path())?;
         undo_util(local.path(), id)?;
 

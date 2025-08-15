@@ -4,21 +4,27 @@ use crate::cli::list::list;
 use crate::cli::remove::remove;
 use crate::cli::sync::sync;
 use crate::cli::undo::undo;
-use clap::ArgAction::SetTrue;
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Args, Parser, Subcommand};
 use color_eyre::Result;
 use expanduser::expanduser;
+use init::InitArgs;
+use list::ListArgs;
 use log::{LevelFilter, debug};
+use remove::RemoveArgs;
 use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
+use sync::SyncArgs;
 
 mod add;
+pub use add::AddArgs;
+pub use add::Piece;
 mod init;
 mod list;
 mod remove;
 mod sync;
 mod undo;
+pub use undo::UndoArgs;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
     Ok(expanduser(s)?)
@@ -93,103 +99,6 @@ enum Commands {
 
     #[command(about = "Remove a piece")]
     Remove(RemoveArgs),
-}
-
-#[derive(Args, Debug)]
-struct InitArgs {
-    /// Create a new repo instead of cloning an existing one
-    #[arg(long, short)]
-    new: bool,
-
-    /// The remote url
-    remote: String,
-}
-
-#[derive(Args, Debug)]
-struct SyncArgs {}
-
-#[derive(ValueEnum, Copy, Clone, Debug)]
-#[value(rename_all = "kebab-case")]
-pub enum Piece {
-    /// Executes a command in a shell. Expects a command as value.
-    Command,
-    /// Installs an apt package. Expects a package name as value.
-    Apt,
-    /// Links a file to the repo. Expects an absolute path as value.
-    File,
-    /// Request the user to perform an action manually *sad robot face*. Expects a message for the user (description of the action) as value.
-    Manual,
-}
-
-#[derive(Args, Debug)]
-pub struct AddArgs {
-    /// An optional comment to describe the piece for easier identification.
-    #[arg(long, short)]
-    pub comment: Option<String>,
-
-    /// Omitting this argument will be interpreted as a `command` piece, but it will be translated
-    /// to another piece whenever possible. For example, `falconf add apt install cowsay`
-    /// will result in the same piece as `falconf add --apt cowsay`.
-    #[arg(long = "piece", num_args = 1, require_equals=true, default_value_ifs=[
-        ("_command", "true", "command"),
-        ("_apt", "true", "apt"),
-        ("_file", "true", "file"),
-        ("_manual", "true", "manual"),
-    ])]
-    pub piece: Option<Piece>,
-
-    /// Shorthand for `--piece=command`
-    #[arg(long="command", short='c', action=SetTrue)]
-    _command: (),
-
-    /// Shorthand for `--piece=apt`
-    #[arg(long="apt", action=SetTrue)]
-    _apt: (),
-
-    /// Shorthand for `--piece=file`
-    #[arg(long="file", short='f', action=SetTrue)]
-    _file: (),
-
-    /// Shorthand for `--piece=manual`
-    #[arg(long="manual", short='m', action=SetTrue)]
-    _manual: (),
-
-    /// The value of the piece. For example the command, the package, etc.
-    /// Quoting this is optional; both `falconf add apt install cowsay` and
-    /// `falconf add "apt install cowsay"` are allowed.
-    #[arg(trailing_var_arg = true, required = true)]
-    pub value: Vec<String>,
-
-    /// Run the piece here (on this machine) immediately
-    #[arg(long, short)]
-    pub not_done_here: bool,
-}
-
-#[derive(Args, Debug)]
-struct ListArgs {}
-
-#[derive(Args, Debug)]
-pub struct UndoArgs {
-    #[clap(
-        value_parser = parse_piece_id
-    )]
-    piece_id: u32,
-
-    /// Do not undo the piece here (on this machine) immediately
-    #[arg(long, short)]
-    pub done_here: bool,
-}
-
-#[derive(Args, Debug)]
-pub struct RemoveArgs {
-    #[clap(
-        value_parser = parse_piece_id
-    )]
-    piece_ids: Vec<u32>,
-
-    /// Remove the piece even if it is not unused
-    #[arg(long, short)]
-    pub force: bool,
 }
 
 fn parse_piece_id(s: &str) -> Result<u32, String> {

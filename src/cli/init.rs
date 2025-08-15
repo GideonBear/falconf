@@ -1,7 +1,18 @@
-use crate::cli::{InitArgs, TopLevelArgs};
+use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
+use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::WrapErr;
+
+#[derive(Args, Debug)]
+pub struct InitArgs {
+    /// Create a new repo instead of cloning an existing one
+    #[arg(long, short)]
+    new: bool,
+
+    /// The remote url
+    remote: String,
+}
 
 pub fn init(top_level_args: TopLevelArgs, args: InitArgs) -> Result<()> {
     Installation::init(&top_level_args, &args.remote, args.new).wrap_err("Failed to init")?;
