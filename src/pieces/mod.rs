@@ -263,15 +263,11 @@ impl PieceEnum {
 
 impl Display for PieceEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                PieceEnum::Apt(piece) => piece.to_string(),
-                PieceEnum::Command(piece) => piece.to_string(),
-                PieceEnum::File(piece) => piece.to_string(),
-                PieceEnum::Manual(piece) => piece.to_string(),
-            }
-        )
+        match self {
+            PieceEnum::Apt(piece) => piece.fmt(f),
+            PieceEnum::Command(piece) => piece.fmt(f),
+            PieceEnum::File(piece) => piece.fmt(f),
+            PieceEnum::Manual(piece) => piece.fmt(f),
+        }
     }
 }
