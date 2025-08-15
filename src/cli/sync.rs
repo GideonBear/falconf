@@ -37,7 +37,6 @@ mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli;
     use crate::cli::add;
     use crate::cli::add::tests::add_util;
     use crate::cli::init::tests::init_util;

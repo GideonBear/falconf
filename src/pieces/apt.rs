@@ -1,7 +1,7 @@
 use crate::cli::AddArgs;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
-use crate::piece::Piece;
+use crate::piece::BulkPiece;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
@@ -14,27 +14,9 @@ pub struct Apt {
     package: String,
 }
 
-impl Piece for Apt {
-    fn _execute(&self, _execution_data: &ExecutionData) -> Result<()> {
-        // SAFETY: Since execute_bulk is implemented we assume this is never called.
-        #[expect(clippy::panic)]
-        {
-            panic!();
-        }
-        // Self::execute_bulk(&[self])
-    }
-
+impl BulkPiece for Apt {
     fn execute_bulk(pieces: &[&Self], _execution_data: &ExecutionData) -> Result<()> {
         Self::apt_command(&["install"], pieces)
-    }
-
-    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
-        // SAFETY: Since execute_bulk is implemented we assume this is never called.
-        #[expect(clippy::panic)]
-        {
-            panic!();
-        }
-        // Some(Self::undo_bulk(&[self]))
     }
 
     fn undo_bulk(pieces: &[&Self], _execution_data: &ExecutionData) -> Result<()> {

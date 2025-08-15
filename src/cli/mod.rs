@@ -54,11 +54,15 @@ pub struct TopLevelArgs {
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
 
-    // TODO: this should probably not be called --dry-run
-    /// Don't execute any commands. WARNING: this is not safe to run, as this will
-    /// still make falconf think the commands were executed
-    #[arg(long)]
+    // TODO: if dry_run, panic if there is a change in any file because there shouldn't be.
+    /// Don't execute any commands, and do not mark pieces as executed.
+    #[arg(long, short)]
     pub dry_run: bool,
+
+    /// Don't execute any commands, but mark pieces as executed. WARNING: this
+    /// is not safe to use, and is meant for testing purposes only.
+    #[arg(long)]
+    pub test_run: bool,
 }
 
 impl TopLevelArgs {
@@ -71,12 +75,13 @@ impl TopLevelArgs {
     }
 
     #[cfg(test)]
-    pub fn new_testing(falconf_path: PathBuf, dry_run: bool) -> Self {
+    pub fn new_testing(falconf_path: PathBuf, test_run: bool) -> Self {
         Self {
             log_level: "".to_string(),
             verbose: false,
             path: falconf_path,
-            dry_run,
+            dry_run: false,
+            test_run,
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::cli::AddArgs;
 use crate::execution_data::ExecutionData;
-use crate::piece::Piece;
+use crate::piece::NonBulkPiece;
 use crate::utils::press_enter;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
@@ -12,12 +12,12 @@ pub struct Manual {
     message: String,
 }
 
-impl Piece for Manual {
-    fn _execute(&self, _execution_data: &ExecutionData) -> Result<()> {
+impl NonBulkPiece for Manual {
+    fn execute(&self, _execution_data: &ExecutionData) -> Result<()> {
         Self::print_message(&self.message)
     }
 
-    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
+    fn undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
         Some(Self::print_message(&format!(
             "UNDO the following change: {}",
             self.message

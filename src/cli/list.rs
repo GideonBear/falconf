@@ -32,7 +32,6 @@ pub mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli;
     use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::init::tests::init_util;
@@ -91,21 +90,15 @@ pub mod tests {
 
         let id_re = Regex::new(r"[0-9a-fA-F]{8}").unwrap();
         let output = String::from_utf8(writer.into_inner())?;
-        debug!("\n{output}");
+        debug!("Got:\n{output}");
         let output = output
             .lines()
             .map(|line| id_re.replace(line, "ID_WAS_HERE").to_string())
             .collect::<Vec<_>>()
             .join("\n");
-        debug!(
-            "\n{}",
-            format!("{output:?}").trim_matches('"').replace("\\n", "\n")
-        );
 
-        assert_eq!(
-            format!("\n{output}\n"),
-            format!(
-                "
+        let expected = format!(
+            "
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
@@ -113,9 +106,21 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[0m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
 ",
-                test1.display()
-            )
+            test1.display()
         );
+        debug!("Expect:\n{}", expected);
+        debug!(
+            "Got (raw):\n{}",
+            format!("{output:?}").trim_matches('"').replace("\\n", "\n")
+        );
+        debug!(
+            "Expect (raw):\n{}",
+            format!("{expected:?}")
+                .trim_matches('"')
+                .replace("\\n", "\n")
+        );
+
+        assert_eq!(format!("\n{output}\n"), expected,);
 
         Ok(())
     }

@@ -1,7 +1,7 @@
 use crate::cli;
 use crate::cli::AddArgs;
 use crate::execution_data::ExecutionData;
-use crate::piece::Piece;
+use crate::piece::{BulkPiece, NonBulkPiece};
 use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
 use crate::pieces::file::File;
@@ -60,58 +60,161 @@ impl PieceEnum {
     //     }
     // }
 
+    // TODO: deduplicate
     /// Execute multiple pieces
-    pub fn execute_bulk(pieces: Vec<&Self>, execution_data: &ExecutionData) -> Result<()> {
+    pub fn execute_bulk<F: FnMut()>(
+        pieces: Vec<(&Self, F)>,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
         if execution_data.dry_run {
             warn!("Dry run! Not doing anything.");
             return Ok(());
         }
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
         if !apt.is_empty() {
-            Apt::execute_bulk(&apt, execution_data)?;
+            let (pieces, cbs): (Vec<&Apt>, Vec<F>) = apt.into_iter().unzip();
+            // As we're executing in bulk, we want to wait with the callbacks until after execution
+            if !execution_data.test_run {
+                Apt::execute_bulk(&pieces, execution_data)?;
+            } else {
+                warn!("Test run! Refraining from execution, but marking as normal.");
+            }
+            for mut cb in cbs {
+                cb();
+            }
         }
         if !command.is_empty() {
-            Command::execute_bulk(&command, execution_data)?;
+            for (piece, mut cb) in command {
+                if !execution_data.test_run {
+                    piece.execute(execution_data)?;
+                } else {
+                    warn!("Test run! Refraining from execution, but marking as normal.");
+                }
+                cb();
+            }
         }
         if !file.is_empty() {
-            File::execute_bulk(&file, execution_data)?;
+            for (piece, mut cb) in file {
+                if !execution_data.test_run {
+                    piece.execute(execution_data)?;
+                } else {
+                    warn!("Test run! Refraining from execution, but marking as normal.");
+                }
+                cb();
+            }
         }
         if !manual.is_empty() {
-            Manual::execute_bulk(&manual, execution_data)?;
+            for (piece, mut cb) in manual {
+                if !execution_data.test_run {
+                    piece.execute(execution_data)?;
+                } else {
+                    warn!("Test run! Refraining from execution, but marking as normal.");
+                }
+                cb();
+            }
         }
         Ok(())
     }
 
+    // TODO: deduplicate
     /// Undo multiple pieces.
-    pub fn undo_bulk(pieces: Vec<&Self>, execution_data: &ExecutionData) -> Result<()> {
+    pub fn undo_bulk<F: FnMut()>(
+        pieces: Vec<(&Self, F)>,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
         if execution_data.dry_run {
             warn!("Dry run! Not doing anything.");
             return Ok(());
         }
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
         if !apt.is_empty() {
-            Apt::undo_bulk(&apt, execution_data)?;
+            let (pieces, cbs): (Vec<&Apt>, Vec<F>) = apt.into_iter().unzip();
+            // As we're executing in bulk, we want to wait with the callbacks until after execution
+            if !execution_data.test_run {
+                Apt::undo_bulk(&pieces, execution_data)?;
+            } else {
+                warn!("Test run! Refraining from execution, but marking as normal.");
+            }
+            for mut cb in cbs {
+                cb();
+            }
         }
         if !command.is_empty() {
-            Command::undo_bulk(&command, execution_data)?;
+            for (piece, mut cb) in command {
+                if !execution_data.test_run {
+                    match piece.undo(execution_data) {
+                        None => {
+                            // TODO: Flag to add undo parameter
+                            todo!(
+                                "Undefined undo for piece; we should prompt then retry with that"
+                            );
+                        }
+                        Some(Err(e)) => return Err(e),
+                        Some(Ok(())) => {}
+                    }
+                } else {
+                    warn!("Test run! Refraining from execution, but marking as normal.");
+                }
+                cb();
+            }
         }
         if !file.is_empty() {
-            File::undo_bulk(&file, execution_data)?;
+            for (piece, mut cb) in file {
+                if !execution_data.test_run {
+                    match piece.undo(execution_data) {
+                        None => {
+                            // TODO: Flag to add undo parameter
+                            todo!(
+                                "Undefined undo for piece; we should prompt then retry with that"
+                            );
+                        }
+                        Some(Err(e)) => return Err(e),
+                        Some(Ok(())) => {}
+                    }
+                } else {
+                    warn!("Test run! Refraining from execution, but marking as normal.");
+                }
+                cb();
+            }
         }
         if !manual.is_empty() {
-            Manual::undo_bulk(&manual, execution_data)?;
+            for (piece, mut cb) in manual {
+                if !execution_data.test_run {
+                    match piece.undo(execution_data) {
+                        None => {
+                            // TODO: Flag to add undo parameter
+                            todo!(
+                                "Undefined undo for piece; we should prompt then retry with that"
+                            );
+                        }
+                        Some(Err(e)) => return Err(e),
+                        Some(Ok(())) => {}
+                    }
+                } else {
+                    warn!("Test run! Refraining from execution, but marking as normal.");
+                }
+                cb();
+            }
         }
         Ok(())
     }
 
-    pub fn sort_pieces(pieces: Vec<&Self>) -> (Vec<&Apt>, Vec<&Command>, Vec<&File>, Vec<&Manual>) {
+    #[allow(clippy::type_complexity)] // This is pretty clean
+    pub fn sort_pieces<F: FnMut()>(
+        pieces: Vec<(&Self, F)>,
+    ) -> (
+        Vec<(&Apt, F)>,
+        Vec<(&Command, F)>,
+        Vec<(&File, F)>,
+        Vec<(&Manual, F)>,
+    ) {
         let (mut apt, mut command, mut file, mut manual) = (vec![], vec![], vec![], vec![]);
         for piece in pieces {
             match piece {
-                PieceEnum::Apt(p) => apt.push(p),
-                PieceEnum::Command(c) => command.push(c),
-                PieceEnum::File(f) => file.push(f),
-                PieceEnum::Manual(m) => manual.push(m),
+                (PieceEnum::Apt(p), cb) => apt.push((p, cb)),
+                (PieceEnum::Command(c), cb) => command.push((c, cb)),
+                (PieceEnum::File(f), cb) => file.push((f, cb)),
+                (PieceEnum::Manual(m), cb) => manual.push((m, cb)),
             }
         }
         (apt, command, file, manual)

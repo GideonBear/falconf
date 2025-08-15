@@ -1,7 +1,7 @@
 use crate::cli::AddArgs;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
-use crate::piece::Piece;
+use crate::piece::NonBulkPiece;
 use crate::utils::confirm;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
@@ -29,8 +29,8 @@ pub struct File {
     expected_previous_content: Option<String>,
 }
 
-impl Piece for File {
-    fn _execute(&self, execution_data: &ExecutionData) -> Result<()> {
+impl NonBulkPiece for File {
+    fn execute(&self, execution_data: &ExecutionData) -> Result<()> {
         let target_file = self.target_file(execution_data)?;
 
         if self.location.exists() {
@@ -87,7 +87,7 @@ impl Piece for File {
         Ok(())
     }
 
-    fn _undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
+    fn undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
         Some(remove_file(&self.location).wrap_err("Failed to remove file as part of undo"))
     }
 }

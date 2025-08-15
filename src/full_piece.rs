@@ -81,20 +81,32 @@ impl FullPiece {
             }
         }
 
+        // TODO: These callback shenanigans are ugly. A more elegant solution would be nice.
         PieceEnum::execute_bulk(
-            to_execute.iter().map(|x| &x.piece).collect(),
+            to_execute
+                .iter_mut()
+                .map(|x| {
+                    (&x.piece, || {
+                        x.done_on.push(*machine);
+                    })
+                })
+                .collect(),
             execution_data,
         )?;
-        for piece in to_execute {
-            piece.done_on.push(*machine);
-        }
 
-        PieceEnum::undo_bulk(to_undo.iter().map(|x| &x.piece).collect(), execution_data)?;
-        for piece in to_undo {
-            // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undone_one.is_some()`
-            #[expect(clippy::missing_panics_doc, reason = "code path")]
-            piece.undone_on.as_mut().unwrap().push(*machine);
-        }
+        PieceEnum::undo_bulk(
+            to_undo
+                .iter_mut()
+                .map(|x| {
+                    (&x.piece, || {
+                        // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undone_one.is_some()`
+                        #[expect(clippy::missing_panics_doc, reason = "code path")]
+                        x.undone_on.as_mut().unwrap().push(*machine);
+                    })
+                })
+                .collect(),
+            execution_data,
+        )?;
 
         Ok(())
     }
@@ -102,9 +114,16 @@ impl FullPiece {
     pub fn add(args: &AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
         let mut piece = Self::from_cli(args)?;
 
-        piece.done_on.push(execution_data.machine);
+        let mut cb = || {
+            piece.done_on.push(execution_data.machine);
+        };
+
         if args.not_done_here {
-            PieceEnum::execute_bulk(vec![&piece.piece], execution_data)?;
+            // We could bypass `execute_bulk` here, but this is clearer
+            PieceEnum::execute_bulk(vec![(&piece.piece, cb)], execution_data)?;
+        } else {
+            // If we don't execute it, just add it immediately.
+            cb();
         }
 
         Ok((Self::new_id(), piece))
@@ -115,9 +134,16 @@ impl FullPiece {
             return Err(eyre!("This piece is already undone"));
         }
 
-        self.undone_on = Some(vec![execution_data.machine]);
+        let mut cb = || {
+            self.undone_on = Some(vec![execution_data.machine]);
+        };
+
         if !args.done_here {
-            PieceEnum::undo_bulk(vec![&self.piece], execution_data)?;
+            // We could bypass `execute_bulk` here, but this is clearer
+            PieceEnum::undo_bulk(vec![(&self.piece, cb)], execution_data)?;
+        } else {
+            // If we don't execute it, just add it immediately.
+            cb();
         }
 
         Ok(())
