@@ -81,7 +81,6 @@ impl FullPiece {
             }
         }
 
-        // TODO: These callback shenanigans are ugly. A more elegant solution would be nice.
         PieceEnum::execute_bulk(
             to_execute
                 .iter_mut()
