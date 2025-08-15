@@ -54,6 +54,7 @@ pub struct TopLevelArgs {
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
 
+    // TODO: this should probably not be called --dry-run
     /// Don't execute any commands. WARNING: this is not safe to run, as this will
     /// still make falconf think the commands were executed
     #[arg(long)]
