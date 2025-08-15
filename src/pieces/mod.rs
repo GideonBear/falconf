@@ -60,7 +60,8 @@ impl PieceEnum {
     //     }
     // }
 
-    // TODO: deduplicate
+    // TODO: maybe deduplicate between execute and undo?
+    // TODO: Improve naming
     /// Execute multiple pieces
     pub fn execute_bulk<F: FnMut()>(
         pieces: Vec<(&Self, F)>,
@@ -71,11 +72,22 @@ impl PieceEnum {
             return Ok(());
         }
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
-        if !apt.is_empty() {
-            let (pieces, cbs): (Vec<&Apt>, Vec<F>) = apt.into_iter().unzip();
+        Self::execute_bulk_bulk(apt, execution_data)?;
+        Self::execute_non_bulk_bulk(command, execution_data)?;
+        Self::execute_non_bulk_bulk(file, execution_data)?;
+        Self::execute_non_bulk_bulk(manual, execution_data)?;
+        Ok(())
+    }
+
+    fn execute_bulk_bulk<F: FnMut(), P: BulkPiece>(
+        pieces: Vec<(&P, F)>,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
+        if !pieces.is_empty() {
+            let (pieces, cbs): (Vec<&P>, Vec<F>) = pieces.into_iter().unzip();
             // As we're executing in bulk, we want to wait with the callbacks until after execution
             if !execution_data.test_run {
-                Apt::execute_bulk(&pieces, execution_data)?;
+                P::execute_bulk(&pieces, execution_data)?;
             } else {
                 warn!("Test run! Refraining from execution, but marking as normal.");
             }
@@ -83,35 +95,20 @@ impl PieceEnum {
                 cb();
             }
         }
-        if !command.is_empty() {
-            for (piece, mut cb) in command {
-                if !execution_data.test_run {
-                    piece.execute(execution_data)?;
-                } else {
-                    warn!("Test run! Refraining from execution, but marking as normal.");
-                }
-                cb();
+        Ok(())
+    }
+
+    fn execute_non_bulk_bulk<F: FnMut(), P: NonBulkPiece>(
+        pieces: Vec<(&P, F)>,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
+        for (piece, mut cb) in pieces {
+            if !execution_data.test_run {
+                piece.execute(execution_data)?;
+            } else {
+                warn!("Test run! Refraining from execution, but marking as normal.");
             }
-        }
-        if !file.is_empty() {
-            for (piece, mut cb) in file {
-                if !execution_data.test_run {
-                    piece.execute(execution_data)?;
-                } else {
-                    warn!("Test run! Refraining from execution, but marking as normal.");
-                }
-                cb();
-            }
-        }
-        if !manual.is_empty() {
-            for (piece, mut cb) in manual {
-                if !execution_data.test_run {
-                    piece.execute(execution_data)?;
-                } else {
-                    warn!("Test run! Refraining from execution, but marking as normal.");
-                }
-                cb();
-            }
+            cb();
         }
         Ok(())
     }
@@ -127,11 +124,22 @@ impl PieceEnum {
             return Ok(());
         }
         let (apt, command, file, manual) = Self::sort_pieces(pieces);
-        if !apt.is_empty() {
-            let (pieces, cbs): (Vec<&Apt>, Vec<F>) = apt.into_iter().unzip();
+        Self::undo_bulk_bulk(apt, execution_data)?;
+        Self::undo_non_bulk_bulk(command, execution_data)?;
+        Self::undo_non_bulk_bulk(file, execution_data)?;
+        Self::undo_non_bulk_bulk(manual, execution_data)?;
+        Ok(())
+    }
+
+    fn undo_bulk_bulk<F: FnMut(), P: BulkPiece>(
+        pieces: Vec<(&P, F)>,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
+        if !pieces.is_empty() {
+            let (pieces, cbs): (Vec<&P>, Vec<F>) = pieces.into_iter().unzip();
             // As we're executing in bulk, we want to wait with the callbacks until after execution
             if !execution_data.test_run {
-                Apt::undo_bulk(&pieces, execution_data)?;
+                P::undo_bulk(&pieces, execution_data)?;
             } else {
                 warn!("Test run! Refraining from execution, but marking as normal.");
             }
@@ -139,62 +147,27 @@ impl PieceEnum {
                 cb();
             }
         }
-        if !command.is_empty() {
-            for (piece, mut cb) in command {
-                if !execution_data.test_run {
-                    match piece.undo(execution_data) {
-                        None => {
-                            // TODO: Flag to add undo parameter
-                            todo!(
-                                "Undefined undo for piece; we should prompt then retry with that"
-                            );
-                        }
-                        Some(Err(e)) => return Err(e),
-                        Some(Ok(())) => {}
+        Ok(())
+    }
+
+    fn undo_non_bulk_bulk<F: FnMut(), P: NonBulkPiece>(
+        pieces: Vec<(&P, F)>,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
+        for (piece, mut cb) in pieces {
+            if !execution_data.test_run {
+                match piece.undo(execution_data) {
+                    None => {
+                        // TODO: Flag to add undo parameter
+                        todo!("Undefined undo for piece; we should prompt then retry with that");
                     }
-                } else {
-                    warn!("Test run! Refraining from execution, but marking as normal.");
+                    Some(Err(e)) => return Err(e),
+                    Some(Ok(())) => {}
                 }
-                cb();
+            } else {
+                warn!("Test run! Refraining from execution, but marking as normal.");
             }
-        }
-        if !file.is_empty() {
-            for (piece, mut cb) in file {
-                if !execution_data.test_run {
-                    match piece.undo(execution_data) {
-                        None => {
-                            // TODO: Flag to add undo parameter
-                            todo!(
-                                "Undefined undo for piece; we should prompt then retry with that"
-                            );
-                        }
-                        Some(Err(e)) => return Err(e),
-                        Some(Ok(())) => {}
-                    }
-                } else {
-                    warn!("Test run! Refraining from execution, but marking as normal.");
-                }
-                cb();
-            }
-        }
-        if !manual.is_empty() {
-            for (piece, mut cb) in manual {
-                if !execution_data.test_run {
-                    match piece.undo(execution_data) {
-                        None => {
-                            // TODO: Flag to add undo parameter
-                            todo!(
-                                "Undefined undo for piece; we should prompt then retry with that"
-                            );
-                        }
-                        Some(Err(e)) => return Err(e),
-                        Some(Ok(())) => {}
-                    }
-                } else {
-                    warn!("Test run! Refraining from execution, but marking as normal.");
-                }
-                cb();
-            }
+            cb();
         }
         Ok(())
     }
