@@ -152,6 +152,7 @@ impl TempDirSub {
     }
 }
 
+#[allow(dead_code)]
 pub enum Position {
     Index(usize),
     First,
