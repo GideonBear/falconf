@@ -9,7 +9,7 @@ use crate::pieces::manual::Manual;
 use color_eyre::Result;
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 
 pub mod apt;
 pub mod command;
@@ -25,17 +25,46 @@ macro_rules! unknown {
             $target,
             "')"
         ));
-        PieceEnum::Command(Command::from_cli($args)?)
+        PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli($args)?))
     }};
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PieceEnum {
+    Bulk(BulkPieceEnum),
+    NonBulk(NonBulkPieceEnum),
 }
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum PieceEnum {
+pub enum BulkPieceEnum {
     Apt(Apt),
+}
+
+#[non_exhaustive]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NonBulkPieceEnum {
     Command(Command),
     File(File),
     Manual(Manual),
+}
+
+impl NonBulkPieceEnum {
+    fn execute(&self, execution_data: &ExecutionData) -> Result<()> {
+        match self {
+            NonBulkPieceEnum::Command(command) => command.execute(execution_data),
+            NonBulkPieceEnum::File(file) => file.execute(execution_data),
+            NonBulkPieceEnum::Manual(manual) => manual.execute(execution_data),
+        }
+    }
+
+    fn undo(&self, execution_data: &ExecutionData) -> Option<Result<()>> {
+        match self {
+            NonBulkPieceEnum::Command(command) => command.undo(execution_data),
+            NonBulkPieceEnum::File(file) => file.undo(execution_data),
+            NonBulkPieceEnum::Manual(manual) => manual.undo(execution_data),
+        }
+    }
 }
 
 impl PieceEnum {
@@ -50,11 +79,9 @@ impl PieceEnum {
             warn!("Dry run! Not doing anything.");
             return Ok(());
         }
-        let (apt, command, file, manual) = Self::sort_pieces(pieces);
+        let (apt, non_bulk) = Self::sort_pieces(pieces);
         Self::execute_bulk_bulk(apt, execution_data)?;
-        Self::execute_non_bulk_bulk(command, execution_data)?;
-        Self::execute_non_bulk_bulk(file, execution_data)?;
-        Self::execute_non_bulk_bulk(manual, execution_data)?;
+        Self::execute_non_bulk_bulk(non_bulk, execution_data)?;
         Ok(())
     }
 
@@ -77,8 +104,8 @@ impl PieceEnum {
         Ok(())
     }
 
-    fn execute_non_bulk_bulk<F: FnMut(), P: NonBulkPiece>(
-        pieces: Vec<(&P, F)>,
+    fn execute_non_bulk_bulk<F: FnMut()>(
+        pieces: Vec<(&NonBulkPieceEnum, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         for (piece, mut cb) in pieces {
@@ -102,11 +129,9 @@ impl PieceEnum {
             warn!("Dry run! Not doing anything.");
             return Ok(());
         }
-        let (apt, command, file, manual) = Self::sort_pieces(pieces);
+        let (apt, non_bulk) = Self::sort_pieces(pieces);
         Self::undo_bulk_bulk(apt, execution_data)?;
-        Self::undo_non_bulk_bulk(command, execution_data)?;
-        Self::undo_non_bulk_bulk(file, execution_data)?;
-        Self::undo_non_bulk_bulk(manual, execution_data)?;
+        Self::undo_non_bulk_bulk(non_bulk, execution_data)?;
         Ok(())
     }
 
@@ -129,8 +154,8 @@ impl PieceEnum {
         Ok(())
     }
 
-    fn undo_non_bulk_bulk<F: FnMut(), P: NonBulkPiece>(
-        pieces: Vec<(&P, F)>,
+    fn undo_non_bulk_bulk<F: FnMut()>(
+        pieces: Vec<(&NonBulkPieceEnum, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         for (piece, mut cb) in pieces {
@@ -154,22 +179,17 @@ impl PieceEnum {
     #[allow(clippy::type_complexity)] // This is pretty clean
     pub fn sort_pieces<F: FnMut()>(
         pieces: Vec<(&Self, F)>,
-    ) -> (
-        Vec<(&Apt, F)>,
-        Vec<(&Command, F)>,
-        Vec<(&File, F)>,
-        Vec<(&Manual, F)>,
-    ) {
-        let (mut apt, mut command, mut file, mut manual) = (vec![], vec![], vec![], vec![]);
+    ) -> (Vec<(&Apt, F)>, Vec<(&NonBulkPieceEnum, F)>) {
+        #[expect(unused_parens)]
+        let (mut apt) = (vec![]);
+        let mut non_bulk = vec![];
         for piece in pieces {
             match piece {
-                (PieceEnum::Apt(p), cb) => apt.push((p, cb)),
-                (PieceEnum::Command(c), cb) => command.push((c, cb)),
-                (PieceEnum::File(f), cb) => file.push((f, cb)),
-                (PieceEnum::Manual(m), cb) => manual.push((m, cb)),
+                (PieceEnum::Bulk(BulkPieceEnum::Apt(p)), cb) => apt.push((p, cb)),
+                (PieceEnum::NonBulk(piece), cb) => non_bulk.push((piece, cb)),
             }
         }
-        (apt, command, file, manual)
+        (apt, non_bulk)
     }
 
     pub fn from_cli(args: &AddArgs) -> Result<Self> {
@@ -181,10 +201,14 @@ impl PieceEnum {
 
     fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Result<Self> {
         Ok(match piece {
-            cli::Piece::Apt => PieceEnum::Apt(Apt::from_cli(args)?),
-            cli::Piece::Command => PieceEnum::Command(Command::from_cli(args)?),
-            cli::Piece::File => PieceEnum::File(File::from_cli(args)?),
-            cli::Piece::Manual => PieceEnum::Manual(Manual::from_cli(args)),
+            cli::Piece::Apt => PieceEnum::Bulk(BulkPieceEnum::Apt(Apt::from_cli(args)?)),
+            cli::Piece::Command => {
+                PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?))
+            }
+            cli::Piece::File => PieceEnum::NonBulk(NonBulkPieceEnum::File(File::from_cli(args)?)),
+            cli::Piece::Manual => {
+                PieceEnum::NonBulk(NonBulkPieceEnum::Manual(Manual::from_cli(args)))
+            }
         })
     }
 
@@ -203,23 +227,42 @@ impl PieceEnum {
                 | ["apt", "install", "-y", package]
                 | ["apt", "-y", "install", package] => {
                     info!("Using `apt` piece instead of `command`");
-                    PieceEnum::Apt(Apt::from_cli_autodetected(args, package.to_string()))
+                    PieceEnum::Bulk(BulkPieceEnum::Apt(Apt::from_cli_autodetected(
+                        args,
+                        package.to_string(),
+                    )))
                 }
                 ["apt", ..] => unknown!("apt", "apt", args),
                 ["ln", ..] => unknown!("ln", "file", args),
-                _ => PieceEnum::Command(Command::from_cli(args)?),
+                _ => PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?)),
             },
         )
     }
 }
 
-impl Display for PieceEnum {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for BulkPieceEnum {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            PieceEnum::Apt(piece) => piece.fmt(f),
-            PieceEnum::Command(piece) => piece.fmt(f),
-            PieceEnum::File(piece) => piece.fmt(f),
-            PieceEnum::Manual(piece) => piece.fmt(f),
+            Self::Apt(piece) => piece.fmt(f),
+        }
+    }
+}
+
+impl Display for NonBulkPieceEnum {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Command(piece) => piece.fmt(f),
+            Self::File(piece) => piece.fmt(f),
+            Self::Manual(piece) => piece.fmt(f),
+        }
+    }
+}
+
+impl Display for PieceEnum {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Bulk(piece) => piece.fmt(f),
+            Self::NonBulk(piece) => piece.fmt(f),
         }
     }
 }

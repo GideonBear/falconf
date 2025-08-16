@@ -41,7 +41,7 @@ mod tests {
     use crate::cli::add::tests::add_util;
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
-    use crate::testing::{TestRemote, get_last_piece};
+    use crate::testing::{Position, TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
     use std::fs::{File, create_dir_all};
@@ -66,10 +66,13 @@ mod tests {
         )?;
         debug!("Created {test1_repository:?}");
         File::create(test1_repository)?.write_all(b"test1")?;
+        let test1_s = test1.to_str().ok_or_eyre("Invalid path")?.to_string();
+        add_util(local_1.path(), add::Piece::File, vec![test1_s.clone()])?;
+        // Testing the order. This should execute after the file is added.
         add_util(
             local_1.path(),
-            add::Piece::File,
-            vec![test1.to_str().ok_or_eyre("Invalid path")?.to_string()],
+            add::Piece::Command,
+            vec![format!("test -f '{}'", test1_s)],
         )?;
 
         assert!(!test1.exists());
@@ -88,7 +91,10 @@ mod tests {
 
         // Explicitly do not pull local 1 here to test auto-syncing
 
-        undo_util(local_1.path(), get_last_piece(local_1.path())?)?;
+        undo_util(
+            local_1.path(),
+            get_piece(local_1.path(), Position::Index(0))?,
+        )?;
         assert!(test1.exists());
 
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
