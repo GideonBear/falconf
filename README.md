@@ -13,8 +13,20 @@ Falconf can track configuration files, and run arbitrary commands. These changes
 are tracked and can be undone, and are synchronized with all your machines
 through a Git repository. The ultimate goal is to be able to bring a clean Linux
 install to your desired state with as few manual steps as possible, and to never
-have to tweak something on multiple machines. More things can be automated than
+have to tweak something manually on multiple machines. More things can be automated than
 you think!
+
+### Falconf is for you if...
+* You have a script to set up a new Linux machine, that you update (semi-)regularly
+* You have a list of manual actions to take to set up a new Linux machine
+* You use Ansible to manage your machines, but find it cumbersome to add/remove tasks
+* You use a home-made script / plain git server for synchronizing dotfiles
+* You regularly forget / have to remind yourself to install a program / tweak something on your other machines as well
+* You're afraid to re-install because you'll lose your configuration
+
+### Falconf is **not** for you if...
+* You're happy with NixOS
+* You use an almost clean Linux install
 
 ## Installation
 
@@ -63,7 +75,7 @@ machine will then update `~/.bash_aliases`, uninstall `duf`, and install `dysk`.
 ### Tips
 
 * Running `falconf add` without `--not-done-here` (`-n`) will assume you've already ran the command
-  here. You can for example run any command, and then run `falconf add !!`. The `!!` expands to the
+  here. You can for example run any command, and then run `falconf add !!`. Your shell will expand `!!` to the
   previous command you ran.
 
 ## Comparison to similar tools
@@ -73,7 +85,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 1. Falconf tracks if a change is done, and does the change if it is not done yet,
    regardless of any system state. Ansible does not track this, and instead determines
    if the change is necessary based on the system state. This means that falconf is less
-   reliable, but also easier to use.
+   reliable, but easier to use.
 2. In Ansible, tasks are managed in a file that you need to edit. In Falconf, pieces
    are managed (added, removed) on the command line, and only stored in a file internally.
    You can still edit this file if you want to, but do this at your own risk.
