@@ -26,9 +26,18 @@ jobs:
         name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Run release-plz
+        id: release-plz
         uses: release-plz/action@v0.5
         with:
           command: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger workflows
+        if: steps.release-plz.outputs.releases_created == 'true'
+        run: |
+          gh api repos/${{ github.repository }}/dispatches \
+            -f event_type=release-created
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -46,17 +55,8 @@ jobs:
       - *checkout
       - *install-rust
       - name: Run release-plz
-        id: release-plz
         uses: release-plz/action@v0.5
         with:
           command: release-pr
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Trigger workflows
-        if: steps.release-plz.outputs.releases_created == 'true'
-        run: |
-          gh api repos/${{ github.repository }}/dispatches \
-            -f event_type=release-created
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
