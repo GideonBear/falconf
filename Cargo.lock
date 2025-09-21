@@ -421,7 +421,7 @@ dependencies = [
 
 [[package]]
 name = "falconf"
-version = "0.2.13"
+version = "0.2.14"
 dependencies = [
  "auth-git2",
  "built",
