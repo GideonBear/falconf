@@ -5,9 +5,7 @@ on:
     types: [ published ]
 
 jobs:
-
   native_build:
-    needs: create_release
     strategy:
       fail-fast: false
       matrix:
