@@ -176,6 +176,8 @@ impl Repo {
             .wrap_err("Failed to find tree")?;
 
         // TODO: at the moment, commits can contain changes to tracked files; we should check if the working tree is clean before committing maybe?
+        //  or just not use `git add .` and instead commit only the data file. But then we would have to also commit one other file
+        //  if it is a file piece.
         // TODO: good commit message
         let message = "Falconf update";
 
