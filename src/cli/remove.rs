@@ -18,7 +18,7 @@ pub struct RemoveArgs {
     pub force: bool,
 }
 
-pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> color_eyre::Result<()> {
+pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
 
