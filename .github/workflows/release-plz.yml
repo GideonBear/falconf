@@ -37,8 +37,8 @@ jobs:
         if: steps.release-plz.outputs.releases_created == 'true'
         run: |
           gh api repos/${{ github.repository }}/dispatches \
-            -f event_type=release-created \
-            -f client_payload='{"tag": "${{ fromJSON(steps.release-plz.outputs.releases)[0].tag }}"}'
+            -f "event_type=release-created" \
+            -F "client_payload[tag]=${{ fromJSON(steps.release-plz.outputs.releases)[0].tag }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
