@@ -1,5 +1,7 @@
 # falconf
 
+[![brainmade.org](https://brainmade.org/white-logo.svg)](https://brainmade.org/)
+
 Falconf is a tool to manage your personal Linux machine(s). It is an imperative
 alternative to [Nix](https://nixos.org/)
 and [Ansible](https://www.ansible.com/), to make tweaking your computers
