@@ -1,5 +1,3 @@
-[![brainmade.org](https://brainmade.org/white-logo.svg)](https://brainmade.org/)
-
 # falconf
 
 Falconf is a tool to manage your personal Linux machine(s). It is an imperative
