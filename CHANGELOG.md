@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.16](https://github.com/GideonBear/falconf/compare/v0.2.15...v0.2.16) - 2025-09-21
+
+### Other
+
+- Fix release_assets workflow
+
 ## [0.2.15](https://github.com/GideonBear/falconf/compare/v0.2.14...v0.2.15) - 2025-09-21
 
 ### Other
