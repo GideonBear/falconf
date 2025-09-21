@@ -23,17 +23,12 @@ jobs:
       - name: Build in Release profile with all features enabled
         run: cargo build --release --all-features
 
-      - name: Determine tag name
-        id: determine_tag_name
-        shell: bash # Or it won't work on Windows
-        run: echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-
       - name: Rename Release (Unix)
         run: |
           cargo install default-target
           CRATE_NAME=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].name')
           mkdir -p assets
-          FILENAME=${CRATE_NAME}-${{ steps.determine_tag_name.outputs.tag_name }}-$(default-target)
+          FILENAME=${CRATE_NAME}-${{ github.event.client_payload.tag }}-$(default-target)
           mv target/release/$CRATE_NAME assets
           cd assets
           tar --format=ustar -czf $FILENAME.tar.gz $CRATE_NAME
@@ -47,7 +42,7 @@ jobs:
       #          cargo install default-target
       #          CRATE_NAME=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].name')
       #          mkdir assets
-      #          FILENAME=${CRATE_NAME}-${{steps.determine_tag_name.outputs.tag_name}}-$(default-target)
+      #          FILENAME=${CRATE_NAME}-${{ github.event.client_payload.tag }}-$(default-target)
       #          mv target/release/${CRATE_NAME}.exe assets
       #          cd assets
       #          powershell Compress-Archive -Path * -Destination ${FILENAME}.zip
@@ -58,6 +53,6 @@ jobs:
 
       - name: Upload assets
         run:
-          gh release upload "${{ steps.determine_tag_name.outputs.tag_name }}" assets/*
+          gh release upload "${{ github.event.client_payload.tag }}" assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
