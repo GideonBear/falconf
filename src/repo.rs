@@ -34,6 +34,8 @@ impl Repo {
             .clone_repo(remote, path)
             .wrap_err("Failed to clone repository")?;
 
+        let mut files = vec![];
+
         let mut repo = if new {
             debug!("New, so initializing new");
             let data = Data::init_new();
@@ -45,7 +47,9 @@ impl Repo {
 
             let file_dir = repo.file_dir().wrap_err("Failed to get file dir")?;
             create_dir(&file_dir).wrap_err("Failed to create file dir")?;
-            File::create(file_dir.join(".gitkeep")).wrap_err("Failed to create .gitkeep")?;
+            let gitkeep = file_dir.join(".gitkeep");
+            files.push(".gitkeep".into());
+            File::create(gitkeep).wrap_err("Failed to create .gitkeep")?;
 
             // We push below
             repo
@@ -70,16 +74,17 @@ impl Repo {
 
         let data = repo.data_mut();
         data.machines_mut().insert(machine, machine_data);
-        repo.write_and_push().wrap_err("Failed to write_and_push")?;
+        repo.write_and_push(files)
+            .wrap_err("Failed to write_and_push")?;
         Ok(())
     }
 
+    pub fn workdir(&self) -> Result<&Path> {
+        self.repository.workdir().ok_or_eyre("Repository is bare")
+    }
+
     pub fn file_dir(&self) -> Result<PathBuf> {
-        Ok(self
-            .repository
-            .workdir()
-            .ok_or_eyre("Repository is bare")?
-            .join("files"))
+        Ok(self.workdir()?.join("files"))
     }
 
     pub fn data(&self) -> &Data {
@@ -157,11 +162,22 @@ impl Repo {
         Ok(())
     }
 
-    fn commit(&self) -> Result<()> {
+    /// `files`: A list of files relative to the file dir that will be committed along with the data file.
+    fn commit(&self, files: Vec<PathBuf>) -> Result<()> {
         let mut index = self.repository.index().wrap_err("Failed to get index")?;
 
+        let file_dir = self.file_dir()?;
+        #[expect(clippy::missing_panics_doc, reason = "see expect")]
+        let file_dir = file_dir
+            .strip_prefix(self.workdir()?)
+            .expect("File dir is always within repository workdir");
+        let mut files = files
+            .into_iter()
+            .map(|p| file_dir.join(p).to_string_lossy().to_string())
+            .collect::<Vec<_>>();
+        files.push(DATA_PATH.to_string());
         index
-            .add_all(["."], git2::IndexAddOption::DEFAULT, None)
+            .add_all(files, git2::IndexAddOption::DEFAULT, None)
             .wrap_err("Failed to add all")?;
         index.write().wrap_err("Failed to write index")?;
 
@@ -175,9 +191,6 @@ impl Repo {
             .find_tree(oid)
             .wrap_err("Failed to find tree")?;
 
-        // TODO: at the moment, commits can contain changes to tracked files; we should check if the working tree is clean before committing maybe?
-        //  or just not use `git add .` and instead commit only the data file. But then we would have to also commit one other file
-        //  if it is a file piece.
         // TODO: good commit message
         let message = "Falconf update";
 
@@ -251,18 +264,20 @@ impl Repo {
         Ok(())
     }
 
-    pub fn write_and_push(&self) -> Result<()> {
+    pub fn write_and_push(&self, files: Vec<PathBuf>) -> Result<()> {
         // TODO: we're making empty commits here when nothing changed
         self.write_data().wrap_err("Failed to write data")?;
-        self.commit().wrap_err("Failed to commit")?;
+        self.commit(files).wrap_err("Failed to commit")?;
         self.push().wrap_err("Failed to push")?;
         Ok(())
     }
 }
 
+const DATA_PATH: &str = "data.ron";
+
 fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
     Ok(repo
         .workdir()
         .ok_or_eyre("Git repository is bare")?
-        .join("data.ron"))
+        .join(DATA_PATH))
 }

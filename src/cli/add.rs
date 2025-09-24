@@ -76,10 +76,14 @@ pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
 
     // Add the piece
     let (id, piece) = FullPiece::add(&args, &execution_data)?;
+    let file = piece.file().map(|p| p.to_path_buf());
     pieces.insert(id, piece);
 
     // Push changes
-    repo.write_and_push()?;
+    repo.write_and_push(match file {
+        None => vec![],
+        Some(file) => vec![file.to_path_buf()],
+    })?;
 
     Ok(())
 }

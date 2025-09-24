@@ -27,7 +27,7 @@ pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     )?;
 
     // Push changes
-    repo.write_and_push()?;
+    repo.write_and_push(vec![])?;
 
     Ok(())
 }

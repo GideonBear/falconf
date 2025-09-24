@@ -49,7 +49,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     }
 
     // Push changes
-    repo.write_and_push()?;
+    repo.write_and_push(vec![])?;
 
     Ok(())
 }

@@ -36,7 +36,7 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     piece.undo(&args, &execution_data)?;
 
     // Push changes
-    repo.write_and_push()?;
+    repo.write_and_push(vec![])?;
 
     Ok(())
 }

@@ -2,7 +2,7 @@ use crate::cli::AddArgs;
 use crate::cli::UndoArgs;
 use crate::execution_data::ExecutionData;
 use crate::machine::Machine;
-use crate::pieces::PieceEnum;
+use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use crate::utils::set_eq;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
@@ -10,6 +10,7 @@ use color_eyre::owo_colors::OwoColorize;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
@@ -213,5 +214,14 @@ impl FullPiece {
 
         writeln!(writer)?;
         Ok(())
+    }
+
+    /// If this is a file piece, get the filename relative to the file dir
+    pub fn file(&self) -> Option<&Path> {
+        if let PieceEnum::NonBulk(NonBulkPieceEnum::File(file)) = &self.piece {
+            Some(file.relative_location())
+        } else {
+            None
+        }
     }
 }

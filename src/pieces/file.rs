@@ -9,7 +9,7 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::fs::remove_file;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,6 +29,7 @@ pub struct File {
     expected_previous_content: Option<String>,
 }
 
+// TODO: I think files are just actually broken. Test how they work right now and read & comment code.
 impl NonBulkPiece for File {
     fn execute(&self, execution_data: &ExecutionData) -> Result<()> {
         let target_file = self.target_file(execution_data)?;
@@ -93,12 +94,16 @@ impl NonBulkPiece for File {
 }
 
 impl File {
+    /// Return the file's location in the file dir; the target of the symlink
     fn target_file(&self, execution_data: &ExecutionData) -> Result<PathBuf> {
-        Ok(execution_data.file_dir.join(
-            self.location
-                .strip_prefix("/")
-                .wrap_err("Invalid file location (no leading slash). Unreachable, we checked for this at construction time.")?,
-        ))
+        Ok(execution_data.file_dir.join(self.relative_location()))
+    }
+
+    /// Return the file's location relative to /; the target of the symlink relative to the file dir
+    pub fn relative_location(&self) -> &Path {
+        #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
+        self.location
+            .strip_prefix("/").expect("Invalid file location (no leading slash). Unreachable, we checked for this at construction time.")
     }
 
     pub fn from_cli(args: &AddArgs) -> Result<Self> {
@@ -110,6 +115,7 @@ impl File {
         }
         let location = args.value[0].clone();
         if !location.starts_with('/') {
+            // TODO: shouldn't we make it absolute anyway? Then this error should also be unreachable.
             return Err(eyre!(
                 "File location must be an absolute path (starting with '/'), got '{location:?}'."
             ));
