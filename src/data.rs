@@ -3,7 +3,6 @@ use crate::machine::{Machine, MachineData};
 use color_eyre::Result;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
@@ -11,14 +10,14 @@ use std::path::Path;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Data {
     pieces: IndexMap<u32, FullPiece>,
-    machines: HashMap<Machine, MachineData>,
+    machines: IndexMap<Machine, MachineData>,
 }
 
 impl Data {
     pub fn init_new() -> Self {
         Self {
             pieces: IndexMap::new(),
-            machines: HashMap::new(),
+            machines: IndexMap::new(),
         }
     }
 
@@ -30,7 +29,7 @@ impl Data {
         &mut self.pieces
     }
 
-    pub fn machines_mut(&mut self) -> &mut HashMap<Machine, MachineData> {
+    pub fn machines_mut(&mut self) -> &mut IndexMap<Machine, MachineData> {
         &mut self.machines
     }
 
