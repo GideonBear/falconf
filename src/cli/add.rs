@@ -22,7 +22,7 @@ pub enum Piece {
 #[derive(Args, Debug)]
 pub struct AddArgs {
     /// An optional comment to describe the piece for easier identification.
-    #[arg(long, short)]
+    #[arg(long)]
     pub comment: Option<String>,
 
     /// Omitting this argument will be interpreted as a `command` piece, but it will be translated
