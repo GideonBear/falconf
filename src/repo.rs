@@ -3,7 +3,7 @@ use crate::machine::{Machine, MachineData};
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
-use git2::Repository;
+use git2::{Repository, Status};
 use log::debug;
 use std::fs::{File, create_dir};
 use std::path::{Path, PathBuf};
@@ -80,7 +80,7 @@ impl Repo {
     }
 
     pub fn workdir(&self) -> Result<&Path> {
-        self.repository.workdir().ok_or_eyre("Repository is bare")
+        workdir_from_repository(&self.repository)
     }
 
     pub fn file_dir(&self) -> Result<PathBuf> {
@@ -156,10 +156,15 @@ impl Repo {
         }
     }
 
-    fn write_data(&self) -> Result<()> {
-        self.data
-            .to_file(&data_path_from_repository(&self.repository)?)?;
-        Ok(())
+    /// Returns true if the data file was changed
+    fn write_data(&self) -> Result<bool> {
+        let path = data_path_from_repository(&self.repository)?;
+        self.data.to_file(&path)?;
+        Ok(self
+            .repository
+            .status_file(path.strip_prefix(self.workdir()?)?)
+            .wrap_err("Failed to get status from data file")?
+            .contains(Status::WT_MODIFIED))
     }
 
     /// `files`: A list of files relative to the file dir that will be committed along with the data file.
@@ -265,19 +270,23 @@ impl Repo {
     }
 
     pub fn write_and_push(&self, files: Vec<PathBuf>) -> Result<()> {
-        // TODO: we're making empty commits here when nothing changed
-        self.write_data().wrap_err("Failed to write data")?;
-        self.commit(files).wrap_err("Failed to commit")?;
-        self.push().wrap_err("Failed to push")?;
+        // If the data file changed or there are other files to commit
+        if self.write_data().wrap_err("Failed to write data")? || !files.empty() {
+            self.commit(files).wrap_err("Failed to commit")?;
+            self.push().wrap_err("Failed to push")?;
+        }
         Ok(())
     }
 }
 
+// TODO: below three are a bit convoluted
+
 const DATA_PATH: &str = "data.ron";
 
+fn workdir_from_repository(repo: &Repository) -> Result<&Path> {
+    repo.workdir().ok_or_eyre("Repository is bare")
+}
+
 fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
-    Ok(repo
-        .workdir()
-        .ok_or_eyre("Git repository is bare")?
-        .join(DATA_PATH))
+    Ok(workdir_from_repository(repo)?.join(DATA_PATH))
 }
