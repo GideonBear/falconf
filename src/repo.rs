@@ -136,14 +136,14 @@ impl Repo {
             .repository
             .reference_to_annotated_commit(&fetch_head)
             .wrap_err("Failed to convert fetch head to annotated commit")?;
-        let analysis = self
+        let (analysis, _preference) = self
             .repository
             .merge_analysis(&[&fetch_commit])
             .wrap_err("Failed to do merge analysis")?;
 
-        if analysis.0.is_up_to_date() {
+        if analysis.is_up_to_date() {
             Ok(())
-        } else if analysis.0.is_fast_forward() {
+        } else if analysis.is_fast_forward() {
             let refname = format!("refs/heads/{BRANCH}");
             let mut reference = self.repository.find_reference(&refname)?;
             reference.set_target(fetch_commit.id(), "Fast-Forward")?;
