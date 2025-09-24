@@ -229,7 +229,7 @@ impl Repo {
         // TODO: check for failed push
         //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
         //  > to test whether all the references were pushed successfully.
-        //  And return PushPullError::divergence when it fails because of divergence in the remote
+        //  And return a divergence error when it fails because of divergence in the remote
         let mut remote = self
             .repository
             .find_remote("origin")
@@ -252,6 +252,7 @@ impl Repo {
     }
 
     pub fn write_and_push(&self) -> Result<()> {
+        // TODO: we're making empty commits here when nothing changed
         self.write_data().wrap_err("Failed to write data")?;
         self.commit().wrap_err("Failed to commit")?;
         self.push().wrap_err("Failed to push")?;
