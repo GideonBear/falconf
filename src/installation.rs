@@ -56,7 +56,14 @@ impl Installation {
         fs::write(&machine_path, machine.0.to_string())?;
         let machine_data = MachineData::new_this()?;
 
-        Repo::init(remote, &repository_path, machine, machine_data, new)?;
+        Repo::init(
+            top_level_args,
+            remote,
+            &repository_path,
+            machine,
+            machine_data,
+            new,
+        )?;
 
         Ok(())
     }

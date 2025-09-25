@@ -1,3 +1,4 @@
+use crate::cli::TopLevelArgs;
 use crate::data::Data;
 use crate::machine::{Machine, MachineData};
 use auth_git2::GitAuthenticator;
@@ -34,6 +35,7 @@ impl Debug for Repo {
 
 impl Repo {
     pub fn init(
+        top_level_args: &TopLevelArgs,
         remote: &str,
         path: &Path,
         machine: Machine,
@@ -86,7 +88,7 @@ impl Repo {
 
         let data = repo.data_mut();
         data.machines_mut().insert(machine, machine_data);
-        repo.write_and_push(files)
+        repo.write_and_push(top_level_args, files)
             .wrap_err("Failed to write_and_push")?;
         Ok(())
     }
@@ -291,10 +293,15 @@ impl Repo {
         Ok(())
     }
 
-    pub fn write_and_push(&self, files: Vec<PathBuf>) -> Result<()> {
+    pub fn write_and_push(&self, args: &TopLevelArgs, files: Vec<PathBuf>) -> Result<()> {
         // If the data file changed or there are other files to commit
         self.write_data().wrap_err("Failed to write data")?;
         if self.data_changed()? || !files.is_empty() {
+            if args.dry_run {
+                return Err(eyre!(
+                    "Somehow, the data file was changed during a dry run. This shouldn't happen."
+                ));
+            }
             self.commit(files).wrap_err("Failed to commit")?;
             self.push().wrap_err("Failed to push")?;
         }

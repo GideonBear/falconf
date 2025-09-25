@@ -43,7 +43,7 @@ pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
     }
 
     // Print the diff
-    // TODO: pass this to delta and/or a syntax highlighter
+    // TODO(low): pass this to delta and/or a syntax highlighter
     diff.print(DiffFormat::Patch, |_delta, _hunk, line| {
         match line.origin() {
             '+' | '-' | ' ' => print!("{}", line.origin()),
@@ -58,7 +58,7 @@ pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
     }
 
     // Push changes
-    repo.write_and_push(files)?;
+    repo.write_and_push(&top_level_args, files)?;
 
     Ok(())
 }

@@ -57,8 +57,9 @@ pub struct TopLevelArgs {
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
 
-    // TODO: if dry_run, panic if there is a change in any file because there shouldn't be.
-    /// Don't execute any commands, and do not mark pieces as executed.
+    /// Don't execute any commands, and do not mark pieces as executed. WARNING: this
+    /// is not a complete dry run, and certain commands (like push) will still retain
+    /// their functionality. It does guarantee the data file isn't changed.
     #[arg(long, short)]
     pub dry_run: bool,
 
