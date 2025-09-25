@@ -1,5 +1,5 @@
 use std::io;
-
+use std::io::Write;
 // pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
 //     if sudo {
 //         let mut cmd = process::Command::new("sudo");
@@ -21,7 +21,8 @@ pub fn press_enter() -> io::Result<()> {
 #[allow(clippy::print_stdout)]
 pub fn confirm(question: &str) -> io::Result<bool> {
     loop {
-        println!("{question} (y/n)");
+        print!("{question} (y/n) ");
+        io::stdout().flush()?;
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
         let ans = input.to_ascii_lowercase();

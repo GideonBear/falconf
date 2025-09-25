@@ -19,11 +19,14 @@ use sync::SyncArgs;
 mod add;
 pub use add::AddArgs;
 pub use add::Piece;
-mod init;
+pub(crate) mod init;
 mod list;
+mod push;
 mod remove;
 mod sync;
 mod undo;
+
+use crate::cli::push::{PushArgs, push};
 pub use undo::UndoArgs;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
@@ -105,6 +108,9 @@ enum Commands {
 
     #[command(about = "Remove a piece")]
     Remove(RemoveArgs),
+
+    #[command(about = "Push changes in files to the repo")]
+    Push(PushArgs),
 }
 
 fn parse_piece_id(s: &str) -> Result<u32, String> {
@@ -132,5 +138,6 @@ pub fn main() -> Result<()> {
         Commands::List(args) => list(top_level, args, &mut io::stdout().lock()),
         Commands::Undo(args) => undo(top_level, args),
         Commands::Remove(args) => remove(top_level, args),
+        Commands::Push(args) => push(top_level, args),
     }
 }

@@ -3,7 +3,7 @@ use crate::machine::{Machine, MachineData};
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
-use git2::{Repository, Status};
+use git2::{Diff, Error, Repository, Status};
 use log::debug;
 use std::fmt::{Debug, Formatter};
 use std::fs::{File, create_dir};
@@ -299,6 +299,10 @@ impl Repo {
             self.push().wrap_err("Failed to push")?;
         }
         Ok(())
+    }
+
+    pub fn diff_index_to_workdir(&self) -> std::result::Result<Diff<'_>, Error> {
+        self.repository.diff_index_to_workdir(None, None)
     }
 }
 

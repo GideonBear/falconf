@@ -63,7 +63,7 @@ impl NonBulkPiece for File {
                     ))? {
                         info!("Overwriting file according to user input.");
                     } else {
-                        return Err(eyre!("Aborted."));
+                        return Err(eyre!("Aborted"));
                     }
                 }
             }
