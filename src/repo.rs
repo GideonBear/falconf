@@ -5,6 +5,7 @@ use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use git2::{Repository, Status};
 use log::debug;
+use std::fmt::{Debug, Formatter};
 use std::fs::{File, create_dir};
 use std::path::{Path, PathBuf};
 
@@ -14,6 +15,17 @@ pub struct Repo {
     repository: Repository,
     auth: GitAuthenticator,
     data: Data,
+}
+
+impl Debug for Repo {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Repo {{ path: {:?}, data: {:?} }}",
+            self.workdir().ok(),
+            self.data,
+        )
+    }
 }
 
 // TODO: instead of write_and_push, make function that takes in a closure gets a &mut Data?
@@ -112,11 +124,18 @@ impl Repo {
     fn from_repository(repository: Repository) -> Result<Self> {
         let auth = GitAuthenticator::default();
         let data = Self::get_data(&repository).wrap_err("Failed to get data")?;
-        Ok(Self {
+
+        let repo = Self {
             auth,
             repository,
             data,
-        })
+        };
+        // This runs at the start of every run, so we do sanity checks here
+        if repo.data_changed()? {
+            return Err(eyre!("The data file has uncommitted changes"));
+        }
+
+        Ok(repo)
     }
 
     fn pull(&self) -> Result<()> {
@@ -156,13 +175,16 @@ impl Repo {
         }
     }
 
+    fn write_data(&self) -> Result<()> {
+        self.data
+            .to_file(&data_path_from_repository(&self.repository)?)
+    }
+
     /// Returns true if the data file was changed
-    fn write_data(&self) -> Result<bool> {
-        let path = data_path_from_repository(&self.repository)?;
-        self.data.to_file(&path)?;
+    fn data_changed(&self) -> Result<bool> {
         Ok(self
             .repository
-            .status_file(path.strip_prefix(self.workdir()?)?)
+            .status_file(DATA_PATH.as_ref())
             .wrap_err("Failed to get status from data file")?
             .contains(Status::WT_MODIFIED))
     }
@@ -271,7 +293,8 @@ impl Repo {
 
     pub fn write_and_push(&self, files: Vec<PathBuf>) -> Result<()> {
         // If the data file changed or there are other files to commit
-        if self.write_data().wrap_err("Failed to write data")? || !files.is_empty() {
+        self.write_data().wrap_err("Failed to write data")?;
+        if self.data_changed()? || !files.is_empty() {
             self.commit(files).wrap_err("Failed to commit")?;
             self.push().wrap_err("Failed to push")?;
         }
@@ -289,4 +312,36 @@ fn workdir_from_repository(repo: &Repository) -> Result<&Path> {
 
 fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
     Ok(workdir_from_repository(repo)?.join(DATA_PATH))
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
+    use super::*;
+    use crate::cli::TopLevelArgs;
+    use crate::cli::init::tests::init_util;
+    use crate::installation::Installation;
+    use crate::testing::TestRemote;
+    use std::fs::OpenOptions;
+    use std::io::Write;
+
+    #[test]
+    fn test_error_on_changed_data_file() -> Result<()> {
+        let remote = TestRemote::new()?;
+        let local = init_util(&remote, true)?;
+        // Write a single newline to the end
+        let mut file = OpenOptions::new()
+            .append(true)
+            .open(local.path().join("repository").join(DATA_PATH))?;
+        writeln!(file)?;
+        // It should now crash
+        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
+        assert_eq!(
+            Installation::get(&top_level_args).unwrap_err().to_string(),
+            "The data file has uncommitted changes"
+        );
+
+        Ok(())
+    }
 }

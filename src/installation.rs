@@ -8,6 +8,7 @@ use std::fs;
 use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug)]
 pub struct Installation {
     machine: Machine,
     repo: Repo,
