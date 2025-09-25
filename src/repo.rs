@@ -271,7 +271,7 @@ impl Repo {
 
     pub fn write_and_push(&self, files: Vec<PathBuf>) -> Result<()> {
         // If the data file changed or there are other files to commit
-        if self.write_data().wrap_err("Failed to write data")? || !files.empty() {
+        if self.write_data().wrap_err("Failed to write data")? || !files.is_empty() {
             self.commit(files).wrap_err("Failed to commit")?;
             self.push().wrap_err("Failed to push")?;
         }
