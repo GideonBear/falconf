@@ -11,10 +11,6 @@ use std::path::PathBuf;
 pub struct PushArgs {}
 
 #[allow(clippy::print_stdout)]
-#[expect( // TODO: this should be on the unwrap line itself
-    clippy::missing_panics_doc,
-    reason = "Cannot handle the error properly in the closure"
-)]
 pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
@@ -49,7 +45,12 @@ pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
             '+' | '-' | ' ' => print!("{}", line.origin()),
             _ => {}
         }
-        print!("{}", str::from_utf8(line.content()).unwrap());
+        #[expect(
+            clippy::missing_panics_doc,
+            reason = "Cannot handle the error properly in the closure, and should be utf-8 anyway"
+        )]
+        let line = str::from_utf8(line.content()).unwrap();
+        print!("{line}");
         true
     })?;
 
