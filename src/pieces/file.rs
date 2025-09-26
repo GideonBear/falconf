@@ -16,14 +16,13 @@ use std::process::Command;
 pub struct File {
     /// The location the file should be linked to
     location: PathBuf,
-    // TODO
-    // // TODO: Check if hardlinks actually work when new versions of files are pulled with git.
-    // //  See the Trello thing
+    // TODO(med): Add hardlink support
+    //  Check if hardlinks actually work when new versions of files are pulled with git.
+    //  See the Trello thing
     // /// If the file should be a hardlink or symlink
     // hardlink: bool,
-    // TODO
-    // // TODO: note that this comment is weird
-    // /// If the file should be created as sudo
+    // TODO(med): Add sudo support
+    // /// If the file should be created as root
     // sudo: bool,
     /// What the file should look like before the operation if it exists
     expected_previous_content: Option<String>,

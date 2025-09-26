@@ -29,9 +29,10 @@ impl Debug for Repo {
     }
 }
 
-// TODO: instead of write_and_push, make function that takes in a closure gets a &mut Data?
+// TODO(low): instead of write_and_push, make function that takes in a closure gets a &mut Data?
 //  After the closure, write it. This makes sure that we never forget to write.
 //  see iso-updater
+//  This should also remove duplication of repo.pull_and_read and repo.write_and_push from cli functions
 
 impl Repo {
     pub fn init(
@@ -219,7 +220,7 @@ impl Repo {
             .find_tree(oid)
             .wrap_err("Failed to find tree")?;
 
-        // TODO: good commit message
+        // TODO(med): good commit message
         let message = "Falconf update";
 
         match self.repository.head() {
@@ -267,7 +268,7 @@ impl Repo {
     }
 
     fn push(&self) -> Result<()> {
-        // TODO: check for failed push
+        // TODO(low): check for failed push
         //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
         //  > to test whether all the references were pushed successfully.
         //  And return a divergence error when it fails because of divergence in the remote
@@ -286,7 +287,7 @@ impl Repo {
     }
 
     pub fn pull_and_read(&mut self) -> Result<()> {
-        // TODO: check and warn for out-of-sync changes (what do_todo would do)
+        // TODO(med): check and warn for out-of-sync changes (what do_todo would do)
         self.pull().wrap_err("Failed to pull")?;
         self.update_data().wrap_err("Failed to update data")?;
         Ok(())
@@ -316,7 +317,7 @@ impl Repo {
     }
 }
 
-// TODO: below three are a bit convoluted
+// TODO(low): below three are a bit convoluted
 
 const DATA_PATH: &str = "data.ron";
 

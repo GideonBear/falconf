@@ -72,7 +72,7 @@ impl TestRemote {
             .process_group(0) // See Drop implementation below
             .spawn_checked()?;
 
-        // Wait for the daemon to be ready // TODO: this should be waiting for "ready to rumble" instead
+        // Wait for the daemon to be ready // TODO(low): this should be waiting for "ready to rumble" instead
         sleep(std::time::Duration::from_millis(500));
         if daemon.try_wait_checked()?.is_some() {
             return Err(eyre!("git daemon died"));

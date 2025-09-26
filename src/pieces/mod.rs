@@ -68,8 +68,8 @@ impl NonBulkPieceEnum {
 }
 
 impl PieceEnum {
-    // TODO: maybe deduplicate between execute and undo?
-    // TODO: Improve naming
+    // TODO(low): maybe deduplicate between execute and undo with some generics or something?
+    // TODO(low): Improve naming
     /// Execute multiple pieces
     pub fn execute_bulk<F: FnMut()>(
         pieces: Vec<(&Self, F)>,
@@ -119,7 +119,6 @@ impl PieceEnum {
         Ok(())
     }
 
-    // TODO: deduplicate
     /// Undo multiple pieces.
     pub fn undo_bulk<F: FnMut()>(
         pieces: Vec<(&Self, F)>,
@@ -162,7 +161,7 @@ impl PieceEnum {
             if !execution_data.test_run {
                 match piece.undo(execution_data) {
                     None => {
-                        // TODO: Flag to add undo parameter
+                        // TODO(high): Flag to add undo parameter, and below
                         todo!("Undefined undo for piece; we should prompt then retry with that");
                     }
                     Some(Err(e)) => return Err(e),
@@ -221,7 +220,7 @@ impl PieceEnum {
                 .collect::<Vec<&str>>()
                 .as_slice()
             {
-                // TODO: test
+                // TODO(test): test
                 ["apt", "install", package]
                 | ["apt", "install", package, "-y"]
                 | ["apt", "install", "-y", package]

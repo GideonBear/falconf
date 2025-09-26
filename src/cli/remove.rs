@@ -67,7 +67,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     Ok(())
 }
 
-// TODO: add tests
+// TODO(test): add tests
 // #[cfg(test)]
 // mod tests {
 //     #![allow(clippy::missing_panics_doc)]

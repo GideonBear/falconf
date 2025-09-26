@@ -35,7 +35,7 @@ pub enum Todo {
 }
 
 impl FullPiece {
-    // TODO: one-time support (in all below methods)
+    // TODO(low): one-time support (in all below methods), and then in cli
     pub fn new(piece: PieceEnum, comment: Option<String>) -> Self {
         Self {
             piece,
@@ -199,7 +199,7 @@ impl FullPiece {
         let unused_suffix = if self.unused() { " (unused)" } else { "" };
         let unused_suffix = unused_suffix.italic();
         let unused_suffix = unused_suffix.bright_cyan();
-        // TODO: Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
+        // TODO(low): Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
         if self.undone_on.is_some() {
             write!(
                 writer,
