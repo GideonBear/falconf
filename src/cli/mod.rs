@@ -57,12 +57,11 @@ pub struct TopLevelArgs {
     #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
     pub path: PathBuf,
 
-    /// Don't execute any commands, and do not mark pieces as executed. WARNING: this
-    /// is not a complete dry run, and certain commands (like push) will still retain
-    /// their functionality. It does guarantee the data file isn't changed.
-    #[arg(long, short)]
-    pub dry_run: bool,
-
+    // /// Don't execute any commands, and do not mark pieces as executed. WARNING: this
+    // /// is not a complete dry run, and certain commands (like push) will still retain
+    // /// their functionality. It does guarantee the data file isn't changed.
+    // #[arg(long, short)]
+    // pub dry_run: bool,
     /// Don't execute any commands, but mark pieces as executed. WARNING: this
     /// is not safe to use, and is meant for testing purposes only.
     #[arg(long)]
@@ -84,7 +83,7 @@ impl TopLevelArgs {
             log_level: "".to_string(),
             verbose: false,
             path: falconf_path,
-            dry_run: false,
+            // dry_run: false,
             test_run,
         }
     }

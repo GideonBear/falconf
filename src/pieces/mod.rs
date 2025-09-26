@@ -75,10 +75,10 @@ impl PieceEnum {
         pieces: Vec<(&Self, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        if execution_data.dry_run {
-            warn!("Dry run! Not doing anything.");
-            return Ok(());
-        }
+        // if execution_data.dry_run {
+        //     warn!("Dry run! Not doing anything.");
+        //     return Ok(());
+        // }
         let (apt, non_bulk) = Self::sort_pieces(pieces);
         Self::execute_bulk_bulk(apt, execution_data)?;
         Self::execute_non_bulk_bulk(non_bulk, execution_data)?;
@@ -125,10 +125,10 @@ impl PieceEnum {
         pieces: Vec<(&Self, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        if execution_data.dry_run {
-            warn!("Dry run! Not doing anything.");
-            return Ok(());
-        }
+        // if execution_data.dry_run {
+        //     warn!("Dry run! Not doing anything.");
+        //     return Ok(());
+        // }
         let (apt, non_bulk) = Self::sort_pieces(pieces);
         Self::undo_bulk_bulk(apt, execution_data)?;
         Self::undo_non_bulk_bulk(non_bulk, execution_data)?;

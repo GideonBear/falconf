@@ -297,11 +297,11 @@ impl Repo {
         // If the data file changed or there are other files to commit
         self.write_data().wrap_err("Failed to write data")?;
         if self.data_changed()? || !files.is_empty() {
-            if args.dry_run {
-                return Err(eyre!(
-                    "Somehow, the data file was changed during a dry run. This shouldn't happen."
-                ));
-            }
+            // if args.dry_run {
+            //     return Err(eyre!(
+            //         "Somehow, the data file was changed during a dry run. This shouldn't happen."
+            //     ));
+            // }
             self.commit(files).wrap_err("Failed to commit")?;
             self.push().wrap_err("Failed to push")?;
         }

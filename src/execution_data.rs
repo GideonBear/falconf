@@ -8,7 +8,7 @@ use std::path::PathBuf;
 pub struct ExecutionData {
     pub file_dir: PathBuf,
     pub machine: Machine,
-    pub dry_run: bool,
+    // pub dry_run: bool,
     pub test_run: bool,
 }
 
@@ -17,7 +17,7 @@ impl ExecutionData {
         Ok(Self {
             file_dir: installation.repo().file_dir()?,
             machine: *installation.machine(),
-            dry_run: top_level_args.dry_run,
+            // dry_run: top_level_args.dry_run,
             test_run: top_level_args.test_run,
         })
     }
