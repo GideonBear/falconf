@@ -1,5 +1,6 @@
 use crate::data::Data;
 use crate::machine::{Machine, MachineData};
+use crate::utils::remove_empty_dirs;
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
@@ -308,6 +309,10 @@ impl Repo {
 
     pub fn diff_index_to_workdir(&self) -> std::result::Result<Diff<'_>, Error> {
         self.repository.diff_index_to_workdir(None, None)
+    }
+
+    pub fn clean_file_dir(&self) -> Result<()> {
+        remove_empty_dirs(&self.file_dir()?)
     }
 }
 

@@ -2,13 +2,13 @@ use crate::cli::AddArgs;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::NonBulkPiece;
-use crate::utils::confirm;
+use crate::utils::{confirm, create_parent};
 use color_eyre::Result;
-use color_eyre::eyre::{OptionExt, WrapErr, eyre};
-use log::info;
+use color_eyre::eyre::{WrapErr, eyre};
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-use std::fs::remove_file;
+use std::fs::{remove_file, rename};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -29,10 +29,20 @@ pub struct File {
     expected_previous_content: Option<String>,
 }
 
-// TODO: I think files are just actually broken. Test how they work right now and read & comment code.
 impl NonBulkPiece for File {
     fn execute(&self, execution_data: &ExecutionData) -> Result<()> {
         let target_file = self.target_file(execution_data)?;
+
+        if !target_file.exists() {
+            info!("Repo (target) file doesn't exist, assuming this is newly added");
+            debug!(
+                "Moving the file into the repo: {} to {}",
+                self.location.display(),
+                target_file.display()
+            );
+            create_parent(&target_file)?;
+            rename(&self.location, &target_file).wrap_err("Failed to move file into repo")?;
+        }
 
         if self.location.exists() {
             if self.location.is_symlink() {
@@ -58,10 +68,12 @@ impl NonBulkPiece for File {
                     info!("File already exists but is identical; overwriting.");
                 } else {
                     if confirm(&format!(
-                        "File already exists and is different. Diff:\n{}\nConsider adding an expected content string to the file to prevent this from happening in the future.\nDo you want to overwrite the file?",
+                        "File already exists and is different. Diff between the repo content and actual content:\n{}\nConsider adding an expected content string to the file to prevent this from happening in the future.\nDo you want to overwrite the file?",
                         String::from_utf8_lossy(&diff.stdout)
                     ))? {
                         info!("Overwriting file according to user input.");
+                        debug!("Removing file");
+                        remove_file(&self.location).wrap_err("Failed to remove file.")?;
                     } else {
                         return Err(eyre!("Aborted"));
                     }
@@ -73,12 +85,7 @@ impl NonBulkPiece for File {
             ));
         }
 
-        let parent = target_file
-            .parent()
-            .ok_or_eyre("File doesn't have parent")?;
-        if !parent.exists() {
-            std::fs::create_dir_all(parent)?;
-        }
+        create_parent(&self.location)?;
 
         Command::new("ln")
             .arg(target_file)
@@ -89,6 +96,9 @@ impl NonBulkPiece for File {
     }
 
     fn undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
+        if !self.location.is_symlink() {
+            return Some(Err(eyre!("File is not a symlink.")));
+        }
         Some(remove_file(&self.location).wrap_err("Failed to remove file as part of undo"))
     }
 }
@@ -113,6 +123,7 @@ impl File {
                 args.value
             ));
         }
+
         let location = args.value[0].clone();
         // TODO(low): This does resolve symlinks, is that okay?
         let location = std::fs::canonicalize(&location).wrap_err_with(|| {
@@ -137,3 +148,5 @@ impl Display for File {
         write!(f, "Tracking file at: {}", self.location.display())
     }
 }
+
+// File is tested in sync

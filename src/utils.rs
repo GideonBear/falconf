@@ -1,5 +1,9 @@
-use std::io;
+use color_eyre::Result;
+use color_eyre::eyre::OptionExt;
 use std::io::Write;
+use std::path::Path;
+use std::{fs, io};
+
 // pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
 //     if sudo {
 //         let mut cmd = process::Command::new("sudo");
@@ -38,4 +42,30 @@ pub fn confirm(question: &str) -> io::Result<bool> {
 
 pub fn set_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {
     vec1.len() == vec2.len() && vec1.iter().all(|x| vec2.contains(x))
+}
+
+pub fn create_parent(path: &Path) -> Result<()> {
+    let parent = path.parent().ok_or_eyre("File doesn't have parent")?;
+    if !parent.exists() {
+        std::fs::create_dir_all(parent)?;
+    }
+    Ok(())
+}
+
+pub fn remove_empty_dirs(path: &Path) -> Result<()> {
+    if let Ok(entries) = fs::read_dir(path) {
+        for entry in entries.flatten() {
+            let p = entry.path();
+            if p.is_dir() {
+                remove_empty_dirs(&p)?;
+                if fs::read_dir(&p)
+                    .map(|mut d| d.next().is_none())
+                    .unwrap_or(false)
+                {
+                    fs::remove_dir(&p)?;
+                }
+            }
+        }
+    }
+    Ok(())
 }

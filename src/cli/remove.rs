@@ -5,6 +5,7 @@ use clap::Args;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt;
 use color_eyre::eyre::Result;
+use std::fs::remove_file;
 
 #[derive(Args, Debug)]
 pub struct RemoveArgs {
@@ -21,12 +22,12 @@ pub struct RemoveArgs {
 pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
+    let file_dir = repo.file_dir()?;
 
     // Pull the repo
     repo.pull_and_read()?;
 
-    let data = repo.data_mut();
-    let pieces = data.pieces_mut();
+    let pieces = repo.data().pieces();
 
     let pieces_to_remove = args
         .piece_ids
@@ -35,7 +36,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
         .collect::<Result<Vec<_>>>()?;
 
     // Check if it's unused
-    for piece in pieces_to_remove {
+    for piece in &pieces_to_remove {
         if !args.force && !piece.unused() {
             return Err(eyre::eyre!(
                 "Piece is still in use. Pass --force to remove it anyway, without undoing."
@@ -43,13 +44,25 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
         }
     }
 
+    // Remove attached files
+    let mut removed_files = vec![];
+    for piece in pieces_to_remove {
+        if let Some(file) = piece.file() {
+            removed_files.push(file.to_path_buf());
+            remove_file(file_dir.join(file))?;
+        }
+    }
+    repo.clean_file_dir()?;
+
+    let pieces = repo.data_mut().pieces_mut();
+
     // Remove the piece
     for piece_id in args.piece_ids {
         pieces.shift_remove(&piece_id);
     }
 
     // Push changes
-    repo.write_and_push(vec![])?;
+    repo.write_and_push(removed_files)?;
 
     Ok(())
 }

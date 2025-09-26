@@ -100,9 +100,10 @@ pub mod tests {
         falconf_path: &Path,
         piece: Piece,
         value: Vec<String>,
+        test_run: bool,
         comment: Option<String>,
     ) -> Result<()> {
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), test_run);
 
         let args = AddArgs {
             comment,
@@ -121,7 +122,15 @@ pub mod tests {
     }
 
     pub fn add_util(falconf_path: &Path, piece: Piece, value: Vec<String>) -> Result<()> {
-        _add_util(falconf_path, piece, value, None)
+        _add_util(falconf_path, piece, value, true, None)
+    }
+
+    pub fn add_util_no_test_run(
+        falconf_path: &Path,
+        piece: Piece,
+        value: Vec<String>,
+    ) -> Result<()> {
+        _add_util(falconf_path, piece, value, false, None)
     }
 
     pub fn add_util_comment(
@@ -130,7 +139,7 @@ pub mod tests {
         value: Vec<String>,
         comment: String,
     ) -> Result<()> {
-        _add_util(falconf_path, piece, value, Some(comment))
+        _add_util(falconf_path, piece, value, true, Some(comment))
     }
 
     // Add is tested in sync

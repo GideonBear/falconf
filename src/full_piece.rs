@@ -114,15 +114,21 @@ impl FullPiece {
     pub fn add(args: &AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
         let mut piece = Self::from_cli(args)?;
 
+        let is_file = piece.file().is_some();
+
         let mut cb = || {
             piece.done_on.push(execution_data.machine);
         };
 
-        if args.not_done_here {
+        if args.not_done_here && is_file {
+            return Err(eyre!(
+                "The concept of '--not-done-here' is incompatible with file pieces. Adding a file piece performs a special action."
+            ));
+        } else if args.not_done_here || is_file {
             // We could bypass `execute_bulk` here, but this is clearer
             PieceEnum::execute_bulk(vec![(&piece.piece, cb)], execution_data)?;
         } else {
-            // If we don't execute it, just add it immediately.
+            // If we don't execute it, just mark it as executed immediately.
             cb();
         }
 

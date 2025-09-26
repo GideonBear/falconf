@@ -40,6 +40,7 @@ pub mod tests {
     use color_eyre::Result;
     use log::debug;
     use regex::Regex;
+    use std::fs::File;
     use std::io;
     use tempdir::TempDir;
 
@@ -59,6 +60,8 @@ pub mod tests {
         // File
         let temp = TempDir::new("test_falconf_files")?;
         let test1 = temp.path().join("test1.txt");
+        File::create(&test1)?.write_all(b"test1")?;
+        debug!("Created {test1:?}");
         add_util(
             local.path(),
             add::Piece::File,

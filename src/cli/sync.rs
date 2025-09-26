@@ -38,13 +38,13 @@ mod tests {
 
     use super::*;
     use crate::cli::add;
-    use crate::cli::add::tests::add_util;
+    use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
     use crate::testing::{Position, TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
-    use std::fs::{File, create_dir_all};
+    use std::fs::{File, create_dir_all, remove_file};
     use std::io::Write;
     use tempdir::TempDir;
 
@@ -55,27 +55,21 @@ mod tests {
         let test1 = temp.path().join("test1.txt");
 
         let local_1 = init_util(&remote, true)?;
-        let test1_repository = local_1
-            .path()
-            .join("repository/files")
-            .join(test1.strip_prefix("/")?);
-        create_dir_all(
-            test1_repository
-                .parent()
-                .ok_or_eyre("Doesn't have parent")?,
-        )?;
-        debug!("Created {test1_repository:?}");
-        File::create(test1_repository)?.write_all(b"test1")?;
+        File::create(&test1)?.write_all(b"test1")?;
+        debug!("Created {test1:?}");
         let test1_s = test1.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util(local_1.path(), add::Piece::File, vec![test1_s.clone()])?;
+        add_util_no_test_run(local_1.path(), add::Piece::File, vec![test1_s.clone()])?;
         // Testing the order. This should execute after the file is added.
         add_util(
             local_1.path(),
             add::Piece::Command,
-            vec![format!("test -f '{}'", test1_s)],
+            vec![format!("test -L '{}'", test1_s)],
         )?;
 
-        assert!(!test1.exists());
+        assert!(test1.is_symlink());
+
+        // Switching to being another machine, the file doesn't exist yet
+        remove_file(&test1)?;
 
         let local_2 = init_util(&remote, false)?;
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
@@ -84,18 +78,18 @@ mod tests {
 
         debug!("Checking {test1:?}");
         assert!(test1.exists());
-        assert_eq!(
-            std::fs::read_to_string(temp.path().join("test1.txt"))?,
-            "test1"
-        );
+        assert!(test1.is_symlink());
+        assert_eq!(std::fs::read_to_string(&test1)?, "test1");
 
-        // Explicitly do not pull local 1 here to test auto-syncing
+        // Explicitly do not pull local 1 here to test auto-pulling
 
         undo_util(
             local_1.path(),
             get_piece(local_1.path(), Position::Index(0))?,
         )?;
+        // Is a test run
         assert!(test1.exists());
+        assert!(test1.is_symlink());
 
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
         let args = SyncArgs {};
