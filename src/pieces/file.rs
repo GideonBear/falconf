@@ -114,13 +114,16 @@ impl File {
             ));
         }
         let location = args.value[0].clone();
-        if !location.starts_with('/') {
-            // TODO: shouldn't we make it absolute anyway? Then this error should also be unreachable.
+        // TODO(low): This does resolve symlinks, is that okay?
+        let location = std::fs::canonicalize(&location).wrap_err_with(|| {
+            format!("Failed to canonicalize file '{location}'. Does it exist?")
+        })?;
+
+        if !location.starts_with(PathBuf::from("/")) {
             return Err(eyre!(
-                "File location must be an absolute path (starting with '/'), got '{location:?}'."
+                "File location must be an absolute path (starting with '/'), got '{location:?}'. Unreachable because we just canonicalized it."
             ));
         }
-        let location = location.into();
 
         Ok(Self {
             location,
