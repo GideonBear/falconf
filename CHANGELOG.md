@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.18](https://github.com/GideonBear/falconf/compare/v0.2.17...v0.2.18) - 2025-09-26
+
+### Other
+
+- Simplify and categorize TODOs
+- Improve an `#[expect]`
+- Fix file
+- Remove unused argument
+- Canonicalize paths
+- Remove `--dry-run`
+- Guard against data file changes during dry-run
+- Add push command
+- Add sanity check
+- cargo update
+- Fix wrong method call
+- Fix empty commits
+- Fix clap error
+- Fix machines being randomly reordered in data file
+- Clean up merge analysis
+- Remove hacky `git add .`
+- TODOs
+
 ## [0.2.17](https://github.com/GideonBear/falconf/compare/v0.2.16...v0.2.17) - 2025-09-21
 
 ### Other
