@@ -80,13 +80,10 @@ pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     pieces.insert(id, piece);
 
     // Push changes
-    repo.write_and_push(
-        &top_level_args,
-        match file {
-            None => vec![],
-            Some(file) => vec![file.to_path_buf()],
-        },
-    )?;
+    repo.write_and_push(match file {
+        None => vec![],
+        Some(file) => vec![file.to_path_buf()],
+    })?;
 
     Ok(())
 }
