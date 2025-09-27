@@ -34,7 +34,7 @@ fn parse_path(s: &str) -> Result<PathBuf> {
 }
 
 #[derive(Parser, Debug)]
-#[command(name = "falconf", author, long_version = crate::VERSION)]
+#[command(name = "falconf", version)]
 #[command(about = "TODO description")] // TODO(med): Edit the description here, in GitHub, in Cargo.toml
 pub struct Cli {
     #[command(subcommand)]

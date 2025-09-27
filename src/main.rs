@@ -20,12 +20,6 @@ mod repo;
 mod testing;
 mod utils;
 
-mod built_info {
-    include!(concat!(env!("OUT_DIR"), "/built.rs"));
-}
-
-const VERSION: &str = built_info::PKG_VERSION;
-
 fn main() -> Result<(), eyre::Report> {
     color_eyre::config::HookBuilder::new()
         .display_location_section(true)

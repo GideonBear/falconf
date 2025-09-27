@@ -32,6 +32,3 @@ ctor = "0.5.0"
 libc = "0.2.172"
 regex = "1.11.1"
 tempdir = "0.3.7"
-
-[build-dependencies]
-built = "0.8.0"
