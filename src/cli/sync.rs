@@ -44,7 +44,7 @@ mod tests {
     use crate::testing::{Position, TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
-    use std::fs::{File, create_dir_all, remove_file};
+    use std::fs::{File, remove_file};
     use std::io::Write;
     use tempdir::TempDir;
 
