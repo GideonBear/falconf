@@ -6,6 +6,7 @@ use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt;
 
+// TODO: support hier ook meerdere piece ids
 #[derive(Args, Debug)]
 pub struct UndoArgs {
     #[clap(
@@ -30,7 +31,7 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
         .get_mut(&args.piece_id)
         .ok_or_eyre("Piece id not found")?;
 
-    piece.undo(&args, &execution_data)?;
+    piece.undo(args.piece_id, &args, &execution_data)?;
 
     // Push changes
     repo.write_and_push(vec![])?;

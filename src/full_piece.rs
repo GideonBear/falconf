@@ -3,14 +3,13 @@ use crate::cli::UndoArgs;
 use crate::execution_data::ExecutionData;
 use crate::machine::Machine;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
-use crate::utils::set_eq;
+use crate::utils::{print_id, set_eq};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize;
 use indexmap::IndexMap;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
-use std::io::Write;
 use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,7 +36,6 @@ pub enum Todo {
 
 type IdPiecePair<'a> = (u32, &'a mut FullPiece);
 
-// TODO: Add an info! for when a piece is executed or undone, with the id and such
 impl FullPiece {
     // TODO(low): one-time support (in all below methods), and then in cli
     pub fn new(piece: PieceEnum, comment: Option<String>) -> Self {
@@ -93,15 +91,13 @@ impl FullPiece {
         machine: &Machine,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        let (to_execute, to_undo) = Self::get_todo(pieces, machine);
-        let mut to_execute = to_execute.into_iter().map(|x| x.1).collect::<Vec<_>>();
-        let mut to_undo = to_undo.into_iter().map(|x| x.1).collect::<Vec<_>>();
+        let (mut to_execute, mut to_undo) = Self::get_todo(pieces, machine);
 
         PieceEnum::execute_bulk(
             to_execute
                 .iter_mut()
-                .map(|x| {
-                    (&x.piece, || {
+                .map(|(id, x)| {
+                    (*id, &x.piece, || {
                         x.done_on.push(*machine);
                     })
                 })
@@ -112,8 +108,8 @@ impl FullPiece {
         PieceEnum::undo_bulk(
             to_undo
                 .iter_mut()
-                .map(|x| {
-                    (&x.piece, || {
+                .map(|(id, x)| {
+                    (*id, &x.piece, || {
                         // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undone_one.is_some()`
                         #[expect(clippy::missing_panics_doc, reason = "code path")]
                         x.undone_on.as_mut().unwrap().push(*machine);
@@ -128,6 +124,7 @@ impl FullPiece {
 
     pub fn add(args: &AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
         let mut piece = Self::from_cli(args)?;
+        let id = Self::new_id();
 
         let is_file = piece.file().is_some();
 
@@ -141,16 +138,16 @@ impl FullPiece {
             ));
         } else if args.not_done_here || is_file {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::execute_bulk(vec![(&piece.piece, cb)], execution_data)?;
+            PieceEnum::execute_bulk(vec![(id, &piece.piece, cb)], execution_data)?;
         } else {
             // If we don't execute it, just mark it as executed immediately.
             cb();
         }
 
-        Ok((Self::new_id(), piece))
+        Ok((id, piece))
     }
 
-    pub fn undo(&mut self, args: &UndoArgs, execution_data: &ExecutionData) -> Result<()> {
+    pub fn undo(&mut self, id: u32, args: &UndoArgs, execution_data: &ExecutionData) -> Result<()> {
         if self.undone_on.is_some() {
             return Err(eyre!("This piece is already undone"));
         }
@@ -161,7 +158,7 @@ impl FullPiece {
 
         if !args.done_here {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::undo_bulk(vec![(&self.piece, cb)], execution_data)?;
+            PieceEnum::undo_bulk(vec![(id, &self.piece, cb)], execution_data)?;
         } else {
             // If we don't execute it, just add it immediately.
             cb();
@@ -201,11 +198,9 @@ impl FullPiece {
         rand::rng().next_u32()
     }
 
-    /// Display information about this piece in the console
-    pub fn print<W: Write>(&self, writer: &mut W, id: u32) -> Result<()> {
-        let id_prefix = format!("[{id:08x}]");
-        let id_prefix = id_prefix.magenta();
-        let id_prefix = id_prefix.bold();
+    /// Return information about this piece for printing in the console
+    pub fn print(&self, id: u32) -> String {
+        let id_prefix = print_id(id);
         let comment_suffix = if let Some(comment) = &self.comment {
             format!(" // {comment}")
         } else {
@@ -216,25 +211,20 @@ impl FullPiece {
         let unused_suffix = unused_suffix.bright_cyan();
         // TODO(low): Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
         if self.undone_on.is_some() {
-            write!(
-                writer,
+            format!(
                 "{}{}{}{}{}",
                 id_prefix.strikethrough(),
                 " ".strikethrough(),
                 self.piece.strikethrough(),
                 comment_suffix.strikethrough(),
                 unused_suffix,
-            )?;
+            )
         } else {
-            write!(
-                writer,
+            format!(
                 "{} {}{}{}",
                 id_prefix, self.piece, comment_suffix, unused_suffix,
-            )?;
+            )
         }
-
-        writeln!(writer)?;
-        Ok(())
     }
 
     /// If this is a file piece, get the filename relative to the file dir

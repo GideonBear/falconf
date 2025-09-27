@@ -6,7 +6,9 @@ use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
 use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
+use crate::utils::print_id;
 use color_eyre::Result;
+use itertools::Itertools;
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -72,7 +74,7 @@ impl PieceEnum {
     // TODO(low): Improve naming
     /// Execute multiple pieces
     pub fn execute_bulk<F: FnMut()>(
-        pieces: Vec<(&Self, F)>,
+        pieces: Vec<(u32, &Self, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         // if execution_data.dry_run {
@@ -86,11 +88,15 @@ impl PieceEnum {
     }
 
     fn execute_bulk_bulk<F: FnMut(), P: BulkPiece>(
-        pieces: Vec<(&P, F)>,
+        pieces: Vec<(u32, &P, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         if !pieces.is_empty() {
-            let (pieces, cbs): (Vec<&P>, Vec<F>) = pieces.into_iter().unzip();
+            info!("Executing multiple pieces:");
+            for (id, piece, _cb) in &pieces {
+                info!("- {} {piece}", print_id(*id));
+            }
+            let (_ids, pieces, cbs): (Vec<u32>, Vec<&P>, Vec<F>) = pieces.into_iter().multiunzip();
             // As we're executing in bulk, we want to wait with the callbacks until after execution
             if !execution_data.test_run {
                 P::execute_bulk(&pieces, execution_data)?;
@@ -105,10 +111,11 @@ impl PieceEnum {
     }
 
     fn execute_non_bulk_bulk<F: FnMut()>(
-        pieces: Vec<(&NonBulkPieceEnum, F)>,
+        pieces: Vec<(u32, &NonBulkPieceEnum, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        for (piece, mut cb) in pieces {
+        for (id, piece, mut cb) in pieces {
+            info!("Executing piece: {} {piece}", print_id(id));
             if !execution_data.test_run {
                 piece.execute(execution_data)?;
             } else {
@@ -121,7 +128,7 @@ impl PieceEnum {
 
     /// Undo multiple pieces.
     pub fn undo_bulk<F: FnMut()>(
-        pieces: Vec<(&Self, F)>,
+        pieces: Vec<(u32, &Self, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         // if execution_data.dry_run {
@@ -135,11 +142,15 @@ impl PieceEnum {
     }
 
     fn undo_bulk_bulk<F: FnMut(), P: BulkPiece>(
-        pieces: Vec<(&P, F)>,
+        pieces: Vec<(u32, &P, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         if !pieces.is_empty() {
-            let (pieces, cbs): (Vec<&P>, Vec<F>) = pieces.into_iter().unzip();
+            info!("Undoing multiple pieces:");
+            for (id, piece, _cb) in &pieces {
+                info!("- {} {piece}", print_id(*id));
+            }
+            let (_ids, pieces, cbs): (Vec<u32>, Vec<&P>, Vec<F>) = pieces.into_iter().multiunzip();
             // As we're executing in bulk, we want to wait with the callbacks until after execution
             if !execution_data.test_run {
                 P::undo_bulk(&pieces, execution_data)?;
@@ -154,10 +165,11 @@ impl PieceEnum {
     }
 
     fn undo_non_bulk_bulk<F: FnMut()>(
-        pieces: Vec<(&NonBulkPieceEnum, F)>,
+        pieces: Vec<(u32, &NonBulkPieceEnum, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        for (piece, mut cb) in pieces {
+        for (id, piece, mut cb) in pieces {
+            info!("Undoing piece: {} {piece}", print_id(id));
             if !execution_data.test_run {
                 match piece.undo(execution_data) {
                     None => {
@@ -177,15 +189,15 @@ impl PieceEnum {
 
     #[allow(clippy::type_complexity)] // This is pretty clean
     pub fn sort_pieces<F: FnMut()>(
-        pieces: Vec<(&Self, F)>,
-    ) -> (Vec<(&Apt, F)>, Vec<(&NonBulkPieceEnum, F)>) {
+        pieces: Vec<(u32, &Self, F)>,
+    ) -> (Vec<(u32, &Apt, F)>, Vec<(u32, &NonBulkPieceEnum, F)>) {
         #[expect(unused_parens)]
         let (mut apt) = (vec![]);
         let mut non_bulk = vec![];
-        for piece in pieces {
+        for (id, piece, cb) in pieces {
             match piece {
-                (PieceEnum::Bulk(BulkPieceEnum::Apt(p)), cb) => apt.push((p, cb)),
-                (PieceEnum::NonBulk(piece), cb) => non_bulk.push((piece, cb)),
+                PieceEnum::Bulk(BulkPieceEnum::Apt(p)) => apt.push((id, p, cb)),
+                PieceEnum::NonBulk(piece) => non_bulk.push((id, piece, cb)),
             }
         }
         (apt, non_bulk)

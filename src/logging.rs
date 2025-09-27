@@ -30,7 +30,7 @@ impl CommandExt for Command {
 }
 
 fn log_execution(command: &Command) {
-    info!("Executing: `{}`", as_string(command));
+    info!("Running command: `{}`", as_string(command));
 }
 
 fn as_string(command: &Command) -> String {

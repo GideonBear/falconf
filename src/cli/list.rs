@@ -18,7 +18,7 @@ pub fn list<W: Write>(
     let pieces = data.pieces();
 
     for (id, piece) in pieces {
-        piece.print(writer, *id)?;
+        writeln!(writer, "{}", piece.print(*id))?;
     }
 
     Ok(())
