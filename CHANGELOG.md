@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.19](https://github.com/GideonBear/falconf/compare/v0.2.18...v0.2.19) - 2025-09-27
+
+### Other
+
+- Add logging for piece execution/undoing
+- Check for unsynced changes
+- Remove dependency on built
+- clippy
+
 ## [0.2.18](https://github.com/GideonBear/falconf/compare/v0.2.17...v0.2.18) - 2025-09-26
 
 ### Other
