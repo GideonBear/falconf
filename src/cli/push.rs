@@ -13,10 +13,8 @@ pub struct PushArgs {}
 #[allow(clippy::print_stdout)]
 pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
+    installation.pull_and_read(true)?;
     let repo = installation.repo_mut();
-
-    // Pull the repo
-    repo.pull_and_read()?;
 
     // Get the diff
     let diff = repo.diff_index_to_workdir()?;

@@ -12,7 +12,7 @@ pub struct RemoveArgs {
     #[clap(
         value_parser = parse_piece_id
     )]
-    piece_ids: Vec<u32>,
+    pub(crate) piece_ids: Vec<u32>,
 
     /// Remove the piece even if it is not unused
     #[arg(long, short)]
@@ -21,12 +21,9 @@ pub struct RemoveArgs {
 
 pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
+    installation.pull_and_read(true)?;
     let repo = installation.repo_mut();
     let file_dir = repo.file_dir()?;
-
-    // Pull the repo
-    repo.pull_and_read()?;
-
     let pieces = repo.data().pieces();
 
     let pieces_to_remove = args

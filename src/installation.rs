@@ -1,8 +1,9 @@
 use crate::cli::TopLevelArgs;
+use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
 use crate::repo::Repo;
 use color_eyre::Result;
-use color_eyre::eyre::{WrapErr, eyre};
+use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use log::{debug, info};
 use std::fs;
 use std::fs::remove_dir_all;
@@ -84,5 +85,44 @@ impl Installation {
 
     fn get_repository_path(root: &Path) -> PathBuf {
         root.join("repository")
+    }
+
+    fn check_synced(&mut self) -> Result<()> {
+        let (to_execute, to_undo) =
+            FullPiece::get_todo(self.repo.data_mut().pieces_mut(), &self.machine);
+
+        if !to_execute.is_empty() || !to_undo.is_empty() {
+            info!(
+                "You have changes on the remote that are not executed locally! Use `falconf sync` to execute them. Unsynced changes:"
+            );
+            for (id, piece) in to_execute {
+                let mut buf = Vec::new();
+                piece.print(&mut buf, id)?;
+                let s = String::from_utf8(buf)?;
+                let s = s
+                    .strip_suffix('\n')
+                    .ok_or_eyre("Unreachable: FullPiece::print uses println")?;
+                info!("- Execute: {s}");
+            }
+            for (id, piece) in to_undo {
+                let mut buf = Vec::new();
+                piece.print(&mut buf, id)?;
+                let s = String::from_utf8(buf)?;
+                let s = s
+                    .strip_suffix('\n')
+                    .ok_or_eyre("Unreachable: FullPiece::print uses println")?;
+                info!("- Undo: {s}");
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn pull_and_read(&mut self, check_synced: bool) -> Result<()> {
+        self.repo.pull_and_read()?;
+        if check_synced {
+            self.check_synced()?;
+        }
+        Ok(())
     }
 }

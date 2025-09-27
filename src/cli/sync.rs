@@ -12,19 +12,12 @@ pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let machine = *installation.machine();
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
+    installation.pull_and_read(false)?;
     let repo = installation.repo_mut();
-
-    // Pull the repo
-    repo.pull_and_read()?;
-
     let data = repo.data_mut();
 
     // Do out-of-sync (todo) changes
-    FullPiece::do_todo(
-        data.pieces_mut().values_mut().collect(),
-        &machine,
-        &execution_data,
-    )?;
+    FullPiece::do_todo(data.pieces_mut(), &machine, &execution_data)?;
 
     // Push changes
     repo.write_and_push(vec![])?;
@@ -40,6 +33,7 @@ mod tests {
     use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;
+    use crate::cli::remove::{RemoveArgs, remove};
     use crate::cli::undo::tests::undo_util;
     use crate::testing::{Position, TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
@@ -72,6 +66,15 @@ mod tests {
         remove_file(&test1)?;
 
         let local_2 = init_util(&remote, false)?;
+        // Remove with no args; this is for manual testing of check_synced
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        remove(
+            top_level_args,
+            RemoveArgs {
+                piece_ids: vec![],
+                force: false,
+            },
+        )?;
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
         let args = SyncArgs {};
         sync(top_level_args, args)?;

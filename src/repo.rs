@@ -287,7 +287,6 @@ impl Repo {
     }
 
     pub fn pull_and_read(&mut self) -> Result<()> {
-        // TODO(med): check and warn for out-of-sync changes (what do_todo would do)
         self.pull().wrap_err("Failed to pull")?;
         self.update_data().wrap_err("Failed to update data")?;
         Ok(())

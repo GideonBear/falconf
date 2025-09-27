@@ -7,6 +7,7 @@ use crate::utils::set_eq;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize;
+use indexmap::IndexMap;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
@@ -34,6 +35,9 @@ pub enum Todo {
     Undo,
 }
 
+type IdPiecePair<'a> = (u32, &'a mut FullPiece);
+
+// TODO: Add an info! for when a piece is executed or undone, with the id and such
 impl FullPiece {
     // TODO(low): one-time support (in all below methods), and then in cli
     pub fn new(piece: PieceEnum, comment: Option<String>) -> Self {
@@ -66,21 +70,32 @@ impl FullPiece {
         }
     }
 
-    pub fn do_todo(
-        pieces: Vec<&mut Self>,
+    pub fn get_todo<'a>(
+        pieces: &'a mut IndexMap<u32, FullPiece>,
         machine: &Machine,
-        execution_data: &ExecutionData,
-    ) -> Result<()> {
+    ) -> (Vec<IdPiecePair<'a>>, Vec<IdPiecePair<'a>>) {
         let mut to_execute = vec![];
         let mut to_undo = vec![];
 
-        for piece in pieces {
+        for (&id, piece) in pieces {
             match piece.todo(machine) {
                 Todo::Noop => {}
-                Todo::Execute => to_execute.push(piece),
-                Todo::Undo => to_undo.push(piece),
+                Todo::Execute => to_execute.push((id, piece)),
+                Todo::Undo => to_undo.push((id, piece)),
             }
         }
+
+        (to_execute, to_undo)
+    }
+
+    pub fn do_todo(
+        pieces: &mut IndexMap<u32, FullPiece>,
+        machine: &Machine,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
+        let (to_execute, to_undo) = Self::get_todo(pieces, machine);
+        let mut to_execute = to_execute.into_iter().map(|x| x.1).collect::<Vec<_>>();
+        let mut to_undo = to_undo.into_iter().map(|x| x.1).collect::<Vec<_>>();
 
         PieceEnum::execute_bulk(
             to_execute

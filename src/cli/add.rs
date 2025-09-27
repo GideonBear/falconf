@@ -66,11 +66,8 @@ pub struct AddArgs {
 pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
+    installation.pull_and_read(true)?;
     let repo = installation.repo_mut();
-
-    // Pull the repo
-    repo.pull_and_read()?;
-
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 

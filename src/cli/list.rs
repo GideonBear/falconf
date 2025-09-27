@@ -12,11 +12,8 @@ pub fn list<W: Write>(
     writer: &mut W,
 ) -> color_eyre::Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
+    installation.pull_and_read(true)?;
     let repo = installation.repo_mut();
-
-    // Pull the repo
-    repo.pull_and_read()?;
-
     let data = repo.data();
     let pieces = data.pieces();
 
