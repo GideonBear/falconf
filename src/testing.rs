@@ -8,9 +8,10 @@ use indexmap::IndexMap;
 use libc::{SIGTERM, kill};
 use log::LevelFilter;
 use std::env::set_current_dir;
+use std::io::{BufRead, BufReader, Read};
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command};
+use std::process::{Child, Command, Stdio};
 use std::sync::{LazyLock, Mutex, MutexGuard};
 use std::thread::sleep;
 use tempdir::TempDir;
@@ -57,6 +58,7 @@ impl TestRemote {
 
         // Start the git daemon
         let mut daemon = Command::new("git")
+            .stderr(Stdio::piped())
             .arg("daemon")
             .arg("--reuseaddr")
             .arg(format!(
@@ -72,11 +74,15 @@ impl TestRemote {
             .process_group(0) // See Drop implementation below
             .spawn_checked()?;
 
-        // Wait for the daemon to be ready // TODO(low): this should be waiting for "ready to rumble" instead
-        sleep(std::time::Duration::from_millis(500));
-        if daemon.try_wait_checked()?.is_some() {
-            return Err(eyre!("git daemon died"));
-        }
+        // Wait for the daemon to be ready
+        wait_for_line(daemon.child_mut().stderr.as_mut().unwrap(), |l| {
+            l.contains("Ready to rumble")
+        })?;
+
+        // This is not necessary
+        // if daemon.try_wait_checked()?.is_some() {
+        //     return Err(eyre!("git daemon died"));
+        // }
 
         Ok(Self {
             _repos_dir: repos_dir,
@@ -131,6 +137,19 @@ impl Drop for TestRemote {
             kill(-pgid, SIGTERM);
         }
     }
+}
+
+fn wait_for_line<F: Fn(String) -> bool>(io: impl Read, cond: F) -> Result<()> {
+    let reader = BufReader::new(io);
+
+    for line in reader.lines() {
+        let line = line?;
+        if cond(line) {
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 /// A subpath of a `TempDir` that owns the `TempDir` so it drops only when the `TempDirSub` is dropped
