@@ -60,7 +60,7 @@ pub mod tests {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
 
         let args = UndoArgs {
-            piece_id: id,
+            piece_ids: vec![id],
             done_here: true,
         };
 
