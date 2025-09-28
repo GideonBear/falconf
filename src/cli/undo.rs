@@ -1,18 +1,20 @@
 use crate::cli::TopLevelArgs;
 use crate::cli::parse_piece_id;
 use crate::execution_data::ExecutionData;
+use crate::full_piece::FullPiece;
 use crate::installation::Installation;
+use crate::utils::set_eq;
 use clap::Args;
 use color_eyre::Result;
-use color_eyre::eyre::OptionExt;
+use color_eyre::eyre::eyre;
+use std::collections::{HashMap, HashSet};
 
-// TODO: support hier ook meerdere piece ids
 #[derive(Args, Debug)]
 pub struct UndoArgs {
     #[clap(
         value_parser = parse_piece_id
     )]
-    piece_id: u32,
+    piece_ids: Vec<u32>,
 
     /// Do not undo the piece here (on this machine) immediately
     #[arg(long, short)]
@@ -27,11 +29,20 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 
-    let piece = pieces
-        .get_mut(&args.piece_id)
-        .ok_or_eyre("Piece id not found")?;
+    let piece_ids = args.piece_ids.iter().copied().collect::<HashSet<_>>();
 
-    piece.undo(args.piece_id, &args, &execution_data)?;
+    let pieces_to_undo: HashMap<u32, &mut FullPiece> = pieces
+        .iter_mut()
+        .filter(|(k, _v)| piece_ids.contains(k))
+        .map(|(k, v)| (*k, v))
+        .collect();
+    if pieces_to_undo.keys().copied().collect::<HashSet<_>>() != piece_ids {
+        return Err(eyre!("Piece not found"));
+    }
+
+    for (id, piece) in pieces_to_undo {
+        piece.undo(id, &args, &execution_data)?;
+    }
 
     // Push changes
     repo.write_and_push(vec![])?;
