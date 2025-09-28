@@ -2,7 +2,7 @@ use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
-use command_error::{ChildExt, CommandExt};
+use command_error::CommandExt;
 use ctor::ctor;
 use indexmap::IndexMap;
 use libc::{SIGTERM, kill};
@@ -13,7 +13,6 @@ use std::os::unix::prelude::CommandExt as UnixCommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::{LazyLock, Mutex, MutexGuard};
-use std::thread::sleep;
 use tempdir::TempDir;
 
 static PORT_MUTEX: LazyLock<Mutex<()>> = LazyLock::new(Mutex::default);
@@ -75,6 +74,7 @@ impl TestRemote {
             .spawn_checked()?;
 
         // Wait for the daemon to be ready
+        #[expect(clippy::missing_panics_doc, reason = "We captured stderr above")]
         wait_for_line(daemon.child_mut().stderr.as_mut().unwrap(), |l| {
             l.contains("Ready to rumble")
         })?;
