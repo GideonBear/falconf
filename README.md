@@ -17,6 +17,7 @@ have to tweak something manually on multiple machines. More things can be automa
 you think!
 
 ### Falconf is for you if...
+
 * You have a script to set up a new Linux machine, that you update (semi-)regularly
 * You have a list of manual actions to take to set up a new Linux machine
 * You use Ansible to manage your machines, but find it cumbersome to add/remove tasks
@@ -25,6 +26,7 @@ you think!
 * You're afraid to re-install because you'll lose your configuration
 
 ### Falconf is **not** for you if...
+
 * You're happy with NixOS
 * You use an almost clean Linux install
 
@@ -57,9 +59,10 @@ but not automatically executed. For that, use `falconf sync`.
 ### Example usage
 
 Let's say you just discovered [duf](https://github.com/muesli/duf), and want
-to use it insteead of `df`. You add an alias `alias df=duf` to `~/.bash_aliases`,
+to use it instead of `df`. You add an alias `alias df=duf` to `~/.bash_aliases`,
 which is tracked with `falconf add -f ~/.bash_aliases`. You then run
-`falconf add -n apt install duf`, which installs `duf`. When you then
+`falconf push`, which pushes the changes you made in `~/.bash_aliases` (and shows
+you a diff), and `falconf add -n apt install duf`, which installs `duf`. When you then
 run `falconf sync` on your other machine, it adds the alias to `~/.bash_aliases`,
 and installs `duf`.
 
@@ -69,8 +72,9 @@ piece, and run `falconf undo -n <piece id>`, where `<piece id>` is the 8-digit h
 ID noted in brackets in the `falconf list` output. This automatically runs `apt remove --autoremove duf`
 for you, and on your other machines, and marks the piece for deletion when every machine has.
 This way you don't clutter your pieces with install and remove commands. You can then edit
-`~/.bash_aliases` again, and run `falconf add -n cargo binstall dysk`. The next sync on the other
-machine will then update `~/.bash_aliases`, uninstall `duf`, and install `dysk`.
+`~/.bash_aliases` and run `falconf push` again, and run `falconf add -n cargo binstall dysk`.
+The next sync on the other machine will then update `~/.bash_aliases`, uninstall `duf`,
+and install `dysk`.
 
 ### Tips
 
