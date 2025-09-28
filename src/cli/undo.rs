@@ -3,7 +3,6 @@ use crate::cli::parse_piece_id;
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
-use crate::utils::set_eq;
 use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
