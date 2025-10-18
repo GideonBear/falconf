@@ -4,6 +4,7 @@ use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use clap::Args;
 use color_eyre::Result;
+use log::info;
 
 #[derive(Args, Debug)]
 pub struct SyncArgs {}
@@ -17,7 +18,11 @@ pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let data = repo.data_mut();
 
     // Do out-of-sync (todo) changes
-    FullPiece::do_todo(data.pieces_mut(), &machine, &execution_data)?;
+    if let Err(err) = FullPiece::do_todo(data.pieces_mut(), &machine, &execution_data) {
+        info!("Found error during sync; writing and pushing the changes that *were* done");
+        repo.write_and_push(vec![])?;
+        return Err(err);
+    }
 
     // Push changes
     repo.write_and_push(vec![])?;
@@ -99,6 +104,59 @@ mod tests {
         sync(top_level_args, args)?;
 
         assert!(!test1.exists());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_atomic() -> Result<()> {
+        let remote = TestRemote::new()?;
+
+        let local_1 = init_util(&remote, true)?;
+
+        // Always succeeds
+        add_util(
+            local_1.path(),
+            add::Piece::Command,
+            vec![String::from("true")],
+        )?;
+        // Always fails
+        add_util(
+            local_1.path(),
+            add::Piece::Command,
+            vec![String::from("false")],
+        )?;
+
+        let local_2 = init_util(&remote, false)?;
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        assert!(sync(top_level_args, SyncArgs {}).is_err());
+
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), true);
+        let installation = Installation::get(&top_level_args)?;
+        // The first one (true) was successfully marked as done
+        assert!(
+            installation
+                .repo()
+                .data()
+                .pieces()
+                .get_index(0)
+                .ok_or_eyre("Cannot find added piece")?
+                .1
+                .done_on()
+                .contains(installation.machine())
+        );
+        // The second one (false) wasn't marked as done
+        assert!(
+            !installation
+                .repo()
+                .data()
+                .pieces()
+                .get_index(1)
+                .ok_or_eyre("Cannot find added piece")?
+                .1
+                .done_on()
+                .contains(installation.machine())
+        );
 
         Ok(())
     }

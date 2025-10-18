@@ -235,4 +235,9 @@ impl FullPiece {
             None
         }
     }
+
+    #[cfg(test)]
+    pub fn done_on(&self) -> &Vec<Machine> {
+        &self.done_on
+    }
 }

@@ -60,6 +60,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     }
 
     // Push changes
+    // Not much to fail, we don't need to split writes
     repo.write_and_push(removed_files)?;
 
     Ok(())

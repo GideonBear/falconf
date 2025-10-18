@@ -6,6 +6,7 @@ use crate::installation::Installation;
 use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
+use log::info;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Args, Debug)]
@@ -40,7 +41,11 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     }
 
     for (id, piece) in pieces_to_undo {
-        piece.undo(id, &args, &execution_data)?;
+        if let Err(err) = piece.undo(id, &args, &execution_data) {
+            info!("Found error during undo; writing and pushing the changes that *were* done");
+            repo.write_and_push(vec![])?;
+            return Err(err);
+        }
     }
 
     // Push changes
