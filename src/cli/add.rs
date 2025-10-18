@@ -79,7 +79,7 @@ pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     // Push changes
     repo.write_and_push(match file {
         None => vec![],
-        Some(file) => vec![file.to_path_buf()],
+        Some(file) => vec![file],
     })?;
 
     Ok(())
