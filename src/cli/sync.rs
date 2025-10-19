@@ -51,24 +51,27 @@ mod tests {
     fn test_sync() -> Result<()> {
         let remote = TestRemote::new()?;
         let temp = TempDir::new("test_falconf_files")?;
-        let test1 = temp.path().join("test1.txt");
+        let test_1 = temp.path().join("test_1.txt");
+        File::create(&test_1)?.write_all(b"test_1_content")?;
 
         let local_1 = init_util(&remote, true)?;
-        File::create(&test1)?.write_all(b"test1")?;
-        debug!("Created {test1:?}");
-        let test1_s = test1.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), add::Piece::File, vec![test1_s.clone()])?;
+        debug!("Created {test_1:?}");
+        let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
+        add_util_no_test_run(local_1.path(), add::Piece::File, vec![test_1_s.clone()])?;
         // Testing the order. This should execute after the file is added.
         add_util(
             local_1.path(),
             add::Piece::Command,
-            vec![format!("test -L '{}'", test1_s)],
+            vec![format!("test -L '{}'", test_1_s)],
         )?;
 
-        assert!(test1.is_symlink());
+        assert!(test_1.exists());
+        assert!(test_1.is_symlink());
+        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
 
         // Switching to being another machine, the file doesn't exist yet
-        remove_file(&test1)?;
+        remove_file(&test_1)?;
+        assert!(!test_1.exists());
 
         let local_2 = init_util(&remote, false)?;
         // Remove with no args; this is for manual testing of check_synced
@@ -84,10 +87,10 @@ mod tests {
         let args = SyncArgs {};
         sync(top_level_args, args)?;
 
-        debug!("Checking {test1:?}");
-        assert!(test1.exists());
-        assert!(test1.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test1)?, "test1");
+        // After syncing, the file is created
+        assert!(test_1.exists());
+        assert!(test_1.is_symlink());
+        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
 
         // Explicitly do not pull local 1 here to test auto-pulling
 
@@ -96,14 +99,14 @@ mod tests {
             get_piece(local_1.path(), Position::Index(0))?,
         )?;
         // Is a test run
-        assert!(test1.exists());
-        assert!(test1.is_symlink());
+        assert!(test_1.exists());
+        assert!(test_1.is_symlink());
 
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
         let args = SyncArgs {};
         sync(top_level_args, args)?;
 
-        assert!(!test1.exists());
+        assert!(!test_1.exists());
 
         Ok(())
     }
