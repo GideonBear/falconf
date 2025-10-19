@@ -16,14 +16,14 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use sync::SyncArgs;
 
-mod add;
+pub(crate) mod add;
 pub use add::AddArgs;
 pub use add::Piece;
 pub(crate) mod init;
 mod list;
 mod push;
 mod remove;
-mod sync;
+pub(crate) mod sync;
 mod undo;
 
 use crate::cli::push::{PushArgs, push};

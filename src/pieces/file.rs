@@ -148,4 +148,75 @@ impl Display for File {
     }
 }
 
-// File is tested in sync
+// File is mostly tested in sync
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
+    use super::*;
+    use crate::cli::TopLevelArgs;
+    use crate::cli::add::tests::add_util_no_test_run;
+    use crate::cli::init::tests::init_util;
+    use crate::cli::sync::{SyncArgs, sync};
+    use crate::testing::TestRemote;
+    use color_eyre::eyre::OptionExt;
+    use std::fs;
+    use std::fs::create_dir;
+    use std::io::Write;
+    use tempdir::TempDir;
+
+    #[test]
+    fn test_file_dir() -> Result<()> {
+        let remote = TestRemote::new()?;
+        let temp = TempDir::new("test_falconf_files")?;
+        let test_d = temp.path().join("dir");
+        create_dir(&test_d)?;
+        let test_1 = test_d.join("test_1");
+        fs::File::create(&test_1)?.write_all(b"test_1_content")?;
+        let test_2 = test_d.join("test_2");
+        fs::File::create(&test_2)?.write_all(b"test_2_content")?;
+
+        let local_1 = init_util(&remote, true)?;
+        let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
+        add_util_no_test_run(
+            local_1.path(),
+            crate::cli::add::Piece::File,
+            vec![test_1_s.clone()],
+        )?;
+        let test_2_s = test_2.to_str().ok_or_eyre("Invalid path")?.to_string();
+        add_util_no_test_run(
+            local_1.path(),
+            crate::cli::add::Piece::File,
+            vec![test_2_s.clone()],
+        )?;
+
+        assert!(test_1.exists());
+        assert!(test_1.is_symlink());
+        assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
+        assert!(test_2.exists());
+        assert!(test_2.is_symlink());
+        assert_eq!(fs::read_to_string(&test_2)?, "test_2_content");
+
+        // Switching to being another machine, the file doesn't exist yet
+        remove_file(&test_1)?;
+        assert!(!test_1.exists());
+        remove_file(&test_2)?;
+        assert!(!test_2.exists());
+
+        let local_2 = init_util(&remote, false)?;
+
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let args = SyncArgs {};
+        sync(top_level_args, args)?;
+
+        // After syncing, the file is created
+        assert!(test_1.exists());
+        assert!(test_1.is_symlink());
+        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+        assert!(test_2.exists());
+        assert!(test_2.is_symlink());
+        assert_eq!(std::fs::read_to_string(&test_2)?, "test_2_content");
+
+        Ok(())
+    }
+}
