@@ -31,9 +31,10 @@ pub fn confirm(question: &str) -> io::Result<bool> {
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
         let ans = input.to_ascii_lowercase();
-        if ans == "y\n" || ans == "yes\n" {
+        let ans = ans.trim_end();
+        if ans == "y" || ans == "yes" {
             return Ok(true);
-        } else if ans == "n\n" || ans == "no\n" {
+        } else if ans == "n" || ans == "no" {
             return Ok(false);
         } else {
             println!("Invalid answer.");
@@ -47,7 +48,7 @@ pub fn prompt(question: &str) -> io::Result<String> {
     io::stdout().flush()?;
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
-    Ok(input)
+    Ok(input.trim_end().to_string())
 }
 
 pub fn set_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {
