@@ -41,6 +41,15 @@ pub fn confirm(question: &str) -> io::Result<bool> {
     }
 }
 
+#[allow(clippy::print_stdout)]
+pub fn prompt(question: &str) -> io::Result<String> {
+    print!("{question}");
+    io::stdout().flush()?;
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input)
+}
+
 pub fn set_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {
     vec1.len() == vec2.len() && vec1.iter().all(|x| vec2.contains(x))
 }

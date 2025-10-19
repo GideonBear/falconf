@@ -52,7 +52,7 @@ pub enum NonBulkPieceEnum {
 }
 
 impl NonBulkPieceEnum {
-    fn execute(&self, execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, execution_data: &ExecutionData) -> Result<()> {
         match self {
             NonBulkPieceEnum::Command(command) => command.execute(execution_data),
             NonBulkPieceEnum::File(file) => file.execute(execution_data),
@@ -60,7 +60,7 @@ impl NonBulkPieceEnum {
         }
     }
 
-    fn undo(&self, execution_data: &ExecutionData) -> Option<Result<()>> {
+    fn undo(&mut self, execution_data: &ExecutionData) -> Result<()> {
         match self {
             NonBulkPieceEnum::Command(command) => command.undo(execution_data),
             NonBulkPieceEnum::File(file) => file.undo(execution_data),
@@ -74,7 +74,7 @@ impl PieceEnum {
     // TODO(low): Improve naming
     /// Execute multiple pieces
     pub fn execute_bulk<F: FnMut()>(
-        pieces: Vec<(u32, &Self, F)>,
+        pieces: Vec<(u32, &mut Self, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         // if execution_data.dry_run {
@@ -88,7 +88,7 @@ impl PieceEnum {
     }
 
     fn execute_bulk_bulk<F: FnMut(), P: BulkPiece>(
-        pieces: Vec<(u32, &P, F)>,
+        pieces: Vec<(u32, &mut P, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         if !pieces.is_empty() {
@@ -96,7 +96,8 @@ impl PieceEnum {
             for (id, piece, _cb) in &pieces {
                 info!("- {} {piece}", print_id(*id));
             }
-            let (_ids, pieces, cbs): (Vec<u32>, Vec<&P>, Vec<F>) = pieces.into_iter().multiunzip();
+            let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) =
+                pieces.into_iter().multiunzip();
             // As we're executing in bulk, we want to wait with the callbacks until after execution
             if !execution_data.test_run {
                 P::execute_bulk(&pieces, execution_data)?;
@@ -111,7 +112,7 @@ impl PieceEnum {
     }
 
     fn execute_non_bulk_bulk<F: FnMut()>(
-        pieces: Vec<(u32, &NonBulkPieceEnum, F)>,
+        pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         for (id, piece, mut cb) in pieces {
@@ -128,7 +129,7 @@ impl PieceEnum {
 
     /// Undo multiple pieces.
     pub fn undo_bulk<F: FnMut()>(
-        pieces: Vec<(u32, &Self, F)>,
+        pieces: Vec<(u32, &mut Self, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         // if execution_data.dry_run {
@@ -142,7 +143,7 @@ impl PieceEnum {
     }
 
     fn undo_bulk_bulk<F: FnMut(), P: BulkPiece>(
-        pieces: Vec<(u32, &P, F)>,
+        pieces: Vec<(u32, &mut P, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         if !pieces.is_empty() {
@@ -150,7 +151,8 @@ impl PieceEnum {
             for (id, piece, _cb) in &pieces {
                 info!("- {} {piece}", print_id(*id));
             }
-            let (_ids, pieces, cbs): (Vec<u32>, Vec<&P>, Vec<F>) = pieces.into_iter().multiunzip();
+            let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) =
+                pieces.into_iter().multiunzip();
             // As we're executing in bulk, we want to wait with the callbacks until after execution
             if !execution_data.test_run {
                 P::undo_bulk(&pieces, execution_data)?;
@@ -165,20 +167,13 @@ impl PieceEnum {
     }
 
     fn undo_non_bulk_bulk<F: FnMut()>(
-        pieces: Vec<(u32, &NonBulkPieceEnum, F)>,
+        pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
         for (id, piece, mut cb) in pieces {
             info!("Undoing piece: {} {piece}", print_id(id));
             if !execution_data.test_run {
-                match piece.undo(execution_data) {
-                    None => {
-                        // TODO(high): Flag to add undo parameter, and below
-                        todo!("Undefined undo for piece; we should prompt then retry with that");
-                    }
-                    Some(Err(e)) => return Err(e),
-                    Some(Ok(())) => {}
-                }
+                piece.undo(execution_data)?;
             } else {
                 warn!("Test run! Refraining from execution, but marking as normal.");
             }
@@ -189,8 +184,11 @@ impl PieceEnum {
 
     #[allow(clippy::type_complexity)] // This is pretty clean
     pub fn sort_pieces<F: FnMut()>(
-        pieces: Vec<(u32, &Self, F)>,
-    ) -> (Vec<(u32, &Apt, F)>, Vec<(u32, &NonBulkPieceEnum, F)>) {
+        pieces: Vec<(u32, &mut Self, F)>,
+    ) -> (
+        Vec<(u32, &mut Apt, F)>,
+        Vec<(u32, &mut NonBulkPieceEnum, F)>,
+    ) {
         #[expect(unused_parens)]
         let (mut apt) = (vec![]);
         let mut non_bulk = vec![];

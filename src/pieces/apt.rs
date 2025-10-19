@@ -15,17 +15,17 @@ pub struct Apt {
 }
 
 impl BulkPiece for Apt {
-    fn execute_bulk(pieces: &[&Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn execute_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
         Self::apt_command(&["install"], pieces)
     }
 
-    fn undo_bulk(pieces: &[&Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn undo_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
         Self::apt_command(&["remove", "--autoremove"], pieces)
     }
 }
 
 impl Apt {
-    fn apt_command(command: &[&str], pieces: &[&Self]) -> Result<()> {
+    fn apt_command(command: &[&str], pieces: &[&mut Self]) -> Result<()> {
         process::Command::new("apt")
             .args(command)
             .args(pieces.iter().map(|p| &p.package))

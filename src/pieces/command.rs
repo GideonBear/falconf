@@ -2,6 +2,7 @@ use crate::cli::AddArgs;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::NonBulkPiece;
+use crate::utils::prompt;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -11,18 +12,24 @@ use std::process;
 pub struct Command {
     /// The command to run
     command: String,
+    // TODO(test): test the undo_command
     /// The command to run when undoing
     undo_command: Option<String>,
 }
 
 impl NonBulkPiece for Command {
-    fn execute(&self, _execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
         Self::run_command(&self.command)
     }
 
-    fn undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
-        // This will return None if self.undo_command is None
-        self.undo_command.as_ref().map(|cmd| Self::run_command(cmd))
+    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+        if self.undo_command.is_none() {
+            let undo_command =
+                prompt("This command piece is missing an undo command. Undo command to use: ")?;
+            self.undo_command = Some(undo_command);
+        }
+        // TODO(low): do this in a non-unwrappy way
+        Self::run_command(self.undo_command.as_ref().unwrap())
     }
 }
 
@@ -38,7 +45,7 @@ impl Command {
     pub fn from_cli(args: &AddArgs) -> Result<Self> {
         Ok(Self {
             command: Self::parse_value(&args.value)?,
-            undo_command: None,
+            undo_command: args.undo.clone(),
         })
     }
 

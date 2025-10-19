@@ -97,7 +97,7 @@ impl FullPiece {
             to_execute
                 .iter_mut()
                 .map(|(id, x)| {
-                    (*id, &x.piece, || {
+                    (*id, &mut x.piece, || {
                         x.done_on.push(*machine);
                     })
                 })
@@ -109,7 +109,7 @@ impl FullPiece {
             to_undo
                 .iter_mut()
                 .map(|(id, x)| {
-                    (*id, &x.piece, || {
+                    (*id, &mut x.piece, || {
                         // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undone_one.is_some()`
                         #[expect(clippy::missing_panics_doc, reason = "code path")]
                         x.undone_on.as_mut().unwrap().push(*machine);
@@ -132,13 +132,24 @@ impl FullPiece {
             piece.done_on.push(execution_data.machine);
         };
 
+        if args.undo.is_some()
+            && !matches!(
+                piece.piece,
+                PieceEnum::NonBulk(NonBulkPieceEnum::Command(_))
+            )
+        {
+            return Err(eyre!(
+                "`--undo` only makes sense with a command piece. Autodetected pieces supply their own undo."
+            ));
+        }
+
         if args.not_done_here && is_file {
             return Err(eyre!(
                 "The concept of '--not-done-here' is incompatible with file pieces. Adding a file piece performs a special action."
             ));
         } else if args.not_done_here || is_file {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::execute_bulk(vec![(id, &piece.piece, cb)], execution_data)?;
+            PieceEnum::execute_bulk(vec![(id, &mut piece.piece, cb)], execution_data)?;
         } else {
             // If we don't execute it, just mark it as executed immediately.
             cb();
@@ -158,7 +169,7 @@ impl FullPiece {
 
         if !args.done_here {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::undo_bulk(vec![(id, &self.piece, cb)], execution_data)?;
+            PieceEnum::undo_bulk(vec![(id, &mut self.piece, cb)], execution_data)?;
         } else {
             // If we don't execute it, just add it immediately.
             cb();

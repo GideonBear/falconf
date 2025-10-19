@@ -7,7 +7,7 @@ use color_eyre::eyre::OptionExt;
 use color_eyre::eyre::Result;
 use std::fs::remove_file;
 
-// TODO: add a command to remove all unused pieces
+// TODO(low): add a command to remove all unused pieces
 #[derive(Args, Debug)]
 pub struct RemoveArgs {
     #[clap(

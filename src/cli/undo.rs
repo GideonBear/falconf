@@ -40,6 +40,7 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
         return Err(eyre!("Piece not found"));
     }
 
+    // TODO(low): This should be bulk. If it shouldn't, there should be a comment explaining why
     for (id, piece) in pieces_to_undo {
         if let Err(err) = piece.undo(id, &args, &execution_data) {
             info!("Found error during undo; writing and pushing the changes that *were* done");

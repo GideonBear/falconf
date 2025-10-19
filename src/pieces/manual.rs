@@ -13,15 +13,12 @@ pub struct Manual {
 }
 
 impl NonBulkPiece for Manual {
-    fn execute(&self, _execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
         Self::print_message(&self.message)
     }
 
-    fn undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
-        Some(Self::print_message(&format!(
-            "UNDO the following change: {}",
-            self.message
-        )))
+    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+        Self::print_message(&format!("UNDO the following change: {}", self.message))
     }
 }
 

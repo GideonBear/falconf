@@ -58,6 +58,10 @@ pub struct AddArgs {
     #[arg(trailing_var_arg = true, required = true)]
     pub value: Vec<String>,
 
+    /// (command) Command to execute when undoing this
+    #[arg(short, long)]
+    pub undo: Option<String>,
+
     /// Run the piece here (on this machine) immediately
     #[arg(long, short)]
     pub not_done_here: bool,
@@ -110,6 +114,7 @@ pub mod tests {
             _file: (),
             _manual: (),
             value,
+            undo: None,
             not_done_here: false,
         };
 

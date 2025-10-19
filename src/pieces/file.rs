@@ -29,7 +29,7 @@ pub struct File {
 }
 
 impl NonBulkPiece for File {
-    fn execute(&self, execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, execution_data: &ExecutionData) -> Result<()> {
         let target_file = self.target_file(execution_data)?;
 
         if !target_file.exists() {
@@ -94,11 +94,11 @@ impl NonBulkPiece for File {
         Ok(())
     }
 
-    fn undo(&self, _execution_data: &ExecutionData) -> Option<Result<()>> {
+    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
         if !self.location.is_symlink() {
-            return Some(Err(eyre!("File is not a symlink.")));
+            return Err(eyre!("File is not a symlink."));
         }
-        Some(remove_file(&self.location).wrap_err("Failed to remove file as part of undo"))
+        remove_file(&self.location).wrap_err("Failed to remove file as part of undo")
     }
 }
 
