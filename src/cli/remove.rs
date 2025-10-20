@@ -11,7 +11,8 @@ use std::fs::remove_file;
 #[derive(Args, Debug)]
 pub struct RemoveArgs {
     #[clap(
-        value_parser = parse_piece_id
+        value_parser = parse_piece_id,
+        required = true
     )]
     pub(crate) piece_ids: Vec<u32>,
 

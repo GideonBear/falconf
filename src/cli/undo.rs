@@ -12,7 +12,8 @@ use std::collections::{HashMap, HashSet};
 #[derive(Args, Debug)]
 pub struct UndoArgs {
     #[clap(
-        value_parser = parse_piece_id
+        value_parser = parse_piece_id,
+        required = true
     )]
     piece_ids: Vec<u32>,
 
