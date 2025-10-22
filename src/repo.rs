@@ -268,7 +268,9 @@ impl Repo {
     }
 
     fn push(&self) -> Result<()> {
-        // TODO(low): check for failed push
+        // TODO(high):
+        //  I need to test what happens right now if you forget to `falconf push` and do a pull.
+        //  check for failed push
         //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
         //  > to test whether all the references were pushed successfully.
         //  And return a divergence error when it fails because of divergence in the remote
