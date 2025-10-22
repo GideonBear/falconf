@@ -5,6 +5,7 @@ use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, WrapErr, eyre};
 use git2::{Diff, Error, Repository, Status};
+use itertools::Itertools;
 use log::debug;
 use std::fmt::{Debug, Formatter};
 use std::fs::{File, create_dir};
@@ -206,7 +207,7 @@ impl Repo {
             .collect::<Vec<_>>();
         files.push(DATA_PATH.to_string());
         index
-            .add_all(files, git2::IndexAddOption::DEFAULT, None)
+            .add_all(&files, git2::IndexAddOption::DEFAULT, None)
             .wrap_err("Failed to add all")?;
         index.write().wrap_err("Failed to write index")?;
 
@@ -220,8 +221,7 @@ impl Repo {
             .find_tree(oid)
             .wrap_err("Failed to find tree")?;
 
-        // TODO(med): good commit message
-        let message = "Falconf update";
+        let message = format!("falconf: Update {}", files.iter().join(", "));
 
         match self.repository.head() {
             Ok(_) => {
@@ -238,7 +238,7 @@ impl Repo {
                         Some("HEAD"),
                         &signature,
                         &signature,
-                        message,
+                        &message,
                         &tree,
                         parents,
                     )
@@ -257,7 +257,7 @@ impl Repo {
                     Some("HEAD"),
                     &signature,
                     &signature,
-                    message,
+                    &message,
                     &tree,
                     parents,
                 )?;
