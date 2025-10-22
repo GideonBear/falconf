@@ -92,7 +92,7 @@ impl PieceEnum {
         execution_data: &ExecutionData,
     ) -> Result<()> {
         if !pieces.is_empty() {
-            info!("Executing multiple pieces:");
+            info!("Executing multiple pieces at once:");
             for (id, piece, _cb) in &pieces {
                 info!("- {} {piece}", print_id(*id));
             }
@@ -147,7 +147,7 @@ impl PieceEnum {
         execution_data: &ExecutionData,
     ) -> Result<()> {
         if !pieces.is_empty() {
-            info!("Undoing multiple pieces:");
+            info!("Undoing multiple pieces at once:");
             for (id, piece, _cb) in &pieces {
                 info!("- {} {piece}", print_id(*id));
             }
