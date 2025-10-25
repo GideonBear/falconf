@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.21](https://github.com/GideonBear/falconf/compare/v0.2.20...v0.2.21) - 2025-10-25
+
+### Added
+
+- *(logging)* Improve log messages for bulk pieces
+
+### Fixed
+
+- Fix add file help
+
+### Other
+
+- Change 'shorthand' -> 'alias'
+- *(todo)* Clarify and reprio failed push todo
+- Make commit message meaningful
+
 ## [0.2.20](https://github.com/GideonBear/falconf/compare/v0.2.19...v0.2.20) - 2025-10-20
 
 ### Fixed
