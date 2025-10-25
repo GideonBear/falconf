@@ -1,3 +1,5 @@
+// TODO(low): These import sections are f'ed
+
 use crate::cli::add::add;
 use crate::cli::init::init;
 use crate::cli::list::list;
@@ -19,6 +21,7 @@ use sync::SyncArgs;
 pub(crate) mod add;
 pub use add::AddArgs;
 pub use add::Piece;
+mod edit;
 pub(crate) mod init;
 mod list;
 mod push;
@@ -26,6 +29,7 @@ mod remove;
 pub(crate) mod sync;
 mod undo;
 
+use crate::cli::edit::{EditArgs, edit};
 use crate::cli::push::{PushArgs, push};
 pub use undo::UndoArgs;
 
@@ -91,13 +95,13 @@ impl TopLevelArgs {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[command(about = "Intialize a new or existing Falconf repo on this machine")]
+    #[command(about = "Initialize a new or existing Falconf repo on this machine")]
     Init(InitArgs),
 
     #[command(about = "Synchronize changes in the repo to this machine")]
     Sync(SyncArgs),
 
-    #[command(about = "Add a new piece to your configuration")]
+    #[command(about = "Add a new piece")]
     Add(AddArgs),
 
     #[command(about = "List all pieces")]
@@ -109,8 +113,11 @@ enum Commands {
     #[command(about = "Remove a piece")]
     Remove(RemoveArgs),
 
-    #[command(about = "Push changes in files to the repo")]
+    #[command(about = "Push local changes in files to the repo")]
     Push(PushArgs),
+
+    #[command(about = "Edit a piece")]
+    Edit(EditArgs),
 }
 
 fn parse_piece_id(s: &str) -> Result<u32, String> {
@@ -139,5 +146,6 @@ pub fn main() -> Result<()> {
         Commands::Undo(args) => undo(top_level, args),
         Commands::Remove(args) => remove(top_level, args),
         Commands::Push(args) => push(top_level, args),
+        Commands::Edit(args) => edit(top_level, args),
     }
 }
