@@ -36,19 +36,19 @@ pub struct AddArgs {
     ])]
     pub piece: Option<Piece>,
 
-    /// Shorthand for `--piece=command`
+    /// Alias for `--piece=command`
     #[arg(long="command", short='c', action=SetTrue)]
     _command: (),
 
-    /// Shorthand for `--piece=apt`
+    /// Alias for `--piece=apt`
     #[arg(long="apt", action=SetTrue)]
     _apt: (),
 
-    /// Shorthand for `--piece=file`
+    /// Alias for `--piece=file`
     #[arg(long="file", short='f', action=SetTrue)]
     _file: (),
 
-    /// Shorthand for `--piece=manual`
+    /// Alias for `--piece=manual`
     #[arg(long="manual", short='m', action=SetTrue)]
     _manual: (),
 
