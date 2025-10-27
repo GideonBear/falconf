@@ -213,28 +213,41 @@ impl FullPiece {
     /// Return information about this piece for printing in the console
     pub fn print(&self, id: u32) -> String {
         let id_prefix = print_id(id);
+
+        let undo_suffix = if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &self.piece
+            && let Some(undo_command) = &piece.undo_command
+        {
+            format!(" (undo: {})", undo_command)
+        } else {
+            String::new()
+        };
+        let undo_suffix = undo_suffix.bright_yellow();
+
         let comment_suffix = if let Some(comment) = &self.comment {
             format!(" // {comment}")
         } else {
             String::new()
         };
+
         let unused_suffix = if self.unused() { " (unused)" } else { "" };
         let unused_suffix = unused_suffix.italic();
         let unused_suffix = unused_suffix.bright_cyan();
+
         // TODO(low): Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
         if self.undone_on.is_some() {
             format!(
-                "{}{}{}{}{}",
+                "{}{}{}{}{}{}",
                 id_prefix.strikethrough(),
                 " ".strikethrough(),
                 self.piece.strikethrough(),
+                undo_suffix.strikethrough(),
                 comment_suffix.strikethrough(),
                 unused_suffix,
             )
         } else {
             format!(
-                "{} {}{}{}",
-                id_prefix, self.piece, comment_suffix, unused_suffix,
+                "{} {}{}{}{}",
+                id_prefix, self.piece, undo_suffix, comment_suffix, unused_suffix,
             )
         }
     }

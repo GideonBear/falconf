@@ -31,6 +31,7 @@ pub mod tests {
     use super::*;
     use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_comment};
+    use crate::cli::edit::{EditArgs, edit};
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
     use crate::testing::{Position, TestRemote, get_piece};
@@ -53,6 +54,22 @@ pub mod tests {
             local.path(),
             add::Piece::Command,
             vec![String::from("echo"), String::from("some text")],
+        )?;
+        // Command with undo
+        add_util(
+            local.path(),
+            add::Piece::Command,
+            vec![String::from("echo"), String::from("some text")],
+        )?;
+        edit(
+            TopLevelArgs::new_testing(local.path().clone(), true),
+            EditArgs {
+                comment: None,
+                remove_comment: false,
+                piece_id: get_piece(local.path(), Position::Last)?,
+                undo: Some("echo I am undoing this piece".to_string()),
+                remove_undo: false,
+            },
         )?;
         // File
         let temp = TempDir::new("test_falconf_files")?;
@@ -99,12 +116,13 @@ pub mod tests {
 
         let expected = format!(
             "
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[0m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m (undo: echo I am undoing this piece)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[0m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
 ",
             test1.display()
         );
