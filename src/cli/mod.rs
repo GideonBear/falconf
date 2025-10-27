@@ -21,6 +21,7 @@ use sync::SyncArgs;
 pub(crate) mod add;
 pub use add::AddArgs;
 pub use add::Piece;
+mod edit;
 pub(crate) mod init;
 mod list;
 mod push;
@@ -28,6 +29,7 @@ mod remove;
 pub(crate) mod sync;
 mod undo;
 
+use crate::cli::edit::{EditArgs, edit};
 use crate::cli::push::{PushArgs, push};
 pub use undo::UndoArgs;
 
@@ -113,6 +115,9 @@ enum Commands {
 
     #[command(about = "Push local changes in files to the repo")]
     Push(PushArgs),
+
+    #[command(about = "Edit a piece")]
+    Edit(EditArgs),
 }
 
 fn parse_piece_id(s: &str) -> Result<u32, String> {
@@ -141,5 +146,6 @@ pub fn main() -> Result<()> {
         Commands::Undo(args) => undo(top_level, args),
         Commands::Remove(args) => remove(top_level, args),
         Commands::Push(args) => push(top_level, args),
+        Commands::Edit(args) => edit(top_level, args),
     }
 }

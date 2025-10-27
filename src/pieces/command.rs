@@ -14,7 +14,7 @@ pub struct Command {
     command: String,
     // TODO(test): test the undo_command
     /// The command to run when undoing
-    undo_command: Option<String>,
+    pub undo_command: Option<String>,
 }
 
 impl NonBulkPiece for Command {

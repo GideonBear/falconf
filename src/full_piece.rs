@@ -14,9 +14,9 @@ use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullPiece {
-    piece: PieceEnum,
+    pub piece: PieceEnum,
     /// An optional comment to clarify the use of the piece
-    comment: Option<String>,
+    pub comment: Option<String>,
     /// The machines on which this piece is already done
     done_on: Vec<Machine>,
     /// `Some` if this piece should be undone
