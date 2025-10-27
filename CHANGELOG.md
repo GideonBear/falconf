@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.21](https://github.com/GideonBear/falconf/compare/v0.2.20...v0.2.21) - 2025-10-27
+
+### Added
+
+- *(list)* Add `undo_command` to `list` output
+- *(edit)* Add `edit` subcommand
+- *(logging)* Improve log messages for bulk pieces
+
+### Fixed
+
+- Fix help for some subcommands
+- Fix add file help
+
+### Other
+
+- clippy
+- Improve debug output in `list` test
+- Add TODO's
+- Add TODO
+- Change 'shorthand' -> 'alias'
+- *(todo)* Clarify and reprio failed push todo
+- Make commit message meaningful
+
 ## [0.2.20](https://github.com/GideonBear/falconf/compare/v0.2.19...v0.2.20) - 2025-10-20
 
 ### Fixed
