@@ -44,7 +44,8 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: EditArgs) -> Result<()> {
         .get_mut(&args.piece_id)
         .ok_or_eyre("Piece not found")?;
 
-    let mut operations: Vec<Box<dyn FnOnce(&mut FullPiece) -> Result<()>>> = vec![];
+    type Operation = dyn FnOnce(&mut FullPiece) -> Result<()>;
+    let mut operations: Vec<Box<Operation>> = vec![];
 
     if let Some(comment) = args.comment.take() {
         operations.push(Box::new(|piece| {
