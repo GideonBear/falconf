@@ -93,13 +93,13 @@ impl TopLevelArgs {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[command(about = "Intialize a new or existing Falconf repo on this machine")]
+    #[command(about = "Initialize a new or existing Falconf repo on this machine")]
     Init(InitArgs),
 
     #[command(about = "Synchronize changes in the repo to this machine")]
     Sync(SyncArgs),
 
-    #[command(about = "Add a new piece to your configuration")]
+    #[command(about = "Add a new piece")]
     Add(AddArgs),
 
     #[command(about = "List all pieces")]
@@ -111,7 +111,7 @@ enum Commands {
     #[command(about = "Remove a piece")]
     Remove(RemoveArgs),
 
-    #[command(about = "Push changes in files to the repo")]
+    #[command(about = "Push local changes in files to the repo")]
     Push(PushArgs),
 }
 
