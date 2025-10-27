@@ -222,6 +222,7 @@ impl PieceEnum {
     }
 
     fn from_cli_autodetect(args: &AddArgs) -> Result<Self> {
+        // TODO: Can I use .take here? Can I get ownership?
         let command = args.value.clone();
         Ok(
             match command

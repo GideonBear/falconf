@@ -35,6 +35,7 @@ impl Installation {
                 info!(
                     "Found error during init; removing newly created .falconf directory to avoid half-initialized state"
                 );
+                // TODO: Can I use .take here? Can I get ownership?
                 remove_dir_all(top_level_args.path.clone())?;
                 Err(e)
             }

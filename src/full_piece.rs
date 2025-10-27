@@ -201,6 +201,7 @@ impl FullPiece {
     }
 
     fn from_cli(args: &AddArgs) -> Result<Self> {
+        // TODO: Can I use .take here? Can I get ownership?
         let comment = args.comment.clone();
         Ok(Self::new(PieceEnum::from_cli(args)?, comment))
     }
