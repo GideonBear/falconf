@@ -116,7 +116,9 @@ enum Commands {
     #[command(about = "Push local changes in files to the repo")]
     Push(PushArgs),
 
-    #[command(about = "Edit a piece")]
+    #[command(
+        about = "Edit a piece. The value of a piece cannot be edited, create a new piece instead"
+    )]
     Edit(EditArgs),
 }
 

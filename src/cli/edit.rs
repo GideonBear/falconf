@@ -23,7 +23,6 @@ pub struct EditArgs {
     pub(crate) piece_id: u32,
 
     // `value` is intentionally missing
-    // TODO: document this somehow
     /// (command) Command to execute when undoing this
     #[arg(short, long, conflicts_with = "remove_undo")]
     pub undo: Option<String>,
