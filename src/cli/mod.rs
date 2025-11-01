@@ -58,7 +58,7 @@ pub struct TopLevelArgs {
     verbose: bool,
 
     /// The path to the falconf directory.
-    #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path)]
+    #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path, env = "FALCONF_PATH")]
     pub path: PathBuf,
 
     // /// Don't execute any commands, and do not mark pieces as executed. WARNING: this
