@@ -246,9 +246,9 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "command-error"
-version = "0.6.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a388075d796717b179ed75638e4d48d27f492c406e6a3e129e0b727face726da"
+checksum = "2b6ac3abfcf15b4536b079bcee923683fe3dc1173b70be5e05ccf28ca112862e"
 dependencies = [
  "dyn-clone",
  "process-wrap",
