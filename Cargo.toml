@@ -31,5 +31,5 @@ itertools = "0.14.0"
 [dev-dependencies]
 ctor = "=0.5.0"
 libc = "=0.2.172"
-regex = "=1.11.1"
+regex = "=1.12.2"
 tempdir = "=0.3.7"
