@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.22](https://github.com/GideonBear/falconf/compare/v0.2.21...v0.2.22) - 2025-11-15
+
+### Added
+
+- Add use FALCONF_PATH env variable
+
+### Fixed
+
+- *(deps)* update rust crate command-error to 0.8.0 ([#23](https://github.com/GideonBear/falconf/pull/23))
+- *(deps)* update rust crate ron to 0.12.0 ([#24](https://github.com/GideonBear/falconf/pull/24))
+
+### Other
+
+- *(lint_pr)* run on synchronize, and add zizmor ignore ([#27](https://github.com/GideonBear/falconf/pull/27))
+- *(deps)* update rust crate libc to v0.2.177 ([#18](https://github.com/GideonBear/falconf/pull/18))
+- *(deps)* update rust crate ctor to v0.6.1 ([#20](https://github.com/GideonBear/falconf/pull/20))
+- *(deps)* update rust crate regex to v1.12.2 ([#22](https://github.com/GideonBear/falconf/pull/22))
+- *(deps)* update actions/checkout action to v5 ([#25](https://github.com/GideonBear/falconf/pull/25))
+- *(deps)* lock file maintenance ([#26](https://github.com/GideonBear/falconf/pull/26))
+- *(deps)* pin dependencies ([#15](https://github.com/GideonBear/falconf/pull/15))
+- *(deps)* update rust crate clap to v4.5.51 ([#16](https://github.com/GideonBear/falconf/pull/16))
+- Add Renovate ([#14](https://github.com/GideonBear/falconf/pull/14))
+- Enforce conventional commits in PR titles ([#13](https://github.com/GideonBear/falconf/pull/13))
+- Document the fact that edit does not take a value
+
 ## [0.2.21](https://github.com/GideonBear/falconf/compare/v0.2.20...v0.2.21) - 2025-10-27
 
 ### Added
