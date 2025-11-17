@@ -117,12 +117,12 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 | Undo changes (automatically, without commands)   |    ✅    |  ✅  |    ➖    |    ❌    |    ❌     |
 | Runs without Git installation                    |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
 | Built-in synchronization                         |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
+| Topgrade integration                             |    ✅    |  ✅  |    ❌    |    ✅    |    ❌     |
 | dconf support (specific paths)*                  |    ⏳    |  ✅  |    ✅    |    ❌    |    ❌     |
 | Temporary one-time pieces                        |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Watch configuration (files, dconf)               |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Secret management                                |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
 | Windows support                                  |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
-| Topgrade integration                             |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
 | Self-updating                                    |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
 | Machine-to-machine differences (templates)       |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
 | Supports use on servers                          |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
