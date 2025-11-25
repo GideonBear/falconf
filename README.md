@@ -111,7 +111,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 | Run arbitrary non-idempotent commands            |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Works with your previous configuration           |    ✅    |  ❌  |    ✅    |    ✅    |    ✅     |
 | Full functionality on all Linux distros          |    ✅    |  ❌  |    ✅    |    ✅    |    ✅     |
-| Interact (run commands, add files) via CLI       |    ✅    |  ❌  |    ❌    |    ❌    |    ❌     |
+| Interact (run commands, add files) via CLI       |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
 | Edit arbitrary files                             |    ✅    |  ➖  |    ✅    |    ✅    |    ✅     |
 | Undo commands (with commands)                    |    ✅    |  ➖  |    ➖    |    ➖    |    ❌     |
 | Undo changes (automatically, without commands)   |    ✅    |  ✅  |    ➖    |    ❌    |    ❌     |
@@ -125,6 +125,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 | Windows support                                  |    ⏳    |  ❌  |    ✅    |    ✅    |    ❌     |
 | Self-updating                                    |    ⏳    |  ✅  |    ❌    |    ✅    |    ❌     |
 | Machine-to-machine differences (templates)       |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
+| Ability to run pre-commit on added files         |    ⏳    |  ➖  |    ➖    |    ✅    |    ➖     |
 | Supports use on servers                          |    ❌    |  ✅  |    ✅    |    ❌    |    ❌     |
 | Made specifically for managing personal machines |    ✅    |  ✅  |    ❌    |    ✅    |    ✅     |
 | Also a package manager                           |    ❌    |  ✅  |    ❌    |    ❌    |    ❌     |
