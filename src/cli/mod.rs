@@ -1,26 +1,28 @@
-// TODO(low): These import sections are f'ed
-
 use crate::cli::add::add;
+use crate::cli::edit::{EditArgs, edit};
+use crate::cli::init::InitArgs;
 use crate::cli::init::init;
+use crate::cli::list::ListArgs;
 use crate::cli::list::list;
+use crate::cli::push::{PushArgs, push};
+use crate::cli::remove::RemoveArgs;
 use crate::cli::remove::remove;
+use crate::cli::sync::SyncArgs;
 use crate::cli::sync::sync;
 use crate::cli::undo::undo;
+pub use add::AddArgs;
+pub use add::Piece;
+pub use undo::UndoArgs;
+
 use clap::{Args, Parser, Subcommand};
 use color_eyre::Result;
 use expanduser::expanduser;
-use init::InitArgs;
-use list::ListArgs;
 use log::{LevelFilter, debug};
-use remove::RemoveArgs;
 use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
-use sync::SyncArgs;
 
 pub(crate) mod add;
-pub use add::AddArgs;
-pub use add::Piece;
 mod edit;
 pub(crate) mod init;
 mod list;
@@ -28,10 +30,6 @@ mod push;
 mod remove;
 pub(crate) mod sync;
 mod undo;
-
-use crate::cli::edit::{EditArgs, edit};
-use crate::cli::push::{PushArgs, push};
-pub use undo::UndoArgs;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
     Ok(expanduser(s)?)
