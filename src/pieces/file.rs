@@ -123,7 +123,6 @@ impl File {
             ));
         }
 
-        // TODO: Can I use .take here? Can I get ownership?
         let location = args.value[0].clone();
         // TODO(low): This does resolve symlinks, is that okay?
         let location = std::fs::canonicalize(&location).wrap_err_with(|| {

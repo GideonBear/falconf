@@ -40,7 +40,6 @@ impl Apt {
                 args.value
             ));
         }
-        // TODO: Can I use .take here? Can I get ownership?
         let package = args.value[0].clone();
         Ok(Self { package })
     }

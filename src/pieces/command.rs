@@ -45,7 +45,6 @@ impl Command {
     pub fn from_cli(args: &AddArgs) -> Result<Self> {
         Ok(Self {
             command: Self::parse_value(&args.value)?,
-            // TODO: Can I use .take here? Can I get ownership?
             undo_command: args.undo.clone(),
         })
     }
