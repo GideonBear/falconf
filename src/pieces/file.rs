@@ -161,7 +161,7 @@ mod tests {
     use crate::testing::TestRemote;
     use color_eyre::eyre::OptionExt;
     use std::fs;
-    use std::fs::create_dir;
+    use std::fs::{create_dir, remove_dir_all};
     use std::io::Write;
     use tempdir::TempDir;
 
@@ -177,30 +177,22 @@ mod tests {
         fs::File::create(&test_2)?.write_all(b"test_2_content")?;
 
         let local_1 = init_util(&remote, true)?;
-        let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
+        let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
         add_util_no_test_run(
             local_1.path(),
             crate::cli::add::Piece::File,
-            vec![test_1_s.clone()],
-        )?;
-        let test_2_s = test_2.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(
-            local_1.path(),
-            crate::cli::add::Piece::File,
-            vec![test_2_s.clone()],
+            vec![test_d_s.clone()],
         )?;
 
         assert!(test_1.exists());
-        assert!(test_1.is_symlink());
         assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
         assert!(test_2.exists());
-        assert!(test_2.is_symlink());
         assert_eq!(fs::read_to_string(&test_2)?, "test_2_content");
 
-        // Switching to being another machine, the file doesn't exist yet
-        remove_file(&test_1)?;
+        // Switching to being another machine, the dir doesn't exist yet
+        remove_dir_all(&test_d)?;
+        assert!(!test_d.exists());
         assert!(!test_1.exists());
-        remove_file(&test_2)?;
         assert!(!test_2.exists());
 
         let local_2 = init_util(&remote, false)?;
@@ -209,13 +201,11 @@ mod tests {
         let args = SyncArgs {};
         sync(top_level_args, args)?;
 
-        // After syncing, the file is created
+        // After syncing, the dir is created
         assert!(test_1.exists());
-        assert!(test_1.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+        assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
         assert!(test_2.exists());
-        assert!(test_2.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test_2)?, "test_2_content");
+        assert_eq!(fs::read_to_string(&test_2)?, "test_2_content");
 
         Ok(())
     }
