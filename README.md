@@ -7,7 +7,7 @@ seamless without needing to edit files in a specialized syntax. Falconf puts
 usability and speed of iteration before idempotency and correctness.
 
 Falconf keeps track of changes done on top of your base Linux install, and syncs
-then across your machines.
+them across your machines.
 
 Falconf can track configuration files, and run arbitrary commands. These changes
 are tracked and can be undone, and are synchronized with all your machines
