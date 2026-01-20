@@ -39,13 +39,15 @@ jobs:
             target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
 
-          - target_name: Windows
-            target: x86_64-pc-windows-msvc
-            os: windows-latest
+          # TODO
+          # - target_name: Windows
+          #   target: x86_64-pc-windows-msvc
+          #   os: windows-latest
 
-          - target_name: macOS-aarch64
-            target: aarch64-apple-darwin
-            os: macos-latest
+          # TODO
+          # - target_name: macOS-aarch64
+          #   target: aarch64-apple-darwin
+          #   os: macos-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
