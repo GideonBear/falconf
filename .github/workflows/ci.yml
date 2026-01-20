@@ -1,38 +1,69 @@
-name: CI checks
+name: Rust CI
 
 on:
+  pull_request:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_BACKTRACE: full
 
 jobs:
-  check:
-
+  format:
+    name: Format (cargo fmt)
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - name: Update toolchain
-        run: rustup install stable
+
+      - run: rustup component add rustfmt
+
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+
+  main:
+    needs: [ format ]
+    name: ${{ matrix.target_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_name: Linux
+            target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+
+          - target_name: Windows
+            target: x86_64-pc-windows-msvc
+            os: windows-latest
+
+          - target_name: macOS-aarch64
+            target: aarch64-apple-darwin
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
       - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2
+        with:
+          key: ${{ matrix.target }}
 
-      - name: Format (cargo fmt)
-        run: cargo fmt --verbose --all -- --check
+      - run: rustup component add clippy
 
-      - name: Build (cargo build)
-        run: cargo build --verbose
+      - name: Print toolchain version
+        run: rustc --version
 
-      - name: Lint (cargo clippy)
-        run: cargo clippy --verbose --all-features -- -D warnings
+      - name: cargo clippy
+        run: cargo clippy --locked --all-features -- --deny warnings
 
       # Lint tests seperately, since `--tests` ignores any `cfg(not(test))` code, and "unused"s can slip by
-      - name: Lint tests (cargo clippy)
-        run: cargo clippy --verbose --all-features --tests -- -D warnings
+      - name: cargo clippy --tests
+        run: cargo clippy --locked --all-features --tests -- --deny warnings
 
-      - name: Run tests (cargo test)
-        run: cargo test --verbose
+      - name: cargo test
+        run: cargo test --locked

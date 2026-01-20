@@ -133,3 +133,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 
 \* Chezmoi supports syncing the entire dconf file via onchange scripts, but this is not always desired, because
 things like window positions are stored in there as well. Falconf supports syncing specific dconf paths natively.
+
+## MSRV
+
+This project will only ever support the latest stable Rust version.
