@@ -10,7 +10,7 @@
         {
             customType: "regex",
             managerFilePatterns: [
-                "(^|/)rust-toolchain\\.toml?$",
+                "/(^|/)rust-toolchain\\.toml?$/",
             ],
             matchStrings: [
                 "channel\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+(\\.\\d+)?)\"",
