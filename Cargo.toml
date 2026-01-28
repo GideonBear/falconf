@@ -6,7 +6,7 @@ license = "GPL-3.0-only"
 repository = "https://github.com/GideonBear/falconf"
 keywords = ["configuration", "synchronization"]
 categories = ["command-line-utilities"]
-version = "0.2.21"
+version = "0.3.0"
 edition = "2024"
 
 [dependencies]
