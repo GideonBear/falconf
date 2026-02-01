@@ -14,6 +14,7 @@ pub struct InitArgs {
     remote: String,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn init(top_level_args: TopLevelArgs, args: InitArgs) -> Result<()> {
     Installation::init(&top_level_args, &args.remote, args.new).wrap_err("Failed to init")?;
     Ok(())

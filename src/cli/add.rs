@@ -68,6 +68,7 @@ pub struct AddArgs {
     pub not_done_here: bool,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;

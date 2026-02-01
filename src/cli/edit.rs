@@ -33,6 +33,7 @@ pub struct EditArgs {
     pub remove_undo: bool,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn edit(top_level_args: TopLevelArgs, mut args: EditArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     installation.pull_and_read(true)?;

@@ -23,6 +23,7 @@ pub struct UndoArgs {
     pub done_here: bool,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;

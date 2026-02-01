@@ -12,6 +12,7 @@ use std::path::PathBuf;
 pub struct PushArgs {}
 
 #[allow(clippy::print_stdout)]
+#[allow(clippy::needless_pass_by_value)]
 pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     installation.pull_and_read(true)?;

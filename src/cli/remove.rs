@@ -22,6 +22,7 @@ pub struct RemoveArgs {
     pub force: bool,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     installation.pull_and_read(true)?;

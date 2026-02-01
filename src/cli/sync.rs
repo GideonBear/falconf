@@ -9,6 +9,7 @@ use log::info;
 #[derive(Args, Debug)]
 pub struct SyncArgs {}
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let machine = *installation.machine();

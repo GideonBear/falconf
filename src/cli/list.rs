@@ -6,6 +6,7 @@ use std::io::Write;
 #[derive(Args, Debug)]
 pub struct ListArgs {}
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn list<W: Write>(
     top_level_args: TopLevelArgs,
     _args: ListArgs,
