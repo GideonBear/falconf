@@ -90,7 +90,8 @@ impl TestRemote {
         })
     }
 
-    pub fn address(&self) -> &str {
+    #[allow(clippy::unused_self)]
+    pub fn address(&self) -> &'static str {
         "git://localhost/test_repo.git"
     }
 
@@ -131,7 +132,7 @@ impl TestRemote {
 impl Drop for TestRemote {
     fn drop(&mut self) {
         // Necessary to kill all its children as well
-        let pgid = self.daemon.id() as i32;
+        let pgid = i32::try_from(self.daemon.id()).unwrap();
         unsafe {
             kill(-pgid, SIGTERM);
         }

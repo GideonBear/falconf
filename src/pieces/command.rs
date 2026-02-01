@@ -72,12 +72,13 @@ mod tests {
 
     fn testcase(input: Vec<&str>, output: &str) -> Result<()> {
         assert_eq!(
-            Command::parse_value(&input.into_iter().map(|s| s.to_string()).collect())?,
+            Command::parse_value(&input.into_iter().map(ToString::to_string).collect())?,
             output,
         );
         Ok(())
     }
 
+    #[allow(clippy::needless_raw_string_hashes)]
     #[test]
     fn test_parse_value() -> Result<()> {
         testcase(vec!["echo", "one two"], r#"echo 'one two'"#)?;

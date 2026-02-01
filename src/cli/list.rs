@@ -125,7 +125,7 @@ pub mod tests {
 ",
             test1.display()
         );
-        debug!("Expect:{}", expected);
+        debug!("Expect:{expected}");
         debug!(
             "Got (raw):\n{}",
             format!("{output:?}").trim_matches('"').replace("\\n", "\n")

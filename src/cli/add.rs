@@ -98,7 +98,7 @@ pub mod tests {
     use crate::cli::add;
     use std::path::Path;
 
-    pub fn _add_util(
+    fn add_util_opts(
         falconf_path: &Path,
         piece: Piece,
         value: Vec<String>,
@@ -125,7 +125,7 @@ pub mod tests {
     }
 
     pub fn add_util(falconf_path: &Path, piece: Piece, value: Vec<String>) -> Result<()> {
-        _add_util(falconf_path, piece, value, true, None)
+        add_util_opts(falconf_path, piece, value, true, None)
     }
 
     pub fn add_util_no_test_run(
@@ -133,7 +133,7 @@ pub mod tests {
         piece: Piece,
         value: Vec<String>,
     ) -> Result<()> {
-        _add_util(falconf_path, piece, value, false, None)
+        add_util_opts(falconf_path, piece, value, false, None)
     }
 
     pub fn add_util_comment(
@@ -142,7 +142,7 @@ pub mod tests {
         value: Vec<String>,
         comment: String,
     ) -> Result<()> {
-        _add_util(falconf_path, piece, value, true, Some(comment))
+        add_util_opts(falconf_path, piece, value, true, Some(comment))
     }
 
     // Add is tested in sync
