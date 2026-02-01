@@ -56,6 +56,7 @@ impl FullPiece {
             .as_ref()
             .map(|undone_on| undone_on.contains(machine));
 
+        #[allow(clippy::match_same_arms)]
         match (done, undone) {
             (false, None) => Todo::Execute,     // Not done, not to undo: Execute
             (false, Some(false)) => Todo::Noop, // Not done, but to undo: Noop

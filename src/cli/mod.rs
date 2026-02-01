@@ -130,13 +130,13 @@ pub enum PieceRef {
 }
 
 impl PieceRef {
-    fn resolve(&self, pieces: &IndexMap<u32, FullPiece>) -> Result<u32> {
+    fn resolve(self, pieces: &IndexMap<u32, FullPiece>) -> Result<u32> {
         match self {
             PieceRef::Last => Ok(*pieces
                 .last()
                 .ok_or_eyre("Attempted to get last piece (with '-') when no pieces are present")?
                 .0),
-            PieceRef::Id(id) => Ok(*id),
+            PieceRef::Id(id) => Ok(id),
         }
     }
 }

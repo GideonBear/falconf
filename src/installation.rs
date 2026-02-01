@@ -43,7 +43,7 @@ impl Installation {
 
     fn _init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
         let root = &top_level_args.path;
-        debug!("Looking at {root:?}");
+        debug!("Looking at {}", root.display());
 
         if root.try_exists()? {
             return Err(eyre!("Installation already exists"));
@@ -64,7 +64,7 @@ impl Installation {
 
     pub fn get(top_level_args: &TopLevelArgs) -> Result<Self> {
         let root = &top_level_args.path;
-        debug!("Looking at {root:?}");
+        debug!("Looking at {}", root.display());
 
         if !root.is_dir() {
             return Err(eyre!(
@@ -87,7 +87,7 @@ impl Installation {
         root.join("repository")
     }
 
-    fn check_synced(&mut self) -> Result<()> {
+    fn check_synced(&mut self) {
         let (to_execute, to_undo) =
             FullPiece::get_todo(self.repo.data_mut().pieces_mut(), &self.machine);
 
@@ -102,14 +102,12 @@ impl Installation {
                 info!("- Undo: {}", piece.print(id));
             }
         }
-
-        Ok(())
     }
 
     pub fn pull_and_read(&mut self, check_synced: bool) -> Result<()> {
         self.repo.pull_and_read()?;
         if check_synced {
-            self.check_synced()?;
+            self.check_synced();
         }
         Ok(())
     }

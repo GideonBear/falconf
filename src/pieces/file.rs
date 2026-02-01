@@ -30,7 +30,7 @@ pub struct File {
 
 impl NonBulkPiece for File {
     fn execute(&mut self, execution_data: &ExecutionData) -> Result<()> {
-        let target_file = self.target_file(execution_data)?;
+        let target_file = self.target_file(execution_data);
 
         if !target_file.exists() {
             info!("Repo (target) file doesn't exist, assuming this is newly added");
@@ -104,8 +104,8 @@ impl NonBulkPiece for File {
 
 impl File {
     /// Return the file's location in the file dir; the target of the symlink
-    fn target_file(&self, execution_data: &ExecutionData) -> Result<PathBuf> {
-        Ok(execution_data.file_dir.join(self.relative_location()))
+    fn target_file(&self, execution_data: &ExecutionData) -> PathBuf {
+        execution_data.file_dir.join(self.relative_location())
     }
 
     /// Return the file's location relative to /; the target of the symlink relative to the file dir
