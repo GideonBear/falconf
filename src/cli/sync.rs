@@ -35,12 +35,12 @@ mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;
     use crate::cli::remove::{RemoveArgs, remove};
     use crate::cli::undo::tests::undo_util;
-    use crate::testing::{Position, TestRemote, get_piece};
+    use crate::cli::{PieceRef, add};
+    use crate::testing::{TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
     use std::fs::{File, remove_file};
@@ -79,7 +79,7 @@ mod tests {
         remove(
             top_level_args,
             RemoveArgs {
-                piece_ids: vec![],
+                pieces: vec![],
                 force: false,
             },
         )?;
@@ -94,10 +94,7 @@ mod tests {
 
         // Explicitly do not pull local 1 here to test auto-pulling
 
-        undo_util(
-            local_1.path(),
-            get_piece(local_1.path(), Position::Index(0))?,
-        )?;
+        undo_util(local_1.path(), get_piece(local_1.path(), 0)?)?;
         // Is a test run
         assert!(test_1.exists());
         assert!(test_1.is_symlink());

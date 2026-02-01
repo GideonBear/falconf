@@ -14,9 +14,12 @@ pub use add::AddArgs;
 pub use add::Piece;
 pub use undo::UndoArgs;
 
+use crate::full_piece::FullPiece;
 use clap::{Args, Parser, Subcommand};
 use color_eyre::Result;
+use color_eyre::eyre::OptionExt;
 use expanduser::expanduser;
+use indexmap::IndexMap;
 use log::{LevelFilter, debug};
 use std::io;
 use std::path::PathBuf;
@@ -120,11 +123,34 @@ enum Commands {
     Edit(EditArgs),
 }
 
-fn parse_piece_id(s: &str) -> Result<u32, String> {
+#[derive(Debug, Clone, Copy)]
+pub enum PieceRef {
+    Last,
+    Id(u32),
+}
+
+impl PieceRef {
+    fn resolve(&self, pieces: &IndexMap<u32, FullPiece>) -> Result<u32> {
+        match self {
+            PieceRef::Last => Ok(*pieces
+                .last()
+                .ok_or_eyre("Attempted to get last piece (with '-') when no pieces are present")?
+                .0),
+            PieceRef::Id(id) => Ok(*id),
+        }
+    }
+}
+
+fn parse_piece_ref(s: &str) -> Result<PieceRef, String> {
+    if s == "-" {
+        return Ok(PieceRef::Last);
+    }
     if s.len() != 8 {
         return Err("Value must be exactly 8 hex digits".to_string());
     }
-    u32::from_str_radix(s, 16).map_err(|_| "Invalid hex format".to_string())
+    u32::from_str_radix(s, 16)
+        .map_err(|_| "Invalid hex format".to_string())
+        .map(PieceRef::Id)
 }
 
 pub fn main() -> Result<()> {

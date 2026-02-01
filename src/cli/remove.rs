@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::cli::parse_piece_id;
+use crate::cli::{PieceRef, parse_piece_ref};
 use crate::installation::Installation;
 use clap::Args;
 use color_eyre::eyre;
@@ -10,11 +10,12 @@ use std::fs::remove_file;
 // TODO(low): add a command to remove all unused pieces
 #[derive(Args, Debug)]
 pub struct RemoveArgs {
+    /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(
-        value_parser = parse_piece_id,
+        value_parser = parse_piece_ref,
         required = true
     )]
-    pub(crate) piece_ids: Vec<u32>,
+    pub(crate) pieces: Vec<PieceRef>,
 
     /// Remove the piece even if it is not unused
     #[arg(long, short)]
@@ -28,8 +29,13 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     let file_dir = repo.file_dir()?;
     let pieces = repo.data().pieces();
 
-    let pieces_to_remove = args
-        .piece_ids
+    let piece_ids = args
+        .pieces
+        .iter()
+        .map(|x| x.resolve(pieces))
+        .collect::<Result<Vec<_>>>()?;
+
+    let pieces_to_remove = piece_ids
         .iter()
         .map(|piece_id| pieces.get(piece_id).ok_or_eyre("Piece not found"))
         .collect::<Result<Vec<_>>>()?;
@@ -56,7 +62,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
     let pieces = repo.data_mut().pieces_mut();
 
     // Remove the piece
-    for piece_id in args.piece_ids {
+    for piece_id in piece_ids {
         pieces.shift_remove(&piece_id);
     }
 

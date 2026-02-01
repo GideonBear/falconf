@@ -1,10 +1,9 @@
-use crate::cli::TopLevelArgs;
+use crate::cli::{PieceRef, TopLevelArgs};
 use crate::installation::Installation;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
 use command_error::CommandExt;
 use ctor::ctor;
-use indexmap::IndexMap;
 use libc::{SIGTERM, kill};
 use log::LevelFilter;
 use std::env::set_current_dir;
@@ -171,34 +170,18 @@ impl TempDirSub {
     }
 }
 
-#[allow(dead_code)]
-pub enum Position {
-    Index(usize),
-    First,
-    Last,
-}
-
-impl Position {
-    fn get<'a, K, V>(&self, map: &'a IndexMap<K, V>) -> Result<(&'a K, &'a V)> {
-        match self {
-            Position::Index(i) => map.get_index(*i),
-            Position::First => map.first(),
-            Position::Last => map.last(),
-        }
-        .ok_or_eyre("No piece at that index")
-    }
-}
-
-pub fn get_piece(falconf_dir: &Path, position: Position) -> Result<u32> {
+pub fn get_piece(falconf_dir: &Path, position: usize) -> Result<PieceRef> {
     let top_level_args = TopLevelArgs::new_testing(falconf_dir.to_path_buf(), true);
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 
-    let (&id, _piece) = position.get(pieces)?;
+    let (&id, _piece) = pieces
+        .get_index(position)
+        .ok_or_eyre("No piece at that index")?;
 
-    Ok(id)
+    Ok(PieceRef::Id(id))
 }
 
 #[ctor]

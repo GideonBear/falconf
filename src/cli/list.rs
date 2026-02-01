@@ -29,12 +29,12 @@ pub mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::edit::{EditArgs, edit};
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
-    use crate::testing::{Position, TestRemote, get_piece};
+    use crate::cli::{PieceRef, add};
+    use crate::testing::TestRemote;
     use color_eyre::Result;
     use log::debug;
     use regex::Regex;
@@ -66,7 +66,7 @@ pub mod tests {
             EditArgs {
                 comment: None,
                 remove_comment: false,
-                piece_id: get_piece(local.path(), Position::Last)?,
+                piece: PieceRef::Last,
                 undo: Some("echo I am undoing this piece".to_string()),
                 remove_undo: false,
             },
@@ -96,8 +96,7 @@ pub mod tests {
         )?;
         // Undone & unused
         add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
-        let id = get_piece(local.path(), Position::Last)?;
-        undo_util(local.path(), id)?;
+        undo_util(local.path(), PieceRef::Last)?;
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
         let args = ListArgs {};

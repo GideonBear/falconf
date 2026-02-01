@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::cli::parse_piece_id;
+use crate::cli::{PieceRef, parse_piece_ref};
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
@@ -11,11 +11,12 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Args, Debug)]
 pub struct UndoArgs {
+    /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(
-        value_parser = parse_piece_id,
+        value_parser = parse_piece_ref,
         required = true
     )]
-    piece_ids: Vec<u32>,
+    pieces: Vec<PieceRef>,
 
     /// Do not undo the piece here (on this machine) immediately
     #[arg(long, short)]
@@ -30,7 +31,11 @@ pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 
-    let piece_ids = args.piece_ids.iter().copied().collect::<HashSet<_>>();
+    let piece_ids = args
+        .pieces
+        .iter()
+        .map(|x| x.resolve(pieces))
+        .collect::<Result<HashSet<_>>>()?;
 
     let pieces_to_undo: HashMap<u32, &mut FullPiece> = pieces
         .iter_mut()
@@ -63,11 +68,11 @@ pub mod tests {
     use super::*;
     use std::path::Path;
 
-    pub fn undo_util(falconf_path: &Path, id: u32) -> Result<()> {
+    pub fn undo_util(falconf_path: &Path, piece: PieceRef) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
 
         let args = UndoArgs {
-            piece_ids: vec![id],
+            pieces: vec![piece],
             done_here: true,
         };
 

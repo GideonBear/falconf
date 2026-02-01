@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::cli::parse_piece_id;
+use crate::cli::{PieceRef, parse_piece_ref};
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -19,8 +19,9 @@ pub struct EditArgs {
     #[arg(long, action=SetTrue, conflicts_with = "comment")]
     pub remove_comment: bool,
 
-    #[clap(value_parser = parse_piece_id)]
-    pub(crate) piece_id: u32,
+    /// Specify the piece id. '-' is a shortcut for the last piece.
+    #[clap(value_parser = parse_piece_ref)]
+    pub(crate) piece: PieceRef,
 
     // `value` is intentionally missing
     /// (command) Command to execute when undoing this
@@ -40,7 +41,7 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: EditArgs) -> Result<()> {
     let pieces = data.pieces_mut();
 
     let piece = pieces
-        .get_mut(&args.piece_id)
+        .get_mut(&args.piece.resolve(pieces)?)
         .ok_or_eyre("Piece not found")?;
 
     type Operation = dyn FnOnce(&mut FullPiece) -> Result<()>;
