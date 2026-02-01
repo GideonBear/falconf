@@ -182,7 +182,7 @@ impl PieceEnum {
         Ok(())
     }
 
-    #[allow(clippy::type_complexity)] // This is pretty clean
+    #[expect(clippy::type_complexity)] // This is pretty clean
     pub fn sort_pieces<F: FnMut()>(
         pieces: Vec<(u32, &mut Self, F)>,
     ) -> (

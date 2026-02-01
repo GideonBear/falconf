@@ -90,7 +90,7 @@ impl TestRemote {
         })
     }
 
-    #[allow(clippy::unused_self)]
+    #[expect(clippy::unused_self)]
     pub fn address(&self) -> &'static str {
         "git://localhost/test_repo.git"
     }

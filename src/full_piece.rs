@@ -56,7 +56,7 @@ impl FullPiece {
             .as_ref()
             .map(|undone_on| undone_on.contains(machine));
 
-        #[allow(clippy::match_same_arms)]
+        #[expect(clippy::match_same_arms)]
         match (done, undone) {
             (false, None) => Todo::Execute,     // Not done, not to undo: Execute
             (false, Some(false)) => Todo::Noop, // Not done, but to undo: Noop
@@ -181,7 +181,7 @@ impl FullPiece {
 
     /// Returns true if the piece is safe to clean up
     pub fn unused(&self) -> bool {
-        #[allow(clippy::option_if_let_else)]
+        #[expect(clippy::option_if_let_else)]
         if let Some(undone_on) = &self.undone_on {
             // If it's something to undo (whether it's one_time or not),
             //  we don't want to execute it on new machines and can remove it

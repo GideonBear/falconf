@@ -15,7 +15,7 @@ use std::{fs, io};
 //     }
 // }
 
-#[allow(clippy::print_stdout)]
+#[expect(clippy::print_stdout)]
 pub fn press_enter() -> io::Result<()> {
     println!("Press Enter to continue...");
     let mut input = String::new();
@@ -23,7 +23,7 @@ pub fn press_enter() -> io::Result<()> {
     Ok(())
 }
 
-#[allow(clippy::print_stdout)]
+#[expect(clippy::print_stdout)]
 pub fn confirm(question: &str) -> io::Result<bool> {
     loop {
         print!("{question} (y/n) ");
@@ -42,7 +42,7 @@ pub fn confirm(question: &str) -> io::Result<bool> {
     }
 }
 
-#[allow(clippy::print_stdout)]
+#[expect(clippy::print_stdout)]
 pub fn prompt(question: &str) -> io::Result<String> {
     print!("{question}");
     io::stdout().flush()?;

@@ -78,7 +78,7 @@ mod tests {
         Ok(())
     }
 
-    #[allow(clippy::needless_raw_string_hashes)]
+    #[expect(clippy::needless_raw_string_hashes)]
     #[test]
     fn test_parse_value() -> Result<()> {
         testcase(vec!["echo", "one two"], r#"echo 'one two'"#)?;

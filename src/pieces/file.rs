@@ -62,7 +62,7 @@ impl NonBulkPiece for File {
                     .arg(&self.location)
                     .output_fallible()?;
 
-                #[allow(clippy::collapsible_else_if)] // Clearer this way
+                #[expect(clippy::collapsible_else_if)] // Clearer this way
                 if diff.status.success() {
                     info!("File already exists but is identical; overwriting.");
                 } else {
