@@ -25,13 +25,13 @@ use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-pub(crate) mod add;
+pub mod add;
 mod edit;
-pub(crate) mod init;
+pub mod init;
 mod list;
 mod push;
 mod remove;
-pub(crate) mod sync;
+pub mod sync;
 mod undo;
 
 fn parse_path(s: &str) -> Result<PathBuf> {

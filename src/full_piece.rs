@@ -181,6 +181,7 @@ impl FullPiece {
 
     /// Returns true if the piece is safe to clean up
     pub fn unused(&self) -> bool {
+        #[allow(clippy::option_if_let_else)]
         if let Some(undone_on) = &self.undone_on {
             // If it's something to undo (whether it's one_time or not),
             //  we don't want to execute it on new machines and can remove it
@@ -223,11 +224,10 @@ impl FullPiece {
         };
         let undo_suffix = undo_suffix.bright_yellow();
 
-        let comment_suffix = if let Some(comment) = &self.comment {
-            format!(" // {comment}")
-        } else {
-            String::new()
-        };
+        let comment_suffix = self
+            .comment
+            .as_ref()
+            .map_or_else(String::new, |comment| format!(" // {comment}"));
 
         let unused_suffix = if self.unused() { " (unused)" } else { "" };
         let unused_suffix = unused_suffix.italic();
