@@ -38,7 +38,7 @@ type IdPiecePair<'a> = (u32, &'a mut FullPiece);
 
 impl FullPiece {
     // TODO(low): one-time support (in all below methods), and then in cli
-    pub fn new(piece: PieceEnum, comment: Option<String>) -> Self {
+    pub const fn new(piece: PieceEnum, comment: Option<String>) -> Self {
         Self {
             piece,
             comment,
@@ -70,7 +70,7 @@ impl FullPiece {
     }
 
     pub fn get_todo<'a>(
-        pieces: &'a mut IndexMap<u32, FullPiece>,
+        pieces: &'a mut IndexMap<u32, Self>,
         machine: &Machine,
     ) -> (Vec<IdPiecePair<'a>>, Vec<IdPiecePair<'a>>) {
         let mut to_execute = vec![];
@@ -88,7 +88,7 @@ impl FullPiece {
     }
 
     pub fn do_todo(
-        pieces: &mut IndexMap<u32, FullPiece>,
+        pieces: &mut IndexMap<u32, Self>,
         machine: &Machine,
         execution_data: &ExecutionData,
     ) -> Result<()> {
@@ -262,7 +262,7 @@ impl FullPiece {
     }
 
     #[cfg(test)]
-    pub fn done_on(&self) -> &Vec<Machine> {
+    pub const fn done_on(&self) -> &Vec<Machine> {
         &self.done_on
     }
 }

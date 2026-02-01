@@ -21,15 +21,15 @@ impl Data {
         }
     }
 
-    pub fn pieces(&self) -> &IndexMap<u32, FullPiece> {
+    pub const fn pieces(&self) -> &IndexMap<u32, FullPiece> {
         &self.pieces
     }
 
-    pub fn pieces_mut(&mut self) -> &mut IndexMap<u32, FullPiece> {
+    pub const fn pieces_mut(&mut self) -> &mut IndexMap<u32, FullPiece> {
         &mut self.pieces
     }
 
-    pub fn machines_mut(&mut self) -> &mut IndexMap<Machine, MachineData> {
+    pub const fn machines_mut(&mut self) -> &mut IndexMap<Machine, MachineData> {
         &mut self.machines
     }
 

@@ -16,15 +16,15 @@ pub struct Installation {
 }
 
 impl Installation {
-    pub fn machine(&self) -> &Machine {
+    pub const fn machine(&self) -> &Machine {
         &self.machine
     }
 
-    pub fn repo(&self) -> &Repo {
+    pub const fn repo(&self) -> &Repo {
         &self.repo
     }
 
-    pub fn repo_mut(&mut self) -> &mut Repo {
+    pub const fn repo_mut(&mut self) -> &mut Repo {
         &mut self.repo
     }
 

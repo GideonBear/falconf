@@ -44,7 +44,7 @@ impl Apt {
         Ok(Self { package })
     }
 
-    pub fn from_cli_autodetected(_args: &AddArgs, package: String) -> Self {
+    pub const fn from_cli_autodetected(_args: &AddArgs, package: String) -> Self {
         Self { package }
     }
 }

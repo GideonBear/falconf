@@ -102,11 +102,11 @@ impl Repo {
         Ok(self.workdir()?.join("files"))
     }
 
-    pub fn data(&self) -> &Data {
+    pub const fn data(&self) -> &Data {
         &self.data
     }
 
-    pub fn data_mut(&mut self) -> &mut Data {
+    pub const fn data_mut(&mut self) -> &mut Data {
         &mut self.data
     }
 

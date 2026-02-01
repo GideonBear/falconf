@@ -54,17 +54,17 @@ pub enum NonBulkPieceEnum {
 impl NonBulkPieceEnum {
     fn execute(&mut self, execution_data: &ExecutionData) -> Result<()> {
         match self {
-            NonBulkPieceEnum::Command(command) => command.execute(execution_data),
-            NonBulkPieceEnum::File(file) => file.execute(execution_data),
-            NonBulkPieceEnum::Manual(manual) => manual.execute(execution_data),
+            Self::Command(command) => command.execute(execution_data),
+            Self::File(file) => file.execute(execution_data),
+            Self::Manual(manual) => manual.execute(execution_data),
         }
     }
 
     fn undo(&mut self, execution_data: &ExecutionData) -> Result<()> {
         match self {
-            NonBulkPieceEnum::Command(command) => command.undo(execution_data),
-            NonBulkPieceEnum::File(file) => file.undo(execution_data),
-            NonBulkPieceEnum::Manual(manual) => manual.undo(execution_data),
+            Self::Command(command) => command.undo(execution_data),
+            Self::File(file) => file.undo(execution_data),
+            Self::Manual(manual) => manual.undo(execution_data),
         }
     }
 }
@@ -194,8 +194,8 @@ impl PieceEnum {
         let mut non_bulk = vec![];
         for (id, piece, cb) in pieces {
             match piece {
-                PieceEnum::Bulk(BulkPieceEnum::Apt(p)) => apt.push((id, p, cb)),
-                PieceEnum::NonBulk(piece) => non_bulk.push((id, piece, cb)),
+                Self::Bulk(BulkPieceEnum::Apt(p)) => apt.push((id, p, cb)),
+                Self::NonBulk(piece) => non_bulk.push((id, piece, cb)),
             }
         }
         (apt, non_bulk)
@@ -210,14 +210,12 @@ impl PieceEnum {
 
     fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Result<Self> {
         Ok(match piece {
-            cli::Piece::Apt => PieceEnum::Bulk(BulkPieceEnum::Apt(Apt::from_cli(args)?)),
+            cli::Piece::Apt => Self::Bulk(BulkPieceEnum::Apt(Apt::from_cli(args)?)),
             cli::Piece::Command => {
-                PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?))
+                Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?))
             }
-            cli::Piece::File => PieceEnum::NonBulk(NonBulkPieceEnum::File(File::from_cli(args)?)),
-            cli::Piece::Manual => {
-                PieceEnum::NonBulk(NonBulkPieceEnum::Manual(Manual::from_cli(args)))
-            }
+            cli::Piece::File => Self::NonBulk(NonBulkPieceEnum::File(File::from_cli(args)?)),
+            cli::Piece::Manual => Self::NonBulk(NonBulkPieceEnum::Manual(Manual::from_cli(args))),
         })
     }
 
@@ -236,14 +234,14 @@ impl PieceEnum {
                 | ["apt", "install", "-y", package]
                 | ["apt", "-y", "install", package] => {
                     info!("Using `apt` piece instead of `command`");
-                    PieceEnum::Bulk(BulkPieceEnum::Apt(Apt::from_cli_autodetected(
+                    Self::Bulk(BulkPieceEnum::Apt(Apt::from_cli_autodetected(
                         args,
                         package.to_string(),
                     )))
                 }
                 ["apt", ..] => unknown!("apt", "apt", args),
                 ["ln", ..] => unknown!("ln", "file", args),
-                _ => PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?)),
+                _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?)),
             },
         )
     }

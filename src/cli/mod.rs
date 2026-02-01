@@ -83,7 +83,7 @@ impl TopLevelArgs {
     }
 
     #[cfg(test)]
-    pub fn new_testing(falconf_path: PathBuf, test_run: bool) -> Self {
+    pub const fn new_testing(falconf_path: PathBuf, test_run: bool) -> Self {
         Self {
             log_level: String::new(),
             verbose: false,
@@ -132,11 +132,11 @@ pub enum PieceRef {
 impl PieceRef {
     fn resolve(self, pieces: &IndexMap<u32, FullPiece>) -> Result<u32> {
         match self {
-            PieceRef::Last => Ok(*pieces
+            Self::Last => Ok(*pieces
                 .last()
                 .ok_or_eyre("Attempted to get last piece (with '-') when no pieces are present")?
                 .0),
-            PieceRef::Id(id) => Ok(id),
+            Self::Id(id) => Ok(id),
         }
     }
 }

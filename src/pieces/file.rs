@@ -178,11 +178,7 @@ mod tests {
 
         let local_1 = init_util(&remote, true)?;
         let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(
-            local_1.path(),
-            crate::cli::add::Piece::File,
-            vec![test_d_s.clone()],
-        )?;
+        add_util_no_test_run(local_1.path(), crate::cli::add::Piece::File, vec![test_d_s])?;
 
         assert!(test_1.exists());
         assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
