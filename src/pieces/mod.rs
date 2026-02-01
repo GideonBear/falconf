@@ -226,7 +226,7 @@ impl PieceEnum {
         Ok(
             match command
                 .iter()
-                .map(|x| x.as_str())
+                .map(String::as_str)
                 .collect::<Vec<&str>>()
                 .as_slice()
             {

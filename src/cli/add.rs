@@ -5,6 +5,7 @@ use crate::installation::Installation;
 use clap::ArgAction::SetTrue;
 use clap::{Args, ValueEnum};
 use color_eyre::Result;
+use std::path::Path;
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 #[value(rename_all = "kebab-case")]
@@ -77,7 +78,7 @@ pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
 
     // Add the piece
     let (id, piece) = FullPiece::add(&args, &execution_data)?;
-    let file = piece.file().map(|p| p.to_path_buf());
+    let file = piece.file().map(Path::to_path_buf);
     pieces.insert(id, piece);
 
     // Push changes

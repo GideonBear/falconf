@@ -23,7 +23,7 @@ pub struct FullPiece {
     /// The machines on which this piece is already undone
     undone_on: Option<Vec<Machine>>,
     /// `Some` if this piece should be executed just once (so not on new machines)
-    /// The machines to do it on if one_time is true
+    /// The machines to do it on if `one_time` is true
     one_time_todo_on: Option<Vec<Machine>>,
 }
 
@@ -216,7 +216,7 @@ impl FullPiece {
         let undo_suffix = if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &self.piece
             && let Some(undo_command) = &piece.undo_command
         {
-            format!(" (undo: {})", undo_command)
+            format!(" (undo: {undo_command})")
         } else {
             String::new()
         };

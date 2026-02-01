@@ -5,6 +5,7 @@ use clap::Args;
 use color_eyre::eyre::{Context, Result, eyre};
 use git2::DiffFormat;
 use log::info;
+use std::path::Path;
 use std::path::PathBuf;
 
 #[derive(Args, Debug)]
@@ -26,7 +27,7 @@ pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
         .map(|path| {
             path.strip_prefix("files")
                 .wrap_err("A file not in files/ was changed in the repo")
-                .map(|p| p.to_path_buf())
+                .map(Path::to_path_buf)
         })
         .collect::<Result<_, _>>()?;
 
