@@ -35,11 +35,11 @@ mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
+    use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;
     use crate::cli::remove::{RemoveArgs, remove};
     use crate::cli::undo::tests::undo_util;
-    use crate::cli::{PieceRef, add};
     use crate::testing::{TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
