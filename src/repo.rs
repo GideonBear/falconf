@@ -223,45 +223,42 @@ impl Repo {
 
         let message = format!("falconf: Update {}", files.iter().join(", "));
 
-        match self.repository.head() {
-            Ok(_) => {
-                debug!("Head exists");
-                let parents = &[&self
-                    .repository
-                    .head()
-                    .wrap_err("Failed to get head")?
-                    .peel_to_commit()
-                    .wrap_err("Failed to peel head to commit")?];
+        if self.repository.head().is_ok() {
+            debug!("Head exists");
+            let parents = &[&self
+                .repository
+                .head()
+                .wrap_err("Failed to get head")?
+                .peel_to_commit()
+                .wrap_err("Failed to peel head to commit")?];
 
-                self.repository
-                    .commit(
-                        Some("HEAD"),
-                        &signature,
-                        &signature,
-                        &message,
-                        &tree,
-                        parents,
-                    )
-                    .wrap_err("Failed to commit")?;
-            }
-            Err(_) => {
-                debug!("Head doesn't exist, this is the initial commit");
-
-                // Because there are no commits we need to make sure we're on `main` and not `master`
-                self.repository
-                    .set_head("refs/heads/main")
-                    .wrap_err("Failed to set head to main")?;
-
-                let parents = &[];
-                self.repository.commit(
+            self.repository
+                .commit(
                     Some("HEAD"),
                     &signature,
                     &signature,
                     &message,
                     &tree,
                     parents,
-                )?;
-            }
+                )
+                .wrap_err("Failed to commit")?;
+        } else {
+            debug!("Head doesn't exist, this is the initial commit");
+
+            // Because there are no commits we need to make sure we're on `main` and not `master`
+            self.repository
+                .set_head("refs/heads/main")
+                .wrap_err("Failed to set head to main")?;
+
+            let parents = &[];
+            self.repository.commit(
+                Some("HEAD"),
+                &signature,
+                &signature,
+                &message,
+                &tree,
+                parents,
+            )?;
         }
 
         Ok(())
