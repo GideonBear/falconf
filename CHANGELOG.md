@@ -7,6 +7,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/GideonBear/falconf/compare/v0.2.21...v0.3.0) - 2026-02-01
+
+### Added
+
+- allow using '-' as a shortcut for the last piece in remove, edit, undo
+- Add use FALCONF_PATH env variable
+
+### Fixed
+
+- *(deps)* update rust crate command-error to 0.8.0 ([#23](https://github.com/GideonBear/falconf/pull/23))
+- *(deps)* update rust crate ron to 0.12.0 ([#24](https://github.com/GideonBear/falconf/pull/24))
+
+### Other
+
+- remove unused import
+- *(deps)* update release-plz/action digest to e592230 ([#69](https://github.com/GideonBear/falconf/pull/69))
+- *(deps)* lock file maintenance ([#71](https://github.com/GideonBear/falconf/pull/71))
+- *(renovate)* disable rate-limiting ([#68](https://github.com/GideonBear/falconf/pull/68))
+- *(renovate)* disable rate-limiting ([#67](https://github.com/GideonBear/falconf/pull/67))
+- *(deps)* update dependency rust to v1.93.0 ([#65](https://github.com/GideonBear/falconf/pull/65))
+- *(renovate)* migrate config
+- *(renovate)* migrate config
+- *(renovate)* add rust-toolchain updating
+- *(deps)* update release-plz/action digest to a8c9cdc ([#64](https://github.com/GideonBear/falconf/pull/64))
+- pin rust toolchain further ([#63](https://github.com/GideonBear/falconf/pull/63))
+- drop testing for Windows and macOS
+- [**breaking**] add and test MSRV
+- *(deps)* update release-plz/action digest to 5ab144c ([#61](https://github.com/GideonBear/falconf/pull/61))
+- *(deps)* lock file maintenance ([#62](https://github.com/GideonBear/falconf/pull/62))
+- *(renovate)* use preset for lockfile config ([#60](https://github.com/GideonBear/falconf/pull/60))
+- *(deps)* lock file maintenance ([#59](https://github.com/GideonBear/falconf/pull/59))
+- *(deps)* update rust crate libc to v0.2.180 ([#58](https://github.com/GideonBear/falconf/pull/58))
+- *(deps)* update rust crate indexmap to v2.13.0 ([#57](https://github.com/GideonBear/falconf/pull/57))
+- *(deps)* update rust crate libc to v0.2.179 ([#54](https://github.com/GideonBear/falconf/pull/54))
+- *(deps)* lock file maintenance ([#55](https://github.com/GideonBear/falconf/pull/55))
+- *(renovate)* change semantic commit type to always be 'chore' ([#56](https://github.com/GideonBear/falconf/pull/56))
+- remove deprecated authors field from Cargo.toml ([#53](https://github.com/GideonBear/falconf/pull/53))
+- *(deps)* lock file maintenance ([#51](https://github.com/GideonBear/falconf/pull/51))
+- *(deps)* lock file maintenance ([#50](https://github.com/GideonBear/falconf/pull/50))
+- *(deps)* lock file maintenance ([#49](https://github.com/GideonBear/falconf/pull/49))
+- *(lint_pr)* zizmor fixes ([#48](https://github.com/GideonBear/falconf/pull/48))
+- *(renovate)* move Renovate config ([#47](https://github.com/GideonBear/falconf/pull/47))
+- *(deps)* update rust crate shell-words to v1.1.1 ([#46](https://github.com/GideonBear/falconf/pull/46))
+- *(deps)* lock file maintenance ([#45](https://github.com/GideonBear/falconf/pull/45))
+- *(deps)* update rust crate ctor to v0.6.3 ([#42](https://github.com/GideonBear/falconf/pull/42))
+- *(deps)* update release-plz/action digest to 487eb7b ([#43](https://github.com/GideonBear/falconf/pull/43))
+- *(deps)* update rust crate git2 to v0.20.3 ([#44](https://github.com/GideonBear/falconf/pull/44))
+- *(deps)* update rust crate libc to v0.2.178 ([#40](https://github.com/GideonBear/falconf/pull/40))
+- *(deps)* update rust crate log to v0.4.29 ([#41](https://github.com/GideonBear/falconf/pull/41))
+- *(deps)* update rust crate uuid to v1.19.0 ([#37](https://github.com/GideonBear/falconf/pull/37))
+- *(deps)* update rust crate ctor to v0.6.2 ([#39](https://github.com/GideonBear/falconf/pull/39))
+- *(deps)* update actions/checkout digest to 8e8c483 ([#38](https://github.com/GideonBear/falconf/pull/38))
+- *(deps)* lock file maintenance ([#36](https://github.com/GideonBear/falconf/pull/36))
+- *(deps)* update rust crate hostname to v0.4.2 ([#35](https://github.com/GideonBear/falconf/pull/35))
+- fix typo in README.md
+- fix test_file_dir not symlinking dir
+- format imports in src/cli/mod.rs
+- remove todos
+- *(deps)* update swatinem/rust-cache digest to 779680d ([#34](https://github.com/GideonBear/falconf/pull/34))
+- Update README.md
+- *(deps)* update release-plz/action digest to 1efcf74 ([#33](https://github.com/GideonBear/falconf/pull/33))
+- *(deps)* lock file maintenance ([#32](https://github.com/GideonBear/falconf/pull/32))
+- *(deps)* update actions/checkout action to v6 ([#31](https://github.com/GideonBear/falconf/pull/31))
+- *(deps)* update rust crate clap to v4.5.53 ([#30](https://github.com/GideonBear/falconf/pull/30))
+- *(deps)* update actions/checkout digest to 93cb6ef ([#28](https://github.com/GideonBear/falconf/pull/28))
+- *(deps)* update rust crate clap to v4.5.52 ([#29](https://github.com/GideonBear/falconf/pull/29))
+- Update README.md
+- *(lint_pr)* run on synchronize, and add zizmor ignore ([#27](https://github.com/GideonBear/falconf/pull/27))
+- *(deps)* update rust crate libc to v0.2.177 ([#18](https://github.com/GideonBear/falconf/pull/18))
+- *(deps)* update rust crate ctor to v0.6.1 ([#20](https://github.com/GideonBear/falconf/pull/20))
+- *(deps)* update rust crate regex to v1.12.2 ([#22](https://github.com/GideonBear/falconf/pull/22))
+- *(deps)* update actions/checkout action to v5 ([#25](https://github.com/GideonBear/falconf/pull/25))
+- *(deps)* lock file maintenance ([#26](https://github.com/GideonBear/falconf/pull/26))
+- *(deps)* pin dependencies ([#15](https://github.com/GideonBear/falconf/pull/15))
+- *(deps)* update rust crate clap to v4.5.51 ([#16](https://github.com/GideonBear/falconf/pull/16))
+- Add Renovate ([#14](https://github.com/GideonBear/falconf/pull/14))
+- Enforce conventional commits in PR titles ([#13](https://github.com/GideonBear/falconf/pull/13))
+- Document the fact that edit does not take a value
+
 ## [0.2.21](https://github.com/GideonBear/falconf/compare/v0.2.20...v0.2.21) - 2025-10-27
 
 ### Added
