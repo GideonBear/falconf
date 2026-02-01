@@ -55,8 +55,8 @@ impl Repo {
             debug!("New, so initializing new");
             let data = Data::init_new();
             let repo = Self {
-                auth,
                 repository,
+                auth,
                 data,
             };
 
@@ -129,8 +129,8 @@ impl Repo {
         let data = Self::get_data(&repository).wrap_err("Failed to get data")?;
 
         let repo = Self {
-            auth,
             repository,
+            auth,
             data,
         };
         // This runs at the start of every run, so we do sanity checks here
