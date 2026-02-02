@@ -1,15 +1,14 @@
 use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
-use clap::Args;
 use std::io::Write;
 
-#[derive(Args, Debug)]
-pub struct ListArgs {}
+#[derive(clap::Args, Debug)]
+pub struct Args {}
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn list<W: Write>(
     top_level_args: TopLevelArgs,
-    _args: ListArgs,
+    _args: Args,
     writer: &mut W,
 ) -> color_eyre::Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
@@ -31,10 +30,10 @@ pub mod tests {
 
     use super::*;
     use crate::cli::add::tests::{add_util, add_util_comment};
-    use crate::cli::edit::{EditArgs, edit};
+    use crate::cli::edit::edit;
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
-    use crate::cli::{PieceRef, add};
+    use crate::cli::{PieceRef, add, edit};
     use crate::testing::TestRemote;
     use color_eyre::Result;
     use log::debug;
@@ -64,7 +63,7 @@ pub mod tests {
         )?;
         edit(
             TopLevelArgs::new_testing(local.path().clone(), true),
-            EditArgs {
+            edit::Args {
                 comment: None,
                 remove_comment: false,
                 piece: PieceRef::Last,
@@ -100,7 +99,7 @@ pub mod tests {
         undo_util(local.path(), PieceRef::Last)?;
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
-        let args = ListArgs {};
+        let args = Args {};
         let mut writer = io::Cursor::new(vec![]);
 
         list(top_level_args, args, &mut writer)?;

@@ -1,5 +1,5 @@
 use crate::cli;
-use crate::cli::AddArgs;
+use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::piece::{BulkPiece, NonBulkPiece};
 use crate::pieces::apt::Apt;
@@ -201,14 +201,14 @@ impl PieceEnum {
         (apt, non_bulk)
     }
 
-    pub fn from_cli(args: &AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &add::Args) -> Result<Self> {
         Ok(match args.piece {
             None => Self::from_cli_autodetect(args)?,
             Some(piece) => Self::from_cli_known(piece, args)?,
         })
     }
 
-    fn from_cli_known(piece: cli::Piece, args: &AddArgs) -> Result<Self> {
+    fn from_cli_known(piece: cli::Piece, args: &add::Args) -> Result<Self> {
         Ok(match piece {
             cli::Piece::Apt => Self::Bulk(BulkPieceEnum::Apt(Apt::from_cli(args)?)),
             cli::Piece::Command => {
@@ -219,7 +219,7 @@ impl PieceEnum {
         })
     }
 
-    fn from_cli_autodetect(args: &AddArgs) -> Result<Self> {
+    fn from_cli_autodetect(args: &add::Args) -> Result<Self> {
         let command = args.value.clone();
         Ok(
             match command

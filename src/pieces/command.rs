@@ -1,4 +1,4 @@
-use crate::cli::AddArgs;
+use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::NonBulkPiece;
@@ -42,7 +42,7 @@ impl Command {
         Ok(())
     }
 
-    pub fn from_cli(args: &AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &add::Args) -> Result<Self> {
         Ok(Self {
             command: Self::parse_value(&args.value)?,
             undo_command: args.undo.clone(),

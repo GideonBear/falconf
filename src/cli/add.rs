@@ -3,7 +3,7 @@ use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use clap::ArgAction::SetTrue;
-use clap::{Args, ValueEnum};
+use clap::ValueEnum;
 use color_eyre::Result;
 use std::path::Path;
 
@@ -20,8 +20,8 @@ pub enum Piece {
     Manual,
 }
 
-#[derive(Args, Debug)]
-pub struct AddArgs {
+#[derive(clap::Args, Debug)]
+pub struct Args {
     /// An optional comment to describe the piece for easier identification.
     #[arg(long)]
     pub comment: Option<String>,
@@ -69,7 +69,7 @@ pub struct AddArgs {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn add(top_level_args: TopLevelArgs, args: AddArgs) -> Result<()> {
+pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     installation.pull_and_read(true)?;
@@ -105,7 +105,7 @@ pub mod tests {
     ) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), test_run);
 
-        let args = AddArgs {
+        let args = Args {
             comment,
             piece: Some(piece),
             _command: (),

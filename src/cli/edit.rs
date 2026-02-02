@@ -4,13 +4,12 @@ use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
-use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt, eyre};
 use log::{info, warn};
 
-#[derive(Args, Debug)]
-pub struct EditArgs {
+#[derive(clap::Args, Debug)]
+pub struct Args {
     /// An optional comment to describe the piece for easier identification.
     #[arg(long, conflicts_with = "remove_comment")]
     pub comment: Option<String>,
@@ -34,7 +33,7 @@ pub struct EditArgs {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn edit(top_level_args: TopLevelArgs, mut args: EditArgs) -> Result<()> {
+pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     installation.pull_and_read(true)?;
     let repo = installation.repo_mut();

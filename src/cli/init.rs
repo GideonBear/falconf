@@ -1,11 +1,10 @@
 use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
-use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::WrapErr;
 
-#[derive(Args, Debug)]
-pub struct InitArgs {
+#[derive(clap::Args, Debug)]
+pub struct Args {
     /// Create a new repo instead of cloning an existing one
     #[arg(long, short)]
     new: bool,
@@ -15,7 +14,7 @@ pub struct InitArgs {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn init(top_level_args: TopLevelArgs, args: InitArgs) -> Result<()> {
+pub fn init(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     Installation::init(&top_level_args, &args.remote, args.new).wrap_err("Failed to init")?;
     Ok(())
 }
@@ -33,7 +32,7 @@ pub mod tests {
 
         let top_level_args = TopLevelArgs::new_testing(falconf_path.clone(), true);
 
-        let args = InitArgs {
+        let args = Args {
             new,
             remote: remote.address().to_string(),
         };

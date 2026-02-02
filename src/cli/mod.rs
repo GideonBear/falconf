@@ -1,19 +1,3 @@
-use crate::cli::add::add;
-use crate::cli::edit::{EditArgs, edit};
-use crate::cli::init::InitArgs;
-use crate::cli::init::init;
-use crate::cli::list::ListArgs;
-use crate::cli::list::list;
-use crate::cli::push::{PushArgs, push};
-use crate::cli::remove::RemoveArgs;
-use crate::cli::remove::remove;
-use crate::cli::sync::SyncArgs;
-use crate::cli::sync::sync;
-use crate::cli::undo::undo;
-pub use add::AddArgs;
-pub use add::Piece;
-pub use undo::UndoArgs;
-
 use crate::full_piece::FullPiece;
 use clap::{Args, Parser, Subcommand};
 use color_eyre::Result;
@@ -25,6 +9,8 @@ use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 
+pub use add::Piece;
+
 pub mod add;
 mod edit;
 pub mod init;
@@ -32,7 +18,7 @@ mod list;
 mod push;
 mod remove;
 pub mod sync;
-mod undo;
+pub mod undo;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
     Ok(expanduser(s)?)
@@ -97,30 +83,30 @@ impl TopLevelArgs {
 #[derive(Subcommand, Debug)]
 enum Commands {
     #[command(about = "Initialize a new or existing Falconf repo on this machine")]
-    Init(InitArgs),
+    Init(init::Args),
 
     #[command(about = "Synchronize changes in the repo to this machine")]
-    Sync(SyncArgs),
+    Sync(sync::Args),
 
     #[command(about = "Add a new piece")]
-    Add(AddArgs),
+    Add(add::Args),
 
     #[command(about = "List all pieces")]
-    List(ListArgs),
+    List(list::Args),
 
     #[command(about = "Undo a piece")]
-    Undo(UndoArgs),
+    Undo(undo::Args),
 
     #[command(about = "Remove a piece")]
-    Remove(RemoveArgs),
+    Remove(remove::Args),
 
     #[command(about = "Push local changes in files to the repo")]
-    Push(PushArgs),
+    Push(push::Args),
 
     #[command(
         about = "Edit a piece. The value of a piece cannot be edited, create a new piece instead"
     )]
-    Edit(EditArgs),
+    Edit(edit::Args),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -165,13 +151,13 @@ pub fn main() -> Result<()> {
     let Cli { command, top_level } = cli;
 
     match *command {
-        Commands::Init(args) => init(top_level, args),
-        Commands::Sync(args) => sync(top_level, args),
-        Commands::Add(args) => add(top_level, args),
-        Commands::List(args) => list(top_level, args, &mut io::stdout().lock()),
-        Commands::Undo(args) => undo(top_level, args),
-        Commands::Remove(args) => remove(top_level, args),
-        Commands::Push(args) => push(top_level, args),
-        Commands::Edit(args) => edit(top_level, args),
+        Commands::Init(args) => init::init(top_level, args),
+        Commands::Sync(args) => sync::sync(top_level, args),
+        Commands::Add(args) => add::add(top_level, args),
+        Commands::List(args) => list::list(top_level, args, &mut io::stdout().lock()),
+        Commands::Undo(args) => undo::undo(top_level, args),
+        Commands::Remove(args) => remove::remove(top_level, args),
+        Commands::Push(args) => push::push(top_level, args),
+        Commands::Edit(args) => edit::edit(top_level, args),
     }
 }

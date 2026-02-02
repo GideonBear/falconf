@@ -1,5 +1,5 @@
-use crate::cli::AddArgs;
-use crate::cli::UndoArgs;
+use crate::cli::add;
+use crate::cli::undo;
 use crate::execution_data::ExecutionData;
 use crate::machine::Machine;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -123,7 +123,7 @@ impl FullPiece {
         Ok(())
     }
 
-    pub fn add(args: &AddArgs, execution_data: &ExecutionData) -> Result<(u32, Self)> {
+    pub fn add(args: &add::Args, execution_data: &ExecutionData) -> Result<(u32, Self)> {
         let mut piece = Self::from_cli(args)?;
         let id = Self::new_id();
 
@@ -159,7 +159,12 @@ impl FullPiece {
         Ok((id, piece))
     }
 
-    pub fn undo(&mut self, id: u32, args: &UndoArgs, execution_data: &ExecutionData) -> Result<()> {
+    pub fn undo(
+        &mut self,
+        id: u32,
+        args: &undo::Args,
+        execution_data: &ExecutionData,
+    ) -> Result<()> {
         if self.undone_on.is_some() {
             return Err(eyre!("This piece is already undone"));
         }
@@ -202,7 +207,7 @@ impl FullPiece {
         }
     }
 
-    fn from_cli(args: &AddArgs) -> Result<Self> {
+    fn from_cli(args: &add::Args) -> Result<Self> {
         let comment = args.comment.clone();
         Ok(Self::new(PieceEnum::from_cli(args)?, comment))
     }

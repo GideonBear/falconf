@@ -1,4 +1,4 @@
-use crate::cli::AddArgs;
+use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::NonBulkPiece;
@@ -115,7 +115,7 @@ impl File {
             .strip_prefix("/").expect("Invalid file location (no leading slash). Unreachable, we checked for this at construction time.")
     }
 
-    pub fn from_cli(args: &AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &add::Args) -> Result<Self> {
         if args.value.len() != 1 {
             return Err(eyre!(
                 "Expected a singular value (file location) for 'file' piece, got '{:?}'.",
@@ -154,10 +154,10 @@ mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli::TopLevelArgs;
     use crate::cli::add::tests::add_util_no_test_run;
     use crate::cli::init::tests::init_util;
-    use crate::cli::sync::{SyncArgs, sync};
+    use crate::cli::sync::sync;
+    use crate::cli::{TopLevelArgs, sync};
     use crate::testing::TestRemote;
     use color_eyre::eyre::OptionExt;
     use std::fs;
@@ -194,7 +194,7 @@ mod tests {
         let local_2 = init_util(&remote, false)?;
 
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = SyncArgs {};
+        let args = sync::Args {};
         sync(top_level_args, args)?;
 
         // After syncing, the dir is created

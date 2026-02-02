@@ -1,19 +1,18 @@
 use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
 use crate::utils::confirm;
-use clap::Args;
 use color_eyre::eyre::{Context, Result, eyre};
 use git2::DiffFormat;
 use log::info;
 use std::path::Path;
 use std::path::PathBuf;
 
-#[derive(Args, Debug)]
-pub struct PushArgs {}
+#[derive(clap::Args, Debug)]
+pub struct Args {}
 
 #[expect(clippy::print_stdout)]
 #[allow(clippy::needless_pass_by_value)]
-pub fn push(top_level_args: TopLevelArgs, _args: PushArgs) -> Result<()> {
+pub fn push(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     installation.pull_and_read(true)?;
     let repo = installation.repo_mut();

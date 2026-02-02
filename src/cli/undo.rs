@@ -3,14 +3,13 @@ use crate::cli::{PieceRef, parse_piece_ref};
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
-use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use log::info;
 use std::collections::{HashMap, HashSet};
 
-#[derive(Args, Debug)]
-pub struct UndoArgs {
+#[derive(clap::Args, Debug)]
+pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(
         value_parser = parse_piece_ref,
@@ -24,7 +23,7 @@ pub struct UndoArgs {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn undo(top_level_args: TopLevelArgs, args: UndoArgs) -> Result<()> {
+pub fn undo(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     installation.pull_and_read(true)?;
@@ -72,7 +71,7 @@ pub mod tests {
     pub fn undo_util(falconf_path: &Path, piece: PieceRef) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
 
-        let args = UndoArgs {
+        let args = Args {
             pieces: vec![piece],
             done_here: true,
         };

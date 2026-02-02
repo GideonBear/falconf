@@ -1,4 +1,4 @@
-use crate::cli::AddArgs;
+use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::BulkPiece;
@@ -33,7 +33,7 @@ impl Apt {
         Ok(())
     }
 
-    pub fn from_cli(args: &AddArgs) -> Result<Self> {
+    pub fn from_cli(args: &add::Args) -> Result<Self> {
         if args.value.len() != 1 {
             return Err(eyre!(
                 "Expected a singular value (package name) for 'apt' piece, got '{:?}'.",
@@ -44,7 +44,7 @@ impl Apt {
         Ok(Self { package })
     }
 
-    pub const fn from_cli_autodetected(_args: &AddArgs, package: String) -> Self {
+    pub const fn from_cli_autodetected(_args: &add::Args, package: String) -> Self {
         Self { package }
     }
 }

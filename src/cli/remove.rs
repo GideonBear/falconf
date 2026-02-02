@@ -1,15 +1,14 @@
 use crate::cli::TopLevelArgs;
 use crate::cli::{PieceRef, parse_piece_ref};
 use crate::installation::Installation;
-use clap::Args;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt;
 use color_eyre::eyre::Result;
 use std::fs::remove_file;
 
 // TODO(low): add a command to remove all unused pieces
-#[derive(Args, Debug)]
-pub struct RemoveArgs {
+#[derive(clap::Args, Debug)]
+pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(
         value_parser = parse_piece_ref,
@@ -23,7 +22,7 @@ pub struct RemoveArgs {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
+pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     installation.pull_and_read(true)?;
     let repo = installation.repo_mut();
@@ -105,7 +104,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
 //
 //         let local_2 = init_util(&remote, false)?;
 //         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-//         let args = SyncArgs {};
+//         let args = sync::Args {};
 //         sync(top_level_args, args)?;
 //
 //         debug!("Checking {test1:?}");
@@ -121,7 +120,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: RemoveArgs) -> Result<()> {
 //         assert!(test1.exists());
 //
 //         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-//         let args = SyncArgs {};
+//         let args = sync::Args {};
 //         sync(top_level_args, args)?;
 //
 //         assert!(!test1.exists());

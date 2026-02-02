@@ -2,15 +2,14 @@ use crate::cli::TopLevelArgs;
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
-use clap::Args;
 use color_eyre::Result;
 use log::info;
 
-#[derive(Args, Debug)]
-pub struct SyncArgs {}
+#[derive(clap::Args, Debug)]
+pub struct Args {}
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn sync(top_level_args: TopLevelArgs, _args: SyncArgs) -> Result<()> {
+pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let machine = *installation.machine();
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
@@ -36,11 +35,11 @@ mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli::add;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;
-    use crate::cli::remove::{RemoveArgs, remove};
+    use crate::cli::remove::remove;
     use crate::cli::undo::tests::undo_util;
+    use crate::cli::{add, remove};
     use crate::testing::{TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
@@ -79,13 +78,13 @@ mod tests {
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
         remove(
             top_level_args,
-            RemoveArgs {
+            remove::Args {
                 pieces: vec![],
                 force: false,
             },
         )?;
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = SyncArgs {};
+        let args = Args {};
         sync(top_level_args, args)?;
 
         // After syncing, the file is created
@@ -101,7 +100,7 @@ mod tests {
         assert!(test_1.is_symlink());
 
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = SyncArgs {};
+        let args = Args {};
         sync(top_level_args, args)?;
 
         assert!(!test_1.exists());
@@ -130,7 +129,7 @@ mod tests {
 
         let local_2 = init_util(&remote, false)?;
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        assert!(sync(top_level_args, SyncArgs {}).is_err());
+        assert!(sync(top_level_args, Args {}).is_err());
 
         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), true);
         let installation = Installation::get(&top_level_args)?;

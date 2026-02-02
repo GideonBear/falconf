@@ -1,4 +1,4 @@
-use crate::cli::AddArgs;
+use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::piece::NonBulkPiece;
 use crate::utils::press_enter;
@@ -32,7 +32,7 @@ impl Manual {
         Ok(())
     }
 
-    pub fn from_cli(args: &AddArgs) -> Self {
+    pub fn from_cli(args: &add::Args) -> Self {
         Self {
             message: shell_words::join(&args.value),
         }
