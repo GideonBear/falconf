@@ -134,7 +134,7 @@ impl Drop for TestRemote {
         // Necessary to kill all its children as well
         let pgid = i32::try_from(self.daemon.id()).unwrap();
         unsafe {
-            kill(-pgid, SIGTERM);
+            kill(pgid.checked_neg().unwrap(), SIGTERM);
         }
     }
 }
