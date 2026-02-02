@@ -2,6 +2,7 @@ use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
 use std::io::Write;
 
+#[expect(clippy::empty_structs_with_brackets)] // Consistent with other commands' Args
 #[derive(clap::Args, Debug)]
 pub struct Args {}
 

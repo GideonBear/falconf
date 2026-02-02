@@ -5,6 +5,7 @@ use crate::installation::Installation;
 use color_eyre::Result;
 use log::info;
 
+#[expect(clippy::empty_structs_with_brackets)] // Consistent with other commands' Args
 #[derive(clap::Args, Debug)]
 pub struct Args {}
 

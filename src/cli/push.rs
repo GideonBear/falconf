@@ -7,6 +7,7 @@ use log::info;
 use std::path::Path;
 use std::path::PathBuf;
 
+#[expect(clippy::empty_structs_with_brackets)] // Consistent with other commands' Args
 #[derive(clap::Args, Debug)]
 pub struct Args {}
 
