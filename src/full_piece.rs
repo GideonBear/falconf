@@ -8,7 +8,7 @@ use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize;
 use indexmap::IndexMap;
-use rand::RngCore;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
