@@ -21,7 +21,7 @@ env_logger = "0.11.8"
 hostname = "0.4.1"
 expanduser = "1.2.2"
 ron = "0.12.0"
-rand = "0.9.1"
+rand = "0.10.0"
 shell-words = "1.1.0"
 indexmap = { version = "2.10.0", features = ["serde"] }
 auth-git2 = "0.5.8"
