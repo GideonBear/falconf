@@ -38,23 +38,23 @@ pub struct Args {
         ("_apt", "true", "apt"),
         ("_file", "true", "file"),
         ("_manual", "true", "manual"),
-    ])]
+    ], group="piece_group")]
     pub piece: Option<Piece>,
 
     /// Alias for `--piece=command`
-    #[arg(long="command", short='c', action=SetTrue)]
+    #[arg(long="command", short='c', action=SetTrue, group="piece_group")]
     _command: (),
 
     /// Alias for `--piece=apt`
-    #[arg(long="apt", action=SetTrue)]
+    #[arg(long="apt", action=SetTrue, group="piece_group")]
     _apt: (),
 
     /// Alias for `--piece=file`
-    #[arg(long="file", short='f', action=SetTrue)]
+    #[arg(long="file", short='f', action=SetTrue, group="piece_group")]
     _file: (),
 
     /// Alias for `--piece=manual`
-    #[arg(long="manual", short='m', action=SetTrue)]
+    #[arg(long="manual", short='m', action=SetTrue, group="piece_group")]
     _manual: (),
 
     /// The value of the piece. For example the command, the package, etc.
