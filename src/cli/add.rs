@@ -21,6 +21,10 @@ pub enum Piece {
 }
 
 #[derive(clap::Args, Debug)]
+#[expect(
+    clippy::partial_pub_fields,
+    reason = "Will set `piece`, should not be read directly"
+)]
 pub struct Args {
     /// An optional comment to describe the piece for easier identification.
     #[arg(long)]
