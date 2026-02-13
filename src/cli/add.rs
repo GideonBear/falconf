@@ -93,7 +93,6 @@ pub mod tests {
     #![allow(clippy::missing_panics_doc)]
 
     use super::*;
-    use crate::cli::add;
     use std::path::Path;
 
     fn add_util_opts(
