@@ -5,7 +5,7 @@ use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
 use color_eyre::Result;
-use color_eyre::eyre::{OptionExt, eyre};
+use color_eyre::eyre::{OptionExt as _, eyre};
 use log::{info, warn};
 
 #[derive(clap::Args, Debug)]

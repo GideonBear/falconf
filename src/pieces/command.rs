@@ -1,6 +1,6 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
-use crate::logging::CommandExt;
+use crate::logging::CommandExt as _;
 use crate::piece::NonBulkPiece;
 use crate::utils::prompt;
 use color_eyre::Result;

@@ -1,7 +1,7 @@
 use color_eyre::Result;
-use color_eyre::eyre::OptionExt;
-use color_eyre::owo_colors::OwoColorize;
-use std::io::Write;
+use color_eyre::eyre::OptionExt as _;
+use color_eyre::owo_colors::OwoColorize as _;
+use std::io::Write as _;
 use std::path::Path;
 use std::{fs, io};
 
@@ -48,7 +48,7 @@ pub fn prompt(question: &str) -> io::Result<String> {
     io::stdout().flush()?;
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
-    Ok(input.trim_end().to_string())
+    Ok(input.trim_end().to_owned())
 }
 
 pub fn set_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {

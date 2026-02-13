@@ -2,7 +2,7 @@ use crate::cli::TopLevelArgs;
 use crate::cli::{PieceRef, parse_piece_ref};
 use crate::installation::Installation;
 use color_eyre::eyre;
-use color_eyre::eyre::OptionExt;
+use color_eyre::eyre::OptionExt as _;
 use color_eyre::eyre::Result;
 use std::fs::remove_file;
 

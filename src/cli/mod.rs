@@ -1,13 +1,13 @@
 use crate::full_piece::FullPiece;
 use clap::{Args, Parser, Subcommand};
 use color_eyre::Result;
-use color_eyre::eyre::OptionExt;
+use color_eyre::eyre::OptionExt as _;
 use expanduser::expanduser;
 use indexmap::IndexMap;
 use log::{LevelFilter, debug};
 use std::io;
 use std::path::PathBuf;
-use std::str::FromStr;
+use std::str::FromStr as _;
 
 pub use add::Piece;
 
@@ -132,10 +132,10 @@ fn parse_piece_ref(s: &str) -> Result<PieceRef, String> {
         return Ok(PieceRef::Last);
     }
     if s.len() != 8 {
-        return Err("Value must be exactly 8 hex digits".to_string());
+        return Err("Value must be exactly 8 hex digits".to_owned());
     }
     u32::from_str_radix(s, 16)
-        .map_err(|_| "Invalid hex format".to_string())
+        .map_err(|_| "Invalid hex format".to_owned())
         .map(PieceRef::Id)
 }
 

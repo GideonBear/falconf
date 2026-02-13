@@ -3,7 +3,7 @@ use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
 use crate::repo::Repo;
 use color_eyre::Result;
-use color_eyre::eyre::{WrapErr, eyre};
+use color_eyre::eyre::{WrapErr as _, eyre};
 use log::{debug, info};
 use std::fs;
 use std::fs::remove_dir_all;
@@ -75,7 +75,7 @@ impl Installation {
         let machine = Machine(
             fs::read_to_string(root.join("machine"))?
                 .parse()
-                .wrap_err("`machine` file does not contain a valid UUID".to_string())?,
+                .wrap_err("`machine` file does not contain a valid UUID".to_owned())?,
         );
 
         let repo = Repo::get_from_path(&Self::get_repository_path(root))?;

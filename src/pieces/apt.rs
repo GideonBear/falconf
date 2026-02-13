@@ -1,6 +1,6 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
-use crate::logging::CommandExt;
+use crate::logging::CommandExt as _;
 use crate::piece::BulkPiece;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;

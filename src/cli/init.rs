@@ -1,7 +1,7 @@
 use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
 use color_eyre::Result;
-use color_eyre::eyre::WrapErr;
+use color_eyre::eyre::WrapErr as _;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {

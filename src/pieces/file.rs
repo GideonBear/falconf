@@ -1,10 +1,10 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
-use crate::logging::CommandExt;
+use crate::logging::CommandExt as _;
 use crate::piece::NonBulkPiece;
 use crate::utils::{confirm, create_parent};
 use color_eyre::Result;
-use color_eyre::eyre::{WrapErr, eyre};
+use color_eyre::eyre::{WrapErr as _, eyre};
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};

@@ -1,7 +1,7 @@
 use crate::cli::TopLevelArgs;
 use crate::installation::Installation;
 use crate::utils::confirm;
-use color_eyre::eyre::{Context, Result, eyre};
+use color_eyre::eyre::{Context as _, Result, eyre};
 use git2::DiffFormat;
 use log::info;
 use std::path::Path;

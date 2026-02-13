@@ -3,9 +3,9 @@ use crate::machine::{Machine, MachineData};
 use crate::utils::remove_empty_dirs;
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
-use color_eyre::eyre::{OptionExt, WrapErr, eyre};
+use color_eyre::eyre::{OptionExt as _, WrapErr as _, eyre};
 use git2::{Diff, Error, Repository, Status};
-use itertools::Itertools;
+use itertools::Itertools as _;
 use log::debug;
 use std::fmt::{Debug, Formatter};
 use std::fs::{File, create_dir};
@@ -205,7 +205,7 @@ impl Repo {
             .into_iter()
             .map(|p| file_dir.join(p).to_string_lossy().to_string())
             .collect::<Vec<_>>();
-        files.push(DATA_PATH.to_string());
+        files.push(DATA_PATH.to_owned());
         index
             .add_all(&files, git2::IndexAddOption::DEFAULT, None)
             .wrap_err("Failed to add all")?;

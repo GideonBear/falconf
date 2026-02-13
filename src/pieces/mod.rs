@@ -1,14 +1,14 @@
 use crate::cli;
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
-use crate::piece::{BulkPiece, NonBulkPiece};
+use crate::piece::{BulkPiece, NonBulkPiece as _};
 use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
 use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
 use crate::utils::print_id;
 use color_eyre::Result;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};

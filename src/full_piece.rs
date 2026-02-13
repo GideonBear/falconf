@@ -6,9 +6,9 @@ use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use crate::utils::{print_id, set_eq};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
-use color_eyre::owo_colors::OwoColorize;
+use color_eyre::owo_colors::OwoColorize as _;
 use indexmap::IndexMap;
-use rand::Rng;
+use rand::Rng as _;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
