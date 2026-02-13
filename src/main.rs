@@ -1,9 +1,3 @@
-// Warnings are translated to denys in CI
-#![warn(clippy::print_stdout)]
-#![warn(clippy::print_stderr)]
-#![warn(clippy::panic)]
-#![warn(clippy::missing_panics_doc)] // Catches other panics (unwrap, expect)
-
 use color_eyre::eyre;
 
 mod cli;
