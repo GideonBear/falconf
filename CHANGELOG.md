@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1](https://github.com/GideonBear/falconf/compare/v0.3.0...v0.3.1) - 2026-02-17
+
+### Other
+
+- *(renovate)* disable singular dependency updates that only affect the lockfile
+- *(deps)* update release-plz/action digest to f708778 ([#88](https://github.com/GideonBear/falconf/pull/88))
+- *(deps)* update dependency rust to v1.93.1 ([#86](https://github.com/GideonBear/falconf/pull/86))
+- clippy fixes
+- clippy fixes
+- use bash shell
+- apply clippy fixes
+- rename AddArgs to add::Args, etc.
+- *(renovate)* remove unnecessary maintainLockFilesWeekly preset ([#85](https://github.com/GideonBear/falconf/pull/85))
+- *(deps)* update rust crate rand to 0.10.0 ([#81](https://github.com/GideonBear/falconf/pull/81))
+- *(deps)* update release-plz/action digest to 52440b5 ([#79](https://github.com/GideonBear/falconf/pull/79))
+- *(deps)* lock file maintenance ([#74](https://github.com/GideonBear/falconf/pull/74))
+- *(deps)* update rust crate regex to v1.12.3 ([#77](https://github.com/GideonBear/falconf/pull/77))
+- *(deps)* update actions/checkout digest to de0fac2 ([#76](https://github.com/GideonBear/falconf/pull/76))
+- *(deps)* update release-plz/action digest to 20b2393 ([#78](https://github.com/GideonBear/falconf/pull/78))
+- use expect instead of allow where possible
+- apply clippy fixes
+- apply clippy fixes
+- apply clippy fixes
+- apply clippy fixes
+- apply clippy fixes
+- apply clippy fixes
+- apply clippy fixes
+- apply clippy fixes
+
 ## [0.3.0](https://github.com/GideonBear/falconf/compare/v0.2.21...v0.3.0) - 2026-02-01
 
 ### Added
