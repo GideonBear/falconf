@@ -62,6 +62,8 @@ jobs:
     needs: [ native_build ]
     env:
       tag: ${{ github.event.client_payload.tag }}
+    permissions:
+      contents: write # `gh release edit`
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Publish release
