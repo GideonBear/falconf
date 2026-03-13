@@ -65,3 +65,5 @@ jobs:
     steps:
       - name: Publish release
         run: gh release edit "$tag" --draft=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
