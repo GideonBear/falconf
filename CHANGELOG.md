@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.8](https://github.com/GideonBear/falconf/compare/v0.3.7...v0.3.8) - 2026-03-23
+
+### Fixed
+
+- fix command parsing behavior involving pipes
+
 ## [0.3.0](https://github.com/GideonBear/falconf/compare/v0.2.21...v0.3.0) - 2026-02-01
 
 ### Added
