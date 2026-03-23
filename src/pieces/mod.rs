@@ -27,7 +27,7 @@ macro_rules! unknown {
             $target,
             "')"
         ));
-        PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli($args)?))
+        PieceEnum::NonBulk(NonBulkPieceEnum::Command(Command::from_cli($args)))
     }};
 }
 
@@ -212,7 +212,7 @@ impl PieceEnum {
         Ok(match piece {
             cli::Piece::Apt => Self::Bulk(BulkPieceEnum::Apt(Apt::from_cli(args)?)),
             cli::Piece::Command => {
-                Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?))
+                Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)))
             }
             cli::Piece::File => Self::NonBulk(NonBulkPieceEnum::File(File::from_cli(args)?)),
             cli::Piece::Manual => Self::NonBulk(NonBulkPieceEnum::Manual(Manual::from_cli(args))),
@@ -241,7 +241,7 @@ impl PieceEnum {
                 }
                 ["apt", ..] => unknown!("apt", "apt", args),
                 ["ln", ..] => unknown!("ln", "file", args),
-                _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args)?)),
+                _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args))),
             },
         )
     }

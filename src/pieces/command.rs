@@ -42,18 +42,18 @@ impl Command {
         Ok(())
     }
 
-    pub fn from_cli(args: &add::Args) -> Result<Self> {
-        Ok(Self {
-            command: Self::parse_value(&args.value)?,
+    pub fn from_cli(args: &add::Args) -> Self {
+        Self {
+            command: Self::parse_value(&args.value),
             undo_command: args.undo.clone(),
-        })
+        }
     }
 
-    fn parse_value(value: &Vec<String>) -> Result<String> {
+    fn parse_value(value: &Vec<String>) -> String {
         if value.len() == 1 {
-            Ok(shell_words::join(shell_words::split(&value[0])?))
+            value[0].clone()
         } else {
-            Ok(shell_words::join(value))
+            shell_words::join(value)
         }
     }
 }
@@ -70,25 +70,28 @@ mod tests {
 
     use super::*;
 
-    fn testcase(input: Vec<&str>, output: &str) -> Result<()> {
+    fn testcase(input: Vec<&str>, output: &str) {
         assert_eq!(
-            Command::parse_value(&input.into_iter().map(ToString::to_string).collect())?,
+            Command::parse_value(&input.into_iter().map(ToString::to_string).collect()),
             output,
         );
-        Ok(())
     }
 
     #[expect(clippy::needless_raw_string_hashes)]
     #[test]
-    fn test_parse_value() -> Result<()> {
-        testcase(vec!["echo", "one two"], r#"echo 'one two'"#)?;
-        testcase(vec!["echo", "'one two'"], r#"echo ''\''one two'\'''"#)?;
-        testcase(vec!["echo", r#""one two""#], r#"echo '"one two"'"#)?;
-        testcase(vec!["echo 'one two'"], r#"echo 'one two'"#)?;
-        testcase(vec!["echo"], r#"echo"#)?;
-        testcase(vec!["echo one"], r#"echo one"#)?;
-        testcase(vec!["'echo one'"], r#"'echo one'"#)?;
+    fn test_parse_value() {
+        testcase(vec!["echo", "one two"], r#"echo 'one two'"#);
+        testcase(vec!["echo", "'one two'"], r#"echo ''\''one two'\'''"#);
+        testcase(vec!["echo", r#""one two""#], r#"echo '"one two"'"#);
+        testcase(vec!["echo 'one two'"], r#"echo 'one two'"#);
+        testcase(vec!["echo"], r#"echo"#);
+        testcase(vec!["echo one"], r#"echo one"#);
+        testcase(vec!["'echo one'"], r#"'echo one'"#);
+    }
 
-        Ok(())
+    #[test]
+    fn test_parse_value_pipe_not_escaped() {
+        let command = "curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get";
+        assert_eq!(Command::parse_value(&vec![command.to_string()]), command);
     }
 }
