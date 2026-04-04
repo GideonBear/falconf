@@ -3,7 +3,7 @@ use color_eyre::Result;
 use std::fmt::Display;
 
 /// A single piece of configuration (non-bulk)
-pub trait NonBulkPiece: Sized + Display {
+pub trait NonBulkPiece: Display {
     /// Execute a single piece.
     fn execute(&mut self, execution_data: &ExecutionData) -> Result<()>;
 
@@ -12,7 +12,7 @@ pub trait NonBulkPiece: Sized + Display {
 }
 
 /// A single piece of configuration (bulk)
-pub trait BulkPiece: Sized + Display {
+pub trait BulkPiece: Display {
     /// Execute multiple of these pieces in bulk.
     fn execute_bulk(pieces: &[&mut Self], execution_data: &ExecutionData) -> Result<()>;
 
