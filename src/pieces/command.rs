@@ -51,6 +51,9 @@ impl Command {
 
     fn parse_value(value: &Vec<String>) -> String {
         if value.len() == 1 {
+            // TODO(low): This branch should not be hit outside of testing,
+            //  since if value.len() == 1 { command = shell_words::split(&command[0]); }.
+            //  But it doesn't matter that much, it's too much effort to change all the tests.
             value[0].clone()
         } else {
             shell_words::join(value)

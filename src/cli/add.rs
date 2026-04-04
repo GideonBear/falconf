@@ -95,6 +95,24 @@ pub mod tests {
     use super::*;
     use std::path::Path;
 
+    pub fn add_args_util(
+        piece: Option<Piece>,
+        value: Vec<String>,
+        comment: Option<String>,
+    ) -> Args {
+        Args {
+            comment,
+            piece,
+            _command: (),
+            _apt: (),
+            _file: (),
+            _manual: (),
+            value,
+            undo: None,
+            not_done_here: false,
+        }
+    }
+
     fn add_util_opts(
         falconf_path: &Path,
         piece: Piece,
@@ -104,17 +122,7 @@ pub mod tests {
     ) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), test_run);
 
-        let args = Args {
-            comment,
-            piece: Some(piece),
-            _command: (),
-            _apt: (),
-            _file: (),
-            _manual: (),
-            value,
-            undo: None,
-            not_done_here: false,
-        };
+        let args = add_args_util(Some(piece), value, comment);
 
         add(top_level_args, args)?;
 

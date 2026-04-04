@@ -220,7 +220,13 @@ impl PieceEnum {
     }
 
     fn from_cli_autodetect(args: &add::Args) -> Result<Self> {
-        let command = args.value.clone();
+        let mut command = args.value.clone();
+        // When the piece is known, we leave the value alone
+        //  When the piece is unknown, we assume it's a command.
+        //  If there's only a single value, split it so we can do proper autodetection.
+        if command.len() == 1 {
+            command = shell_words::split(&command[0])?;
+        }
         Ok(
             match command
                 .iter()
@@ -271,5 +277,39 @@ impl Display for PieceEnum {
             Self::Bulk(piece) => piece.fmt(f),
             Self::NonBulk(piece) => piece.fmt(f),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::missing_panics_doc)]
+
+    use super::*;
+    use crate::cli::add::tests::add_args_util;
+
+    #[test]
+    fn test_from_cli_autodetect_works_split() -> Result<()> {
+        let args = add_args_util(
+            None,
+            vec![
+                "apt".to_string(),
+                "install".to_string(),
+                "rolldice".to_string(),
+            ],
+            None,
+        );
+        let piece = PieceEnum::from_cli(&args)?;
+        assert!(matches!(piece, PieceEnum::Bulk(BulkPieceEnum::Apt(_))));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_cli_autodetect_works_combined() -> Result<()> {
+        let args = add_args_util(None, vec!["apt install rolldice".to_string()], None);
+        let piece = PieceEnum::from_cli(&args)?;
+        assert!(matches!(piece, PieceEnum::Bulk(BulkPieceEnum::Apt(_))));
+
+        Ok(())
     }
 }
