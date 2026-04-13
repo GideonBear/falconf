@@ -29,6 +29,6 @@ itertools = "0.14.0"
 
 [dev-dependencies]
 ctor = "=0.8.0"
-libc = "=0.2.184"
+libc = "=0.2.185"
 regex = "=1.12.3"
 tempdir = "=0.3.7"
