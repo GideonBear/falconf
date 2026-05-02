@@ -196,8 +196,6 @@ fn setup_test() {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
     use std::fs::OpenOptions;
     use std::io::Write;

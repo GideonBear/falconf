@@ -69,8 +69,6 @@ impl Display for Command {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
 
     fn testcase(input: Vec<&str>, output: &str) {

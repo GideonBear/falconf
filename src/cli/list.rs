@@ -26,8 +26,6 @@ pub fn list<W: Write>(
 
 #[cfg(test)]
 pub mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
     use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::edit::edit;

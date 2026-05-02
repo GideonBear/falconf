@@ -32,8 +32,6 @@ pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;

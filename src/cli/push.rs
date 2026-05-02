@@ -66,7 +66,5 @@ pub fn push(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
 // TODO(test): add tests
 // #[cfg(test)]
 // mod tests {
-//     #![allow(clippy::missing_panics_doc)]
-//
 //     use super::*;
 // }

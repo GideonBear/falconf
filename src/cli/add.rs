@@ -90,8 +90,6 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 
 #[cfg(test)]
 pub mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
     use std::path::Path;
 

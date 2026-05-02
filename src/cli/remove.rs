@@ -76,8 +76,6 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 // TODO(test): add tests
 // #[cfg(test)]
 // mod tests {
-//     #![allow(clippy::missing_panics_doc)]
-//
 //     use super::*;
 //     use crate::cli;
 //     use crate::cli::add::tests::add_util;

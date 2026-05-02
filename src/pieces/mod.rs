@@ -282,8 +282,6 @@ impl Display for PieceEnum {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
     use crate::cli::add::tests::add_args_util;
 

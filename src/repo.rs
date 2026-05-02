@@ -329,8 +329,6 @@ fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::missing_panics_doc)]
-
     use super::*;
     use crate::cli::TopLevelArgs;
     use crate::cli::init::tests::init_util;

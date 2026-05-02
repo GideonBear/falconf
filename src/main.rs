@@ -3,6 +3,7 @@
 #![warn(clippy::print_stderr)]
 #![warn(clippy::panic)]
 #![warn(clippy::missing_panics_doc)] // Catches other panics (unwrap, expect)
+#![cfg_attr(test, allow(clippy::missing_panics_doc))]
 
 use color_eyre::eyre;
 
