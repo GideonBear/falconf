@@ -185,7 +185,7 @@ pub fn get_piece(falconf_dir: &Path, position: usize) -> Result<PieceRef> {
     Ok(PieceRef::Id(id))
 }
 
-#[ctor]
+#[ctor(unsafe)]
 fn setup_test() {
     color_eyre::install().unwrap();
 
