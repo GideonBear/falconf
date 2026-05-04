@@ -28,7 +28,7 @@ auth-git2 = "0.5.8"
 itertools = "0.14.0"
 
 [dev-dependencies]
-ctor = "=1.0.0"
+ctor = "=1.0.1"
 libc = "=0.2.186"
 regex = "=1.12.3"
 tempdir = "=0.3.7"
