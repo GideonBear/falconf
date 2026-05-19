@@ -12,7 +12,7 @@ edition = "2024"
 [dependencies]
 clap = { version = "4.5.37", features = ["derive", "env", "wrap_help"] }
 color-eyre = "0.6.3"
-git2 = "0.20.1"
+git2 = { version = "0.21.0", features = ["https", "ssh"] }
 serde = { version = "1.0.219", features = ["derive"] }
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
 command-error = "0.8.0"
@@ -24,7 +24,7 @@ ron = "0.12.0"
 rand = "0.10.0"
 shell-words = "1.1.0"
 indexmap = { version = "2.10.0", features = ["serde"] }
-auth-git2 = "0.5.8"
+auth-git2 = "0.6.0"
 itertools = "0.14.0"
 
 [dev-dependencies]
