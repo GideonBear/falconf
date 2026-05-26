@@ -38,7 +38,7 @@ pub mod tests {
     use regex::Regex;
     use std::fs::File;
     use std::io;
-    use tempdir::TempDir;
+    use tempfile::TempDir;
 
     #[test]
     fn test_list() -> Result<()> {
@@ -70,7 +70,7 @@ pub mod tests {
             },
         )?;
         // File
-        let temp = TempDir::new("test_falconf_files")?;
+        let temp = TempDir::new()?;
         let test1 = temp.path().join("test1.txt");
         File::create(&test1)?.write_all(b"test1")?;
         debug!("Created {test1:?}");

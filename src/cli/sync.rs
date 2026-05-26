@@ -43,12 +43,12 @@ mod tests {
     use log::debug;
     use std::fs::{File, remove_file};
     use std::io::Write;
-    use tempdir::TempDir;
+    use tempfile::TempDir;
 
     #[test]
     fn test_sync() -> Result<()> {
         let remote = TestRemote::new()?;
-        let temp = TempDir::new("test_falconf_files")?;
+        let temp = TempDir::new()?;
         let test_1 = temp.path().join("test_1.txt");
         File::create(&test_1)?.write_all(b"test_1_content")?;
 

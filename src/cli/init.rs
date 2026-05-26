@@ -24,10 +24,10 @@ pub mod tests {
     use super::*;
     use crate::testing::{TempDirSub, TestRemote};
     use log::debug;
-    use tempdir::TempDir;
+    use tempfile::TempDir;
 
     pub fn init_util(remote: &TestRemote, new: bool) -> Result<TempDirSub> {
-        let temp = TempDir::new("test_falconf")?;
+        let temp = TempDir::new()?;
         let falconf_path = temp.path().join("test_.falconf_dir");
 
         let top_level_args = TopLevelArgs::new_testing(falconf_path.clone(), true);

@@ -12,7 +12,7 @@ use std::os::unix::prelude::CommandExt as UnixCommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::{LazyLock, Mutex, MutexGuard};
-use tempdir::TempDir;
+use tempfile::TempDir;
 
 static PORT_MUTEX: LazyLock<Mutex<()>> = LazyLock::new(Mutex::default);
 
@@ -34,7 +34,7 @@ impl TestRemote {
 
         // Create a temporary directory for the repositories
         // This will get cleaned up automatically when the TestRepository is dropped
-        let repos_dir = TempDir::new("test_remote_repos")?;
+        let repos_dir = TempDir::new()?;
         let repo = repos_dir.path().join("test_repo.git");
 
         // Initialize the repository
@@ -96,7 +96,7 @@ impl TestRemote {
     }
 
     fn clone_and_enter(&self) -> Result<TempDirSub> {
-        let tempdir = TempDir::new("test_local_repo")?;
+        let tempdir = TempDir::new()?;
         let local = tempdir.path().join("test_repo");
 
         Command::new("git")

@@ -161,12 +161,12 @@ mod tests {
     use std::fs;
     use std::fs::{create_dir, remove_dir_all};
     use std::io::Write;
-    use tempdir::TempDir;
+    use tempfile::TempDir;
 
     #[test]
     fn test_file_dir() -> Result<()> {
         let remote = TestRemote::new()?;
-        let temp = TempDir::new("test_falconf_files")?;
+        let temp = TempDir::new()?;
         let test_d = temp.path().join("dir");
         create_dir(&test_d)?;
         let test_1 = test_d.join("test_1");
