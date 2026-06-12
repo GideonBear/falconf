@@ -26,6 +26,7 @@ shell-words = "1.1.0"
 indexmap = { version = "2.10.0", features = ["serde"] }
 auth-git2 = "0.6.0"
 itertools = "0.14.0"
+owo-colors = { version = "4.3.0", features = ["supports-colors"] }
 
 [dev-dependencies]
 ctor = "=1.0.7"

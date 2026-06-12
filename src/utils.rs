@@ -1,6 +1,8 @@
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt as _;
 use color_eyre::owo_colors::OwoColorize as _;
+use color_eyre::owo_colors::Stream::Stdout;
+use color_eyre::owo_colors::Style;
 use std::io::Write as _;
 use std::path::Path;
 use std::{fs, io};
@@ -82,8 +84,6 @@ pub fn remove_empty_dirs(path: &Path) -> Result<()> {
 }
 
 pub fn print_id(id: u32) -> String {
-    let id = format!("[{id:08x}]");
-    let id = id.magenta();
-    let id = id.bold();
-    format!("{id}")
+    let style = Style::new().magenta().bold();
+    format!("[{id:08x}]").if_supports_color(Stdout, |s| s.style(style)).to_string()
 }
