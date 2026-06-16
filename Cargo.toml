@@ -25,7 +25,7 @@ rand = "0.10.0"
 shell-words = "1.1.0"
 indexmap = { version = "2.10.0", features = ["serde"] }
 auth-git2 = "0.6.0"
-itertools = "0.14.0"
+itertools = "0.15.0"
 
 [dev-dependencies]
 ctor = "=1.0.7"
