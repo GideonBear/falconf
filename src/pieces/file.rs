@@ -48,6 +48,7 @@ impl NonBulkPiece for File {
                 return Err(eyre!("File already exists and is a symlink."));
             }
 
+            // TODO(test): test expected content etc. Test all this logic.
             if let Some(expected_previous_content) = &self.expected_previous_content {
                 let actual_content = std::fs::read_to_string(&self.location)?;
                 if actual_content != *expected_previous_content {
