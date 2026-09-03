@@ -8,7 +8,8 @@ use color_eyre::eyre::{WrapErr as _, eyre};
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-use std::fs::{remove_file, rename};
+use std::fs;
+use std::fs::{read_dir, remove_file, rename};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -33,6 +34,7 @@ impl NonBulkPiece for File {
         let target_file = self.target_file(execution_data);
 
         if !target_file.exists() {
+            // TODO(low): possibly do this better
             info!("Repo (target) file doesn't exist, assuming this is newly added");
             debug!(
                 "Moving the file into the repo: {} to {}",
@@ -41,6 +43,9 @@ impl NonBulkPiece for File {
             );
             create_parent(&target_file)?;
             rename(&self.location, &target_file).wrap_err("Failed to move file into repo")?;
+            if target_file.is_dir() && read_dir(&target_file)?.next().is_none() {
+                fs::File::create(target_file.join(".falconfkeep"))?;
+            }
         }
 
         if self.location.exists() {
@@ -159,9 +164,9 @@ mod tests {
     use crate::cli::{TopLevelArgs, sync};
     use crate::testing::TestRemote;
     use color_eyre::eyre::OptionExt;
-    use std::fs;
     use std::fs::{create_dir, remove_dir_all};
     use std::io::Write;
+    use std::{fs, io};
     use tempfile::TempDir;
 
     #[test]
@@ -201,6 +206,40 @@ mod tests {
         assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
         assert!(test_2.exists());
         assert_eq!(fs::read_to_string(&test_2)?, "test_2_content");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_empty_dir() -> Result<()> {
+        let remote = TestRemote::new()?;
+        let temp = TempDir::new()?;
+        let test_d = temp.path().join("dir");
+        create_dir(&test_d)?;
+
+        let local_1 = init_util(&remote, true)?;
+        let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
+        add_util_no_test_run(local_1.path(), crate::cli::add::Piece::File, vec![test_d_s])?;
+
+        // Switching to being another machine, the dir doesn't exist yet
+        remove_dir_all(&test_d)?;
+        assert!(!test_d.exists());
+
+        let local_2 = init_util(&remote, false)?;
+
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let args = sync::Args {};
+        sync(top_level_args, args)?;
+
+        // After syncing, the dir is created
+        assert!(test_d.exists());
+        // TODO(low): it would be nice if there is no .falconfkeep in it
+        assert_eq!(
+            read_dir(&test_d)?
+                .map(|d| d.map(|d| d.path()))
+                .collect::<io::Result<Vec<_>>>()?,
+            vec![test_d.join(".falconfkeep")]
+        );
 
         Ok(())
     }
