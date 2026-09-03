@@ -4,7 +4,8 @@ use crate::installation::Installation;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt as _;
 use color_eyre::eyre::Result;
-use std::fs::remove_file;
+use std::fs;
+use std::fs::{remove_dir_all, remove_file};
 
 // TODO(low): add a command to remove all unused pieces
 #[derive(clap::Args, Debug)]
@@ -54,7 +55,11 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     for piece in pieces_to_remove {
         if let Some(file) = piece.file() {
             removed_files.push(file.to_path_buf());
-            remove_file(file_dir.join(file))?;
+            if fs::symlink_metadata(file_dir.join(file))?.is_dir() {
+                remove_dir_all(file_dir.join(file))?;
+            } else {
+                remove_file(file_dir.join(file))?;
+            }
         }
     }
     repo.clean_file_dir()?;
