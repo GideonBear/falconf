@@ -8,10 +8,12 @@ use crate::pieces::file::File;
 use crate::pieces::manual::Manual;
 use crate::utils::print_id;
 use color_eyre::Result;
+use color_eyre::eyre::eyre;
 use itertools::Itertools as _;
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::path::Path;
 
 pub mod apt;
 pub mod command;
@@ -247,6 +249,12 @@ impl PieceEnum {
                 }
                 ["apt", ..] => unknown!("apt", "apt", args),
                 ["ln", ..] => unknown!("ln", "file", args),
+                [path] if Path::new(path).exists() => {
+                    return Err(eyre!(
+                        "Refusing to add command piece which is also a valid path. \
+                        Please use -f if you meant to add a file, or -c to explicitly add a command."
+                    ));
+                }
                 _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args))),
             },
         )
