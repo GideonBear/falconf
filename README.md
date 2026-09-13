@@ -62,7 +62,7 @@ Let's say you just discovered [duf](https://github.com/muesli/duf), and want
 to use it instead of `df`. You add an alias `alias df=duf` to `~/.bash_aliases`,
 which is tracked with `falconf add -f ~/.bash_aliases`. You then run
 `falconf push`, which pushes the changes you made in `~/.bash_aliases` (and shows
-you a diff), and `falconf add -n apt install duf`, which installs `duf`. When you then
+you a diff), and `falconf add apt install duf`, which installs `duf`. When you then
 run `falconf sync` on your other machine, it adds the alias to `~/.bash_aliases`,
 and installs `duf`.
 
@@ -72,14 +72,14 @@ piece, and run `falconf undo -n <piece id>`, where `<piece id>` is the 8-digit h
 ID noted in brackets in the `falconf list` output. This automatically runs `apt remove --autoremove duf`
 for you, and on your other machines, and marks the piece for deletion when every machine has.
 This way you don't clutter your pieces with install and remove commands. You can then edit
-`~/.bash_aliases` and run `falconf push` again, and run `falconf add -n cargo binstall dysk`.
+`~/.bash_aliases` and run `falconf push` again, and run `falconf add cargo binstall dysk`.
 The next sync on the other machine will then update `~/.bash_aliases`, uninstall `duf`,
 and install `dysk`.
 
 ### Tips
 
-* Running `falconf add` without `--not-done-here` (`-n`) will assume you've already ran the command
-  here. You can for example run any command, and then run `falconf add !!`. Your shell will expand `!!` to the
+* Running `falconf add` with `--done` (`-d`) will assume you've already ran the command
+  here. You can for example run any command, and then run `falconf add -d !!`. Your shell will expand `!!` to the
   previous command you ran.
 
 ## Comparison to similar tools

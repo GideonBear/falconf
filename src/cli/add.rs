@@ -63,9 +63,9 @@ pub struct Args {
     #[arg(short, long)]
     pub undo: Option<String>,
 
-    /// Run the piece here (on this machine) immediately
+    /// Assume this piece is already executed on this machine
     #[arg(long, short)]
-    pub not_done_here: bool,
+    pub done: bool,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -107,7 +107,7 @@ pub mod tests {
             _manual: (),
             value,
             undo: None,
-            not_done_here: false,
+            done: false,
         }
     }
 

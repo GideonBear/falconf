@@ -144,16 +144,16 @@ impl FullPiece {
             ));
         }
 
-        if args.not_done_here && is_file {
+        if args.done && is_file {
             return Err(eyre!(
-                "The concept of '--not-done-here' is incompatible with file pieces. Adding a file piece performs a special action."
+                "The concept of '--done' is incompatible with file pieces. Adding a file piece performs a special action."
             ));
-        } else if args.not_done_here || is_file {
-            // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::execute_bulk(vec![(id, &mut piece.piece, cb)], execution_data)?;
-        } else {
+        } else if args.done {
             // If we don't execute it, just mark it as executed immediately.
             cb();
+        } else {
+            // We could bypass `execute_bulk` here, but this is clearer
+            PieceEnum::execute_bulk(vec![(id, &mut piece.piece, cb)], execution_data)?;
         }
 
         Ok((id, piece))
