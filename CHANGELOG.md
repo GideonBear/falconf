@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/GideonBear/falconf/compare/v0.3.8...v0.4.0) - 2026-09-13
+
+### Breaking changes
+- remove --not-done-here and add --done
+
+### Added
+- fail when autodetecting piece which is a valid existing path
+
+### Fixed
+- *(file)* fix removing pieces tracking directories
+- use .falconfkeep file to fix tracking empty directories
+- split command for autodetection
+
+### Other
+- Revert "chore(deps): pin dtolnay/rust-toolchain action to 29eef33" ([#106](https://github.com/GideonBear/falconf/pull/106))
+
 ## [0.3.8](https://github.com/GideonBear/falconf/compare/v0.3.7...v0.3.8) - 2026-03-23
 
 ### Fixed
