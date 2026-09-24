@@ -89,7 +89,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 1. Falconf tracks if a change is done, and does the change if it is not done yet,
    regardless of any system state. Ansible does not track this, and instead determines
    if the change is necessary based on the system state. This means that falconf is less
-   reliable, but easier to use.
+   reliable, but easier to use, and much much faster to run.
 2. In Ansible, tasks are managed in a file that you need to edit. In Falconf, pieces
    are managed (added, removed) on the command line, and only stored in a file internally.
    You can still edit this file if you want to, but do this at your own risk.
