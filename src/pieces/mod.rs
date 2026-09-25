@@ -93,23 +93,25 @@ impl PieceEnum {
         pieces: Vec<(u32, &mut P, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        if !pieces.is_empty() {
-            info!("Executing multiple pieces at once:");
-            for (id, piece, _cb) in &pieces {
-                info!("- {} {piece}", print_id(*id));
-            }
-            let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) =
-                pieces.into_iter().multiunzip();
-            // As we're executing in bulk, we want to wait with the callbacks until after execution
-            if !execution_data.test_run {
-                P::execute_bulk(&pieces, execution_data)?;
-            } else {
-                warn!("Test run! Refraining from execution, but marking as normal.");
-            }
-            for mut cb in cbs {
-                cb();
-            }
+        if pieces.is_empty() {
+            return Ok(());
         }
+
+        info!("Executing multiple pieces at once:");
+        for (id, piece, _cb) in &pieces {
+            info!("- {} {piece}", print_id(*id));
+        }
+        let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
+        // As we're executing in bulk, we want to wait with the callbacks until after execution
+        if !execution_data.test_run {
+            P::execute_bulk(&pieces, execution_data)?;
+        } else {
+            warn!("Test run! Refraining from execution, but marking as normal.");
+        }
+        for mut cb in cbs {
+            cb();
+        }
+
         Ok(())
     }
 
@@ -148,23 +150,25 @@ impl PieceEnum {
         pieces: Vec<(u32, &mut P, F)>,
         execution_data: &ExecutionData,
     ) -> Result<()> {
-        if !pieces.is_empty() {
-            info!("Undoing multiple pieces at once:");
-            for (id, piece, _cb) in &pieces {
-                info!("- {} {piece}", print_id(*id));
-            }
-            let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) =
-                pieces.into_iter().multiunzip();
-            // As we're executing in bulk, we want to wait with the callbacks until after execution
-            if !execution_data.test_run {
-                P::undo_bulk(&pieces, execution_data)?;
-            } else {
-                warn!("Test run! Refraining from execution, but marking as normal.");
-            }
-            for mut cb in cbs {
-                cb();
-            }
+        if pieces.is_empty() {
+            return Ok(());
         }
+
+        info!("Undoing multiple pieces at once:");
+        for (id, piece, _cb) in &pieces {
+            info!("- {} {piece}", print_id(*id));
+        }
+        let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
+        // As we're executing in bulk, we want to wait with the callbacks until after execution
+        if !execution_data.test_run {
+            P::undo_bulk(&pieces, execution_data)?;
+        } else {
+            warn!("Test run! Refraining from execution, but marking as normal.");
+        }
+        for mut cb in cbs {
+            cb();
+        }
+
         Ok(())
     }
 
