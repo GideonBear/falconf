@@ -97,10 +97,16 @@ impl PieceEnum {
             return Ok(());
         }
 
-        info!("Executing multiple pieces at once:");
-        for (id, piece, _cb) in &pieces {
-            info!("- {} {piece}", print_id(*id));
+        if pieces.len() == 1 {
+            let (id, piece, _cb) = &pieces[0];
+            info!("Executing piece: {} {piece}", print_id(*id));
+        } else {
+            info!("Executing multiple pieces at once:");
+            for (id, piece, _cb) in &pieces {
+                info!("- {} {piece}", print_id(*id));
+            }
         }
+
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
         if !execution_data.test_run {
@@ -154,10 +160,16 @@ impl PieceEnum {
             return Ok(());
         }
 
-        info!("Undoing multiple pieces at once:");
-        for (id, piece, _cb) in &pieces {
-            info!("- {} {piece}", print_id(*id));
+        if pieces.len() == 1 {
+            let (id, piece, _cb) = &pieces[0];
+            info!("Undoing piece: {} {piece}", print_id(*id));
+        } else {
+            info!("Undoing multiple pieces at once:");
+            for (id, piece, _cb) in &pieces {
+                info!("- {} {piece}", print_id(*id));
+            }
         }
+
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
         if !execution_data.test_run {
