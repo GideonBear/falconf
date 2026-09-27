@@ -6,7 +6,8 @@ use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, eyre};
-use log::{info, warn};
+use indexmap::IndexMap;
+use log::warn;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -45,8 +46,71 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
     let pieces = data.pieces_mut();
 
     let id = args.piece.resolve(pieces)?;
+    let piece = pieces.get(&id).ok_or_eyre("Piece not found")?;
 
-    // Mutate pieces before fetching the piece
+    type Operation = dyn FnOnce(&mut IndexMap<u32, FullPiece>);
+    let mut operations: Vec<Box<Operation>> = vec![];
+
+    if let Some(comment) = args.comment.take() {
+        operations.push(Box::new(move |pieces| {
+            #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+            let piece = pieces.get_mut(&id).unwrap();
+            if let Some(existing_comment) = &piece.comment {
+                warn!("Overwriting existing comment: {existing_comment}");
+            }
+            piece.comment = Some(comment);
+        }));
+    }
+    if args.remove_comment {
+        if piece.comment.is_none() {
+            return Err(eyre!("No comment to remove"));
+        }
+        operations.push(Box::new(move |pieces| {
+            #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+            let piece = pieces.get_mut(&id).unwrap();
+            piece.comment = None;
+        }));
+    }
+    if let Some(undo) = args.undo.take() {
+        if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(_)) = &piece.piece {
+            operations.push(Box::new(move |pieces| {
+                #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+                let piece = pieces.get_mut(&id).unwrap();
+                if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece {
+                    if let Some(existing_undo) = &piece.undo_command {
+                        warn!("Overwriting existing undo: {existing_undo}");
+                    }
+                    piece.undo_command = Some(undo);
+                } else {
+                    unreachable!();
+                }
+            }));
+        } else {
+            return Err(eyre!(
+                "`--undo` only makes sense with a command piece. Autodetected pieces supply their own undo."
+            ));
+        }
+    }
+    if args.remove_undo {
+        if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &piece.piece {
+            if piece.undo_command.is_none() {
+                return Err(eyre!("No undo to remove"));
+            }
+            operations.push(Box::new(move |pieces| {
+                #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+                let piece = pieces.get_mut(&id).unwrap();
+                if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece {
+                    piece.undo_command = None;
+                } else {
+                    unreachable!();
+                }
+            }));
+        } else {
+            return Err(eyre!(
+                "`--remove-undo` only makes sense with a command piece. Autodetected pieces supply their own undo."
+            ));
+        }
+    }
     if let Some(move_after) = args.move_after.take() {
         let move_after = move_after.resolve(pieces)?;
         let from = pieces.get_index_of(&id).ok_or_eyre("Piece not found")?;
@@ -56,65 +120,13 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
         if from > to {
             to += 1;
         }
-        pieces.move_index(from, to);
-    }
-
-    let piece = pieces.get_mut(&id).ok_or_eyre("Piece not found")?;
-
-    type Operation = dyn FnOnce(&mut FullPiece) -> Result<()>;
-    let mut operations: Vec<Box<Operation>> = vec![];
-
-    if let Some(comment) = args.comment.take() {
-        operations.push(Box::new(|piece| {
-            if let Some(existing_comment) = &piece.comment {
-                warn!("Overwriting existing comment: {existing_comment}");
-            }
-            piece.comment = Some(comment);
-            Ok(())
-        }));
-    }
-    if args.remove_comment {
-        operations.push(Box::new(|piece| {
-            if piece.comment.is_none() {
-                return Err(eyre!("No comment to remove"));
-            }
-            piece.comment = None;
-            Ok(())
-        }));
-    }
-    if let Some(undo) = args.undo.take() {
-        operations.push(Box::new(|piece| {
-            if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece {
-                if let Some(existing_undo) = &piece.undo_command {
-                    warn!("Overwriting existing undo: {existing_undo}");
-                }
-                piece.undo_command = Some(undo);
-                Ok(())
-            } else {
-                Err(eyre!("`--undo` only makes sense with a command piece. Autodetected pieces supply their own undo."))
-            }
-        }));
-    }
-    if args.remove_undo {
-        operations.push(Box::new(|piece| {
-             if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece {
-                if piece.undo_command.is_none() {
-                    return Err(eyre!("No undo to remove"));
-                }
-                piece.undo_command = None;
-                Ok(())
-            } else {
-                Err(eyre!("`--remove-undo` only makes sense with a command piece. Autodetected pieces supply their own undo."))
-            }
-        }));
+        operations.push(Box::new(move |pieces| {
+            pieces.move_index(from, to);
+        }))
     }
 
     for operation in operations {
-        if let Err(err) = operation(piece) {
-            info!("Found error during edit; writing and pushing the changes that *were* done");
-            repo.write_and_push(vec![])?;
-            return Err(err);
-        }
+        operation(pieces);
     }
 
     // Push changes
