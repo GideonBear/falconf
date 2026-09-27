@@ -71,6 +71,7 @@ pub mod tests {
                 piece: PieceRef::Last,
                 undo: Some("echo I am undoing this piece".to_string()),
                 remove_undo: false,
+                move_after: None,
             },
         )?;
         // File

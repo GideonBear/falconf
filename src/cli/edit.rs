@@ -30,6 +30,10 @@ pub struct Args {
     /// Remove any existing undo
     #[arg(long, action=SetTrue, conflicts_with = "undo")]
     pub remove_undo: bool,
+
+    /// Reorder this piece, moving it after the given piece
+    #[arg(long, value_parser = parse_piece_ref)]
+    pub move_after: Option<PieceRef>,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -40,9 +44,22 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 
-    let piece = pieces
-        .get_mut(&args.piece.resolve(pieces)?)
-        .ok_or_eyre("Piece not found")?;
+    let id = args.piece.resolve(pieces)?;
+
+    // Mutate pieces before fetching the piece
+    if let Some(move_after) = args.move_after.take() {
+        let move_after = move_after.resolve(pieces)?;
+        let from = pieces.get_index_of(&id).ok_or_eyre("Piece not found")?;
+        let mut to = pieces
+            .get_index_of(&move_after)
+            .ok_or_eyre("Piece not found")?;
+        if from > to {
+            to += 1;
+        }
+        pieces.move_index(from, to);
+    }
+
+    let piece = pieces.get_mut(&id).ok_or_eyre("Piece not found")?;
 
     type Operation = dyn FnOnce(&mut FullPiece) -> Result<()>;
     let mut operations: Vec<Box<Operation>> = vec![];
