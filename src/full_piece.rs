@@ -131,8 +131,6 @@ impl FullPiece {
     ) -> Result<u32> {
         let id = Self::new_id();
 
-        let is_file = self.file().is_some();
-
         let mut cb = || {
             self.done_on.push(execution_data.machine);
         };
@@ -144,11 +142,7 @@ impl FullPiece {
             ));
         }
 
-        if done && is_file {
-            return Err(eyre!(
-                "The concept of '--done' is incompatible with file pieces. Adding a file piece performs a special action."
-            ));
-        } else if done {
+        if done {
             // If we don't execute it, just mark it as executed immediately.
             cb();
         } else {

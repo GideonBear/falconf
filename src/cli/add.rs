@@ -5,6 +5,7 @@ use crate::installation::Installation;
 use clap::ArgAction::SetTrue;
 use clap::ValueEnum;
 use color_eyre::Result;
+use color_eyre::eyre::eyre;
 use std::path::Path;
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
@@ -78,6 +79,14 @@ pub struct Args {
 #[allow(clippy::needless_pass_by_value)]
 pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let piece = FullPiece::from_cli(&args)?;
+
+    let is_file = piece.file().is_some();
+    if args.done && is_file {
+        return Err(eyre!(
+            "The concept of '--done' is incompatible with file pieces. Adding a file piece performs a special action."
+        ));
+    }
+
     add_internal(&top_level_args, vec![(piece, args.undo, args.done)])
 }
 
