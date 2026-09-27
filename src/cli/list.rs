@@ -27,11 +27,15 @@ pub fn list<W: Write>(
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::cli::add::add_internal;
     use crate::cli::add::tests::{add_util, add_util_comment};
     use crate::cli::edit::edit;
     use crate::cli::init::tests::init_util;
     use crate::cli::undo::tests::undo_util;
     use crate::cli::{PieceRef, add, edit};
+    use crate::full_piece::FullPiece;
+    use crate::pieces::gsettings::Gsettings;
+    use crate::pieces::{NonBulkPieceEnum, PieceEnum};
     use crate::testing::TestRemote;
     use color_eyre::Result;
     use log::debug;
@@ -86,14 +90,22 @@ pub mod tests {
             vec![String::from("some"), String::from("message")],
         )?;
         // Gsettings
-        add_util(
-            local.path(),
-            add::Piece::Gsettings,
-            vec![
-                String::from("org.gnome.desktop.interface"),
-                String::from("cursor-theme"),
-                String::from("blah"),
-            ],
+        // Cannot use add_util as it will attempt to fetch the original value
+        add_internal(
+            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            vec![(
+                FullPiece::new(
+                    PieceEnum::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::new_with_original(
+                        "org.gnome.desktop.interface".to_string(),
+                        "cursor-theme".to_string(),
+                        "blah".to_string(),
+                        "old".to_string(),
+                    )?)),
+                    None,
+                ),
+                None,
+                false,
+            )],
         )?;
         // With comment
         add_util_comment(
