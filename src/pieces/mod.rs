@@ -5,6 +5,7 @@ use crate::piece::{BulkPiece, NonBulkPiece as _};
 use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
 use crate::pieces::file::File;
+use crate::pieces::gsettings::Gsettings;
 use crate::pieces::manual::Manual;
 use crate::utils::print_id;
 use color_eyre::Result;
@@ -18,6 +19,7 @@ use std::path::Path;
 pub mod apt;
 pub mod command;
 pub mod file;
+pub mod gsettings;
 pub mod manual;
 
 macro_rules! unknown {
@@ -51,6 +53,7 @@ pub enum NonBulkPieceEnum {
     Command(Command),
     File(File),
     Manual(Manual),
+    Gsettings(Gsettings),
 }
 
 impl NonBulkPieceEnum {
@@ -59,6 +62,7 @@ impl NonBulkPieceEnum {
             Self::Command(command) => command.execute(execution_data),
             Self::File(file) => file.execute(execution_data),
             Self::Manual(manual) => manual.execute(execution_data),
+            Self::Gsettings(gsettings) => gsettings.execute(execution_data),
         }
     }
 
@@ -67,6 +71,7 @@ impl NonBulkPieceEnum {
             Self::Command(command) => command.undo(execution_data),
             Self::File(file) => file.undo(execution_data),
             Self::Manual(manual) => manual.undo(execution_data),
+            Self::Gsettings(gsettings) => gsettings.undo(execution_data),
         }
     }
 }
@@ -234,6 +239,9 @@ impl PieceEnum {
             }
             cli::Piece::File => Self::NonBulk(NonBulkPieceEnum::File(File::from_cli(args)?)),
             cli::Piece::Manual => Self::NonBulk(NonBulkPieceEnum::Manual(Manual::from_cli(args))),
+            cli::Piece::Gsettings => {
+                Self::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::from_cli(args)?))
+            }
         })
     }
 
@@ -271,6 +279,15 @@ impl PieceEnum {
                         Please use -f if you meant to add a file, or -c to explicitly add a command."
                     ));
                 }
+                ["gsettings", "set", schema, key, value] => {
+                    info!("Using `gsettings` piece instead of `command`");
+                    Self::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::new(
+                        schema.to_string(),
+                        key.to_string(),
+                        value.to_string(),
+                    )?))
+                }
+                ["gsettings", ..] => unknown!("gsettings", "gsettings", args),
                 _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args))),
             },
         )
@@ -291,6 +308,7 @@ impl Display for NonBulkPieceEnum {
             Self::Command(piece) => piece.fmt(f),
             Self::File(piece) => piece.fmt(f),
             Self::Manual(piece) => piece.fmt(f),
+            Self::Gsettings(piece) => piece.fmt(f),
         }
     }
 }

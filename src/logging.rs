@@ -2,11 +2,12 @@ use color_eyre::Result;
 use log::info;
 use std::iter;
 use std::process::{Command, ExitStatus, Output};
+use utf8_command::Utf8Output;
 
 pub trait CommandExt {
     fn status_checked(&mut self) -> Result<ExitStatus>;
 
-    // fn output_checked(&mut self) -> Result<Output>;
+    fn output_checked_utf8(&mut self) -> Result<Utf8Output>;
 
     fn output_fallible(&mut self) -> Result<Output>;
 }
@@ -17,10 +18,10 @@ impl CommandExt for Command {
         command_error::CommandExt::status_checked(self).map_err(Into::into)
     }
 
-    // fn output_checked(&mut self) -> Result<Output> {
-    //     log_execution(self);
-    //     command_error::CommandExt::output_checked(self).map_err(Into::into)
-    // }
+    fn output_checked_utf8(&mut self) -> Result<Utf8Output> {
+        log_execution(self);
+        command_error::CommandExt::output_checked_utf8(self).map_err(Into::into)
+    }
 
     fn output_fallible(&mut self) -> Result<Output> {
         log_execution(self);

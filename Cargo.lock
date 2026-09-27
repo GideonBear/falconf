@@ -480,6 +480,7 @@ dependencies = [
  "serde",
  "shell-words",
  "tempfile",
+ "utf8-command",
  "uuid",
 ]
 

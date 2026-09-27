@@ -18,6 +18,8 @@ pub enum Piece {
     File,
     /// Request the user to perform an action manually *sad robot face*. Expects a message for the user (description of the action) as value.
     Manual,
+    /// Changes a gsettings/dconf value. Expects a schema, key, and value as value.
+    Gsettings,
 }
 
 #[derive(clap::Args, Debug)]
@@ -34,6 +36,7 @@ pub struct Args {
         ("_apt", "true", "apt"),
         ("_file", "true", "file"),
         ("_manual", "true", "manual"),
+        ("_gsettings", "true", "gsettings"),
     ])]
     pub piece: Option<Piece>,
 
@@ -52,6 +55,10 @@ pub struct Args {
     /// Alias for `--piece=manual`
     #[arg(long="manual", short='m', action=SetTrue)]
     _manual: (),
+
+    /// Alias for `--piece=gsettings`
+    #[arg(long="gsettings", short='g', action=SetTrue)]
+    _gsettings: (),
 
     /// The value of the piece. For example the command, the package, etc.
     /// Quoting this is optional; both `falconf add apt install cowsay` and
@@ -105,6 +112,7 @@ pub mod tests {
             _apt: (),
             _file: (),
             _manual: (),
+            _gsettings: (),
             value,
             undo: None,
             done: false,
