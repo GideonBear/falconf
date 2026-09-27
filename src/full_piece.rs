@@ -123,40 +123,40 @@ impl FullPiece {
         Ok(())
     }
 
-    pub fn add(args: &add::Args, execution_data: &ExecutionData) -> Result<(u32, Self)> {
-        let mut piece = Self::from_cli(args)?;
+    pub fn add(
+        &mut self,
+        execution_data: &ExecutionData,
+        undo: Option<String>,
+        done: bool,
+    ) -> Result<u32> {
         let id = Self::new_id();
 
-        let is_file = piece.file().is_some();
+        let is_file = self.file().is_some();
 
         let mut cb = || {
-            piece.done_on.push(execution_data.machine);
+            self.done_on.push(execution_data.machine);
         };
 
-        if args.undo.is_some()
-            && !matches!(
-                piece.piece,
-                PieceEnum::NonBulk(NonBulkPieceEnum::Command(_))
-            )
+        if undo.is_some() && !matches!(self.piece, PieceEnum::NonBulk(NonBulkPieceEnum::Command(_)))
         {
             return Err(eyre!(
                 "`--undo` only makes sense with a command piece. Autodetected pieces supply their own undo."
             ));
         }
 
-        if args.done && is_file {
+        if done && is_file {
             return Err(eyre!(
                 "The concept of '--done' is incompatible with file pieces. Adding a file piece performs a special action."
             ));
-        } else if args.done {
+        } else if done {
             // If we don't execute it, just mark it as executed immediately.
             cb();
         } else {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::execute_bulk(vec![(id, &mut piece.piece, cb)], execution_data)?;
+            PieceEnum::execute_bulk(vec![(id, &mut self.piece, cb)], execution_data)?;
         }
 
-        Ok((id, piece))
+        Ok(id)
     }
 
     pub fn undo(
@@ -207,7 +207,7 @@ impl FullPiece {
         }
     }
 
-    fn from_cli(args: &add::Args) -> Result<Self> {
+    pub(crate) fn from_cli(args: &add::Args) -> Result<Self> {
         let comment = args.comment.clone();
         Ok(Self::new(PieceEnum::from_cli(args)?, comment))
     }

@@ -56,6 +56,20 @@ impl Gsettings {
         })
     }
 
+    pub fn new_with_original(
+        schema: String,
+        key: String,
+        value: String,
+        original_value: String,
+    ) -> Result<Self> {
+        Ok(Self {
+            schema,
+            key,
+            value,
+            original_value,
+        })
+    }
+
     pub fn from_cli(args: &add::Args) -> Result<Self> {
         if let [schema, key, value] = &args.value[..] {
             Ok(Self::new(

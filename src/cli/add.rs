@@ -77,6 +77,14 @@ pub struct Args {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
+    let piece = FullPiece::from_cli(&args)?;
+    add_internal(&top_level_args, vec![(piece, args.undo, args.done)])
+}
+
+pub fn add_internal(
+    top_level_args: &TopLevelArgs,
+    to_add: Vec<(FullPiece, Option<String>, bool)>,
+) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     installation.pull_and_read(true)?;
@@ -84,13 +92,18 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 
-    // Add the piece
-    let (id, piece) = FullPiece::add(&args, &execution_data)?;
-    let file = piece.file().map(Path::to_path_buf);
-    pieces.insert(id, piece);
+    let mut files = vec![];
+    for (mut piece, undo, done) in to_add {
+        // Add the piece
+        let id = piece.add(&execution_data, undo, done)?;
+        if let Some(file) = piece.file().map(Path::to_path_buf) {
+            files.push(file);
+        }
+        pieces.insert(id, piece);
+    }
 
     // Push changes
-    repo.write_and_push(file.map_or_else(Vec::new, |file| vec![file]))?;
+    repo.write_and_push(files)?;
 
     Ok(())
 }

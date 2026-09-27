@@ -19,6 +19,7 @@ mod push;
 mod remove;
 pub mod sync;
 pub mod undo;
+mod watch_gsettings;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
     Ok(expanduser(s)?)
@@ -107,6 +108,9 @@ enum Commands {
         about = "Edit a piece. The value of a piece cannot be edited, create a new piece instead"
     )]
     Edit(edit::Args),
+
+    #[command(about = "Watch gsettings for changes while you edit settings")]
+    WatchGsettings(watch_gsettings::Args),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -159,5 +163,6 @@ pub fn main() -> Result<()> {
         Commands::Remove(args) => remove::remove(top_level, args),
         Commands::Push(args) => push::push(top_level, args),
         Commands::Edit(args) => edit::edit(top_level, args),
+        Commands::WatchGsettings(args) => watch_gsettings::watch_gsettings(top_level, args),
     }
 }

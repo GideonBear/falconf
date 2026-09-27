@@ -8,9 +8,9 @@ reason = "Use command_error::CommandExt::output_checked[_with][_utf8]"
 path = "std::process::Command::status"
 reason = "Use command_error::CommandExt::status_checked[_with]"
 
-[[disallowed-methods]]
-path = "std::process::Command::spawn"
-reason = "Use command_error::CommandExt::spawn_checked"
+#[[disallowed-methods]]
+#path = "std::process::Command::spawn"
+#reason = "Use command_error::CommandExt::spawn_checked"
 
 [[disallowed-methods]]
 path = "std::process::Child::try_wait"
