@@ -67,7 +67,16 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
     let changes: Vec<_> = changes
         .into_iter()
         .filter_map(|((schema, key), old_value, new_value)| {
-            println!("{schema}.{key}: {old_value} -> {new_value}");
+            let output = match Command::new("gsettings")
+                .arg("describe")
+                .args([&schema, &key])
+                .output_checked_utf8()
+            {
+                Err(e) => return Some(Err(eyre!(e))),
+                Ok(output) => output,
+            };
+            let description = output.stdout.trim();
+            println!("{schema}.{key} ({description}): {old_value} -> {new_value}");
             match confirm("Do you want to add this change?") {
                 Err(e) => Some(Err(eyre!(e))),
                 Ok(false) => None,
