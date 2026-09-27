@@ -85,8 +85,8 @@ pub fn add_internal(
     top_level_args: &TopLevelArgs,
     to_add: Vec<(FullPiece, Option<String>, bool)>,
 ) -> Result<()> {
-    let mut installation = Installation::get(&top_level_args)?;
-    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
+    let mut installation = Installation::get(top_level_args)?;
+    let execution_data = ExecutionData::new(&installation, top_level_args)?;
     installation.pull_and_read(true)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
