@@ -123,6 +123,10 @@ impl FullPiece {
         Ok(())
     }
 
+    pub fn done(&mut self, machine: Machine) {
+        self.done_on.push(machine);
+    }
+
     pub fn add(
         &mut self,
         execution_data: &ExecutionData,
@@ -132,6 +136,7 @@ impl FullPiece {
         let id = Self::new_id();
 
         let mut cb = || {
+            // Cannot reuse self.done because of partial borrowing
             self.done_on.push(execution_data.machine);
         };
 
