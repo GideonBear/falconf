@@ -12,6 +12,7 @@ use std::str::FromStr as _;
 pub use add::Piece;
 
 pub mod add;
+mod done;
 mod edit;
 pub mod init;
 mod list;
@@ -111,6 +112,9 @@ enum Commands {
 
     #[command(about = "Watch gsettings for changes while you edit settings")]
     WatchGsettings(watch_gsettings::Args),
+
+    #[command(about = "Mark a piece as done on this machine without executing it")]
+    Done(done::Args),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -164,5 +168,6 @@ pub fn main() -> Result<()> {
         Commands::Push(args) => push::push(top_level, args),
         Commands::Edit(args) => edit::edit(top_level, args),
         Commands::WatchGsettings(args) => watch_gsettings::watch_gsettings(top_level, args),
+        Commands::Done(args) => done::done(top_level, args),
     }
 }
