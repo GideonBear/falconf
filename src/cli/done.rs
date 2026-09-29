@@ -32,7 +32,7 @@ pub fn done(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
         .collect::<Result<_>>()?;
 
     for piece in to_done {
-        #[expect(clippy::missing_panics_docs, reason = "Checked above")]
+        #[expect(clippy::missing_panics_doc, reason = "Checked above")]
         pieces.get_mut(&piece).unwrap().done(execution_data.machine);
     }
 
