@@ -21,11 +21,15 @@ pub fn done(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
 
-    let to_done: Vec<_> = args.pieces.into_iter().map(|piece| {
-        let id = piece.resolve(pieces)?;
-        pieces.get(&id).ok_or_eyre("Piece not found")?;
-        Ok(id)
-    }).collect::<Result<_>>()?;
+    let to_done: Vec<_> = args
+        .pieces
+        .into_iter()
+        .map(|piece| {
+            let id = piece.resolve(pieces)?;
+            pieces.get(&id).ok_or_eyre("Piece not found")?;
+            Ok(id)
+        })
+        .collect::<Result<_>>()?;
 
     for piece in to_done {
         #[expect(clippy::missing_panics_docs, reason = "Checked above")]
