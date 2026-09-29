@@ -35,6 +35,10 @@ pub struct Args {
     /// Reorder this piece, moving it after the given piece
     #[arg(long, value_parser = parse_piece_ref)]
     pub move_after: Option<PieceRef>,
+
+    /// Reorder this piece, moving it before the given piece
+    #[arg(long, value_parser = parse_piece_ref, conflicts_with = "move_after")]
+    pub move_before: Option<PieceRef>,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -111,15 +115,24 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
             ));
         }
     }
+
+    let mut move_ = None;
     if let Some(move_after) = args.move_after.take() {
-        let move_after = move_after.resolve(pieces)?;
+        move_ = Some((move_after, 0));
+    }
+    if let Some(move_before) = args.move_before.take() {
+        move_ = Some((move_before, 1));
+    }
+    if let Some((move_to, modifier)) = move_ {
+        let move_to = move_to.resolve(pieces)?;
         let from = pieces.get_index_of(&id).ok_or_eyre("Piece not found")?;
         let mut to = pieces
-            .get_index_of(&move_after)
+            .get_index_of(&move_to)
             .ok_or_eyre("Piece not found")?;
         if from > to {
             to += 1;
         }
+        to -= modifier;
         operations.push(Box::new(move |pieces| {
             pieces.move_index(from, to);
         }))

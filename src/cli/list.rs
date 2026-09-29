@@ -72,6 +72,7 @@ pub mod tests {
                 undo: Some("echo I am undoing this piece".to_string()),
                 remove_undo: false,
                 move_after: None,
+                move_before: None,
             },
         )?;
         // File
