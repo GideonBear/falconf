@@ -21,7 +21,7 @@ pub enum Piece {
     Manual,
     /// Changes a gsettings/dconf value. Expects a schema, key, and value as value.
     Gsettings,
-    /// Installs a deb-get package. Expectes a package name as value.
+    /// Installs a deb-get package. Expects a package name as value.
     DebGet,
 }
 
