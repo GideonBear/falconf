@@ -127,25 +127,13 @@ impl FullPiece {
         self.done_on.push(machine);
     }
 
-    pub fn add(
-        &mut self,
-        execution_data: &ExecutionData,
-        undo: Option<String>,
-        done: bool,
-    ) -> Result<u32> {
+    pub fn add(&mut self, execution_data: &ExecutionData, done: bool) -> Result<u32> {
         let id = Self::new_id();
 
         let mut cb = || {
             // Cannot reuse self.done because of partial borrowing
             self.done_on.push(execution_data.machine);
         };
-
-        if undo.is_some() && !matches!(self.piece, PieceEnum::NonBulk(NonBulkPieceEnum::Command(_)))
-        {
-            return Err(eyre!(
-                "`--undo` only makes sense with a command piece. Autodetected pieces supply their own undo."
-            ));
-        }
 
         if done {
             // If we don't execute it, just mark it as executed immediately.

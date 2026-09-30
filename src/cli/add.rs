@@ -2,6 +2,7 @@ use crate::cli::TopLevelArgs;
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
+use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
 use clap::ValueEnum;
 use color_eyre::Result;
@@ -100,13 +101,21 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
         ));
     }
 
-    add_internal(&top_level_args, vec![(piece, args.undo, args.done)])
+    if args.undo.is_some()
+        && !matches!(
+            piece.piece,
+            PieceEnum::NonBulk(NonBulkPieceEnum::Command(_))
+        )
+    {
+        return Err(eyre!(
+            "`--undo` only makes sense with a command piece. Autodetected pieces supply their own undo."
+        ));
+    }
+
+    add_internal(&top_level_args, vec![(piece, args.done)])
 }
 
-pub fn add_internal(
-    top_level_args: &TopLevelArgs,
-    to_add: Vec<(FullPiece, Option<String>, bool)>,
-) -> Result<()> {
+pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)>) -> Result<()> {
     let mut installation = Installation::get(top_level_args)?;
     let execution_data = ExecutionData::new(&installation, top_level_args)?;
     installation.pull_and_read(true)?;
@@ -115,9 +124,9 @@ pub fn add_internal(
     let pieces = data.pieces_mut();
 
     let mut files = vec![];
-    for (mut piece, undo, done) in to_add {
+    for (mut piece, done) in to_add {
         // Add the piece
-        let id = piece.add(&execution_data, undo, done)?;
+        let id = piece.add(&execution_data, done)?;
         if let Some(file) = piece.file().map(Path::to_path_buf) {
             files.push(file);
         }

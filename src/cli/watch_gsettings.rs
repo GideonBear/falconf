@@ -102,7 +102,6 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
                         )),
                         None,
                     ),
-                    None,
                     true,
                 ))
             })

@@ -105,7 +105,6 @@ pub mod tests {
                     )?)),
                     None,
                 ),
-                None,
                 false,
             )],
         )?;
