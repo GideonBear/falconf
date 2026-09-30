@@ -11,7 +11,7 @@ pub struct Args {}
 #[allow(clippy::needless_pass_by_value)]
 pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let machine = *installation.machine();
+    let machine = installation.machine();
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
     installation.pull_and_read(false)?;
     let repo = installation.repo_mut();
@@ -141,7 +141,7 @@ mod tests {
                 .ok_or_eyre("Cannot find added piece")?
                 .1
                 .done_on()
-                .contains(installation.machine())
+                .contains(&installation.machine())
         );
         // The second one (false) wasn't marked as done
         assert!(
@@ -153,7 +153,7 @@ mod tests {
                 .ok_or_eyre("Cannot find added piece")?
                 .1
                 .done_on()
-                .contains(installation.machine())
+                .contains(&installation.machine())
         );
 
         Ok(())

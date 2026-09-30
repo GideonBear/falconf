@@ -16,8 +16,8 @@ pub struct Installation {
 }
 
 impl Installation {
-    pub const fn machine(&self) -> &Machine {
-        &self.machine
+    pub const fn machine(&self) -> Machine {
+        self.machine
     }
 
     pub const fn repo(&self) -> &Repo {

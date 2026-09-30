@@ -16,7 +16,7 @@ impl ExecutionData {
     pub fn new(installation: &Installation, top_level_args: &TopLevelArgs) -> Result<Self> {
         Ok(Self {
             file_dir: installation.repo().file_dir()?,
-            machine: *installation.machine(),
+            machine: installation.machine(),
             // dry_run: top_level_args.dry_run,
             test_run: top_level_args.test_run,
         })
