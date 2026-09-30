@@ -29,6 +29,14 @@ impl Installation {
     }
 
     pub fn init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
+        let root = &top_level_args.path;
+        debug!("Looking at {}", root.display());
+
+        if root.try_exists()? {
+            return Err(eyre!("Installation already exists"));
+        }
+        fs::create_dir(root)?;
+
         match Self::_init(top_level_args, remote, new) {
             Ok(()) => Ok(()),
             Err(e) => {
@@ -43,12 +51,6 @@ impl Installation {
 
     fn _init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
         let root = &top_level_args.path;
-        debug!("Looking at {}", root.display());
-
-        if root.try_exists()? {
-            return Err(eyre!("Installation already exists"));
-        }
-        fs::create_dir(root)?;
 
         let machine_path = root.join("machine");
         let repository_path = Self::get_repository_path(root);
