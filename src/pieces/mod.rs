@@ -4,6 +4,7 @@ use crate::execution_data::ExecutionData;
 use crate::piece::{BulkPiece, NonBulkPiece as _};
 use crate::pieces::apt::Apt;
 use crate::pieces::command::Command;
+use crate::pieces::deb_get::DebGet;
 use crate::pieces::file::File;
 use crate::pieces::gsettings::Gsettings;
 use crate::pieces::manual::Manual;
@@ -18,6 +19,7 @@ use std::path::Path;
 
 pub mod apt;
 pub mod command;
+pub mod deb_get;
 pub mod file;
 pub mod gsettings;
 pub mod manual;
@@ -45,6 +47,7 @@ pub enum PieceEnum {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BulkPieceEnum {
     Apt(Apt),
+    DebGet(DebGet),
 }
 
 #[non_exhaustive]
@@ -88,8 +91,9 @@ impl PieceEnum {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
-        let (apt, non_bulk) = Self::sort_pieces(pieces);
+        let (apt, deb_get, non_bulk) = Self::sort_pieces(pieces);
         Self::execute_bulk_bulk(apt, execution_data)?;
+        Self::execute_bulk_bulk(deb_get, execution_data)?;
         Self::execute_non_bulk_bulk(non_bulk, execution_data)?;
         Ok(())
     }
@@ -151,8 +155,9 @@ impl PieceEnum {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
-        let (apt, non_bulk) = Self::sort_pieces(pieces);
+        let (apt, deb_get, non_bulk) = Self::sort_pieces(pieces);
         Self::undo_bulk_bulk(apt, execution_data)?;
+        Self::undo_bulk_bulk(deb_get, execution_data)?;
         Self::undo_non_bulk_bulk(non_bulk, execution_data)?;
         Ok(())
     }
@@ -210,18 +215,20 @@ impl PieceEnum {
         pieces: Vec<(u32, &mut Self, F)>,
     ) -> (
         Vec<(u32, &mut Apt, F)>,
+        Vec<(u32, &mut DebGet, F)>,
         Vec<(u32, &mut NonBulkPieceEnum, F)>,
     ) {
-        #[expect(unused_parens)]
-        let (mut apt) = (vec![]);
+        let mut apt = vec![];
+        let mut deb_get = vec![];
         let mut non_bulk = vec![];
         for (id, piece, cb) in pieces {
             match piece {
                 Self::Bulk(BulkPieceEnum::Apt(p)) => apt.push((id, p, cb)),
+                Self::Bulk(BulkPieceEnum::DebGet(p)) => deb_get.push((id, p, cb)),
                 Self::NonBulk(piece) => non_bulk.push((id, piece, cb)),
             }
         }
-        (apt, non_bulk)
+        (apt, deb_get, non_bulk)
     }
 
     pub fn from_cli(args: &add::Args) -> Result<Self> {
@@ -242,6 +249,7 @@ impl PieceEnum {
             cli::Piece::Gsettings => {
                 Self::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::from_cli(args)?))
             }
+            cli::Piece::DebGet => Self::Bulk(BulkPieceEnum::DebGet(DebGet::from_cli(args)?)),
         })
     }
 
@@ -288,6 +296,14 @@ impl PieceEnum {
                     )?))
                 }
                 ["gsettings", ..] => unknown!("gsettings", "gsettings", args),
+                ["deb-get", "install", package] => {
+                    info!("Using `deb-get` piece instead of `command`");
+                    Self::Bulk(BulkPieceEnum::DebGet(DebGet::from_cli_autodetected(
+                        args,
+                        package.to_string(),
+                    )))
+                }
+                ["deb-get", ..] => unknown!("deb-get", "deb-get", args),
                 _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args))),
             },
         )
@@ -298,6 +314,7 @@ impl Display for BulkPieceEnum {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Apt(piece) => piece.fmt(f),
+            Self::DebGet(piece) => piece.fmt(f),
         }
     }
 }

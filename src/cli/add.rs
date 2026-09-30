@@ -21,6 +21,8 @@ pub enum Piece {
     Manual,
     /// Changes a gsettings/dconf value. Expects a schema, key, and value as value.
     Gsettings,
+    /// Installs a deb-get package. Expectes a package name as value.
+    DebGet,
 }
 
 #[derive(clap::Args, Debug)]
@@ -38,6 +40,7 @@ pub struct Args {
         ("_file", "true", "file"),
         ("_manual", "true", "manual"),
         ("_gsettings", "true", "gsettings"),
+        ("_deb_get", "true", "deb-get"),
     ])]
     pub piece: Option<Piece>,
 
@@ -60,6 +63,10 @@ pub struct Args {
     /// Alias for `--piece=gsettings`
     #[arg(long="gsettings", short='g', action=SetTrue)]
     _gsettings: (),
+
+    /// Alias for `--piece=deb-get`
+    #[arg(long="deb-get", action=SetTrue)]
+    _deb_get: (),
 
     /// The value of the piece. For example the command, the package, etc.
     /// Quoting this is optional; both `falconf add apt install cowsay` and
@@ -135,6 +142,7 @@ pub mod tests {
             _file: (),
             _manual: (),
             _gsettings: (),
+            _deb_get: (),
             value,
             undo: None,
             done: false,
