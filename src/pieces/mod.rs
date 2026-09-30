@@ -3,6 +3,7 @@ use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::piece::{BulkPiece, NonBulkPiece as _};
 use crate::pieces::apt::Apt;
+use crate::pieces::cargo_install::CargoInstall;
 use crate::pieces::command::Command;
 use crate::pieces::deb_get::DebGet;
 use crate::pieces::file::File;
@@ -18,6 +19,7 @@ use std::fmt::{Display, Formatter};
 use std::path::Path;
 
 pub mod apt;
+pub mod cargo_install;
 pub mod command;
 pub mod deb_get;
 pub mod file;
@@ -48,6 +50,7 @@ pub enum PieceEnum {
 pub enum BulkPieceEnum {
     Apt(Apt),
     DebGet(DebGet),
+    CargoInstall(CargoInstall),
 }
 
 #[non_exhaustive]
@@ -91,9 +94,10 @@ impl PieceEnum {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
-        let (apt, deb_get, non_bulk) = Self::sort_pieces(pieces);
+        let (apt, deb_get, cargo_install, non_bulk) = Self::sort_pieces(pieces);
         Self::execute_bulk_bulk(apt, execution_data)?;
         Self::execute_bulk_bulk(deb_get, execution_data)?;
+        Self::execute_bulk_bulk(cargo_install, execution_data)?;
         Self::execute_non_bulk_bulk(non_bulk, execution_data)?;
         Ok(())
     }
@@ -155,9 +159,10 @@ impl PieceEnum {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
-        let (apt, deb_get, non_bulk) = Self::sort_pieces(pieces);
+        let (apt, deb_get, cargo_install, non_bulk) = Self::sort_pieces(pieces);
         Self::undo_bulk_bulk(apt, execution_data)?;
         Self::undo_bulk_bulk(deb_get, execution_data)?;
+        Self::undo_bulk_bulk(cargo_install, execution_data)?;
         Self::undo_non_bulk_bulk(non_bulk, execution_data)?;
         Ok(())
     }
@@ -216,19 +221,22 @@ impl PieceEnum {
     ) -> (
         Vec<(u32, &mut Apt, F)>,
         Vec<(u32, &mut DebGet, F)>,
+        Vec<(u32, &mut CargoInstall, F)>,
         Vec<(u32, &mut NonBulkPieceEnum, F)>,
     ) {
         let mut apt = vec![];
         let mut deb_get = vec![];
+        let mut cargo_install = vec![];
         let mut non_bulk = vec![];
         for (id, piece, cb) in pieces {
             match piece {
                 Self::Bulk(BulkPieceEnum::Apt(p)) => apt.push((id, p, cb)),
                 Self::Bulk(BulkPieceEnum::DebGet(p)) => deb_get.push((id, p, cb)),
+                Self::Bulk(BulkPieceEnum::CargoInstall(p)) => cargo_install.push((id, p, cb)),
                 Self::NonBulk(piece) => non_bulk.push((id, piece, cb)),
             }
         }
-        (apt, deb_get, non_bulk)
+        (apt, deb_get, cargo_install, non_bulk)
     }
 
     pub fn from_cli(args: &add::Args) -> Result<Self> {
@@ -250,6 +258,9 @@ impl PieceEnum {
                 Self::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::from_cli(args)?))
             }
             cli::Piece::DebGet => Self::Bulk(BulkPieceEnum::DebGet(DebGet::from_cli(args)?)),
+            cli::Piece::CargoInstall => {
+                Self::Bulk(BulkPieceEnum::CargoInstall(CargoInstall::from_cli(args)?))
+            }
         })
     }
 
@@ -304,6 +315,16 @@ impl PieceEnum {
                     )))
                 }
                 ["deb-get", ..] => unknown!("deb-get", "deb-get", args),
+                ["cargo", "install" | "binstall", crate_]
+                | ["cargo", "install" | "binstall", "-y", crate_]
+                | ["cargo", "install" | "binstall", crate_, "-y"] => {
+                    info!("Using `cargo-install` piece instead of `command`");
+                    Self::Bulk(BulkPieceEnum::CargoInstall(
+                        CargoInstall::from_cli_autodetected(args, crate_.to_string()),
+                    ))
+                }
+                ["cargo", "install", ..] => unknown!("cargo install", "cargo-install", args),
+                ["cargo", "binstall", ..] => unknown!("cargo binstall", "cargo-install", args),
                 _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args))),
             },
         )
@@ -315,6 +336,7 @@ impl Display for BulkPieceEnum {
         match self {
             Self::Apt(piece) => piece.fmt(f),
             Self::DebGet(piece) => piece.fmt(f),
+            Self::CargoInstall(piece) => piece.fmt(f),
         }
     }
 }

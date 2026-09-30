@@ -115,6 +115,12 @@ pub mod tests {
             add::Piece::DebGet,
             vec![String::from("cowsay-2")],
         )?;
+        // Cargo-install
+        add_util(
+            local.path(),
+            add::Piece::CargoInstall,
+            vec![String::from("cowsay")],
+        )?;
         // With comment
         add_util_comment(
             local.path(),
@@ -150,6 +156,7 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[0m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
 ",

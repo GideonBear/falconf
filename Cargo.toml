@@ -27,6 +27,7 @@ indexmap = { version = "2.10.0", features = ["serde"] }
 auth-git2 = "0.6.0"
 itertools = "0.15.0"
 utf8-command = "1.0.1"
+which = "8.0.6"
 
 [dev-dependencies]
 ctor = "=1.0.13"

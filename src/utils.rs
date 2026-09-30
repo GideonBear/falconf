@@ -1,8 +1,11 @@
 use color_eyre::Result;
-use color_eyre::eyre::OptionExt as _;
+use color_eyre::eyre::{OptionExt as _, eyre};
 use color_eyre::owo_colors::OwoColorize as _;
+use log::debug;
+use std::ffi::OsStr;
+use std::fmt::Debug;
 use std::io::Write as _;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 // pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
@@ -86,4 +89,18 @@ pub fn print_id(id: u32) -> String {
     let id = id.magenta();
     let id = id.bold();
     format!("{id}")
+}
+
+pub fn which<T: AsRef<OsStr> + Debug>(binary_name: T) -> Result<Option<PathBuf>> {
+    match which::which(&binary_name) {
+        Ok(path) => {
+            debug!("Detected {:?} as {:?}", path, binary_name);
+            Ok(Some(path))
+        }
+        Err(which::Error::CannotFindBinaryPath) => {
+            debug!("Cannot find {:?}", binary_name);
+            Ok(None)
+        }
+        Err(e) => Err(eyre!(e).wrap_err(format!("Detecting {:?} failed", binary_name))),
+    }
 }

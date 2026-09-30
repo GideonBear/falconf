@@ -23,6 +23,8 @@ pub enum Piece {
     Gsettings,
     /// Installs a deb-get package. Expects a package name as value.
     DebGet,
+    /// Installs a cargo crate using `cargo install`, or `cargo binstall` if available. Expects a crate name as value.
+    CargoInstall,
 }
 
 #[derive(clap::Args, Debug)]
@@ -67,6 +69,10 @@ pub struct Args {
     /// Alias for `--piece=deb-get`
     #[arg(long="deb-get", action=SetTrue)]
     _deb_get: (),
+
+    /// Alias for `--piece=cargo-install`
+    #[arg(long="cargo-install", action=SetTrue)]
+    _cargo_install: (),
 
     /// The value of the piece. For example the command, the package, etc.
     /// Quoting this is optional; both `falconf add apt install cowsay` and
@@ -143,6 +149,7 @@ pub mod tests {
             _manual: (),
             _gsettings: (),
             _deb_get: (),
+            _cargo_install: (),
             value,
             undo: None,
             done: false,
