@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2](https://github.com/GideonBear/falconf/compare/v0.4.1...v0.4.2) - 2026-09-30
+
+### Added
+- add automatically added falconf-init piece
+- *(piece)* add cargo-install
+- *(piece)* add deb-get
+- *(edit)* add `--move-before`
+- add `falconf done` command
+- *(edit)* add `falconf edit --move-after`
+
+### Fixed
+- don't remove 'newly added' installation directory when it is not newly added
+- *(edit)* stop partial edits from occuring by validating all operations before applying any
+
 ## [0.4.1](https://github.com/GideonBear/falconf/compare/v0.4.0...v0.4.1) - 2026-09-27
 
 ### Added
