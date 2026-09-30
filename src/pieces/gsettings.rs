@@ -9,6 +9,7 @@ use std::fmt::{Display, Formatter};
 use std::process::Command;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Gsettings {
     schema: String,
     key: String,

@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct FullPiece {
     pub piece: PieceEnum,
     /// An optional comment to clarify the use of the piece

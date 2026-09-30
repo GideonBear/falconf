@@ -34,6 +34,7 @@ pub mod tests {
     use crate::cli::undo::tests::undo_util;
     use crate::cli::{PieceRef, add, edit};
     use crate::full_piece::FullPiece;
+    use crate::pieces::falconf_init::FalconfInit;
     use crate::pieces::gsettings::Gsettings;
     use crate::pieces::{NonBulkPieceEnum, PieceEnum};
     use crate::testing::TestRemote;
@@ -120,6 +121,20 @@ pub mod tests {
             add::Piece::CargoInstall,
             vec![String::from("cowsay")],
         )?;
+        // Falconf init
+        // Cannot use add_util as FalconfInit is not constructible from the cli
+        add_internal(
+            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            vec![(
+                FullPiece::new(
+                    PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
+                        String::from("https://github.com/user/repo"),
+                    ))),
+                    None,
+                ),
+                false,
+            )],
+        )?;
         // With comment
         add_util_comment(
             local.path(),
@@ -148,6 +163,7 @@ pub mod tests {
 
         let expected = format!(
             "
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init {}\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m (undo: echo I am undoing this piece)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
@@ -156,9 +172,11 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m // This is a comment!\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[0m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
 ",
+            remote.address(),
             test1.display()
         );
         debug!("Expect:{expected}");

@@ -92,7 +92,7 @@ mod tests {
 
         // Explicitly do not pull local 1 here to test auto-pulling
 
-        undo_util(local_1.path(), get_piece(local_1.path(), 0)?)?;
+        undo_util(local_1.path(), get_piece(local_1.path(), 1)?)?;
         // Is a test run
         assert!(test_1.exists());
         assert!(test_1.is_symlink());
@@ -137,7 +137,7 @@ mod tests {
                 .repo()
                 .data()
                 .pieces()
-                .get_index(0)
+                .get_index(1)
                 .ok_or_eyre("Cannot find added piece")?
                 .1
                 .done_on()
@@ -149,7 +149,7 @@ mod tests {
                 .repo()
                 .data()
                 .pieces()
-                .get_index(1)
+                .get_index(2)
                 .ok_or_eyre("Cannot find added piece")?
                 .1
                 .done_on()

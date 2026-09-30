@@ -1,6 +1,9 @@
 use crate::cli::TopLevelArgs;
+use crate::cli::add::add_internal;
 use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
+use crate::pieces::falconf_init::FalconfInit;
+use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use crate::repo::Repo;
 use color_eyre::Result;
 use color_eyre::eyre::{WrapErr as _, eyre};
@@ -28,7 +31,7 @@ impl Installation {
         &mut self.repo
     }
 
-    pub fn init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
+    pub fn init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<Self> {
         let root = &top_level_args.path;
         debug!("Looking at {}", root.display());
 
@@ -38,7 +41,7 @@ impl Installation {
         fs::create_dir(root)?;
 
         match Self::_init(top_level_args, remote, new) {
-            Ok(()) => Ok(()),
+            Ok(installation) => Ok(installation),
             Err(e) => {
                 info!(
                     "Found error during init; removing newly created .falconf directory to avoid half-initialized state"
@@ -49,7 +52,7 @@ impl Installation {
         }
     }
 
-    fn _init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<()> {
+    fn _init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<Self> {
         let root = &top_level_args.path;
 
         let machine_path = root.join("machine");
@@ -59,9 +62,45 @@ impl Installation {
         fs::write(&machine_path, machine.0.to_string())?;
         let machine_data = MachineData::new_this()?;
 
-        Repo::init(remote, &repository_path, machine, machine_data, new)?;
+        let mut repo = Repo::init(remote, &repository_path, machine, machine_data, new)?;
 
-        Ok(())
+        if new {
+            add_internal(
+                top_level_args,
+                vec![(
+                    FullPiece::new(
+                        PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
+                            remote.to_string(),
+                        ))),
+                        None,
+                    ),
+                    true,
+                )],
+            )?;
+        } else {
+            let pieces = repo.data_mut().pieces_mut();
+
+            let mut falconf_inits: Vec<_> = pieces
+                .iter_mut()
+                .filter(|(_id, piece)| {
+                    matches!(
+                        piece.piece,
+                        PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(_))
+                    )
+                })
+                .collect();
+            if falconf_inits.is_empty() {
+                return Err(eyre!("Expected a falconf init piece to be present"));
+            } else if falconf_inits.len() > 1 {
+                return Err(eyre!("Expected only one falconf init piece to be present"));
+            }
+            let (_id, ref mut falconf_init) = falconf_inits[0];
+            falconf_init.done(machine);
+
+            repo.write_and_push(vec![])?;
+        }
+
+        Self::from_repo(top_level_args, repo)
     }
 
     pub fn get(top_level_args: &TopLevelArgs) -> Result<Self> {
@@ -74,13 +113,19 @@ impl Installation {
             ));
         }
 
+        let repo = Repo::get_from_path(&Self::get_repository_path(root))?;
+
+        Self::from_repo(top_level_args, repo)
+    }
+
+    fn from_repo(top_level_args: &TopLevelArgs, repo: Repo) -> Result<Self> {
+        let root = &top_level_args.path;
+
         let machine = Machine(
             fs::read_to_string(root.join("machine"))?
                 .parse()
                 .wrap_err("`machine` file does not contain a valid UUID".to_owned())?,
         );
-
-        let repo = Repo::get_from_path(&Self::get_repository_path(root))?;
 
         Ok(Self { machine, repo })
     }

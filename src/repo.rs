@@ -42,7 +42,7 @@ impl Repo {
         machine: Machine,
         machine_data: MachineData,
         new: bool,
-    ) -> Result<()> {
+    ) -> Result<Self> {
         let auth = GitAuthenticator::default();
         debug!("Cloning repo");
         let repository = auth
@@ -91,7 +91,7 @@ impl Repo {
         data.machines_mut().insert(machine, machine_data);
         repo.write_and_push(files)
             .wrap_err("Failed to write_and_push")?;
-        Ok(())
+        Ok(repo)
     }
 
     pub fn workdir(&self) -> Result<&Path> {

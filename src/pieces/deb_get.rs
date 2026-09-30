@@ -9,6 +9,7 @@ use std::fmt::{Display, Formatter};
 use std::process;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct DebGet {
     /// The package to install
     package: String,
