@@ -1,10 +1,11 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt as _;
-use crate::piece::BulkPiece;
+use crate::piece::{BulkPiece, Piece};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
+use shell_words::quote;
 use std::fmt::{Display, Formatter};
 use std::process;
 
@@ -13,6 +14,16 @@ use std::process;
 pub struct DebGet {
     /// The package to install
     package: String,
+}
+
+impl Piece for DebGet {
+    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        Ok((
+            format!("deb-get install {}", quote(&self.package)),
+            true,
+            None,
+        ))
+    }
 }
 
 impl BulkPiece for DebGet {

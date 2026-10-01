@@ -18,6 +18,7 @@ pub mod init;
 mod list;
 mod push;
 mod remove;
+pub mod seed;
 pub mod sync;
 pub mod undo;
 mod watch_gsettings;
@@ -115,6 +116,9 @@ enum Commands {
 
     #[command(about = "Mark a piece as done on this machine without executing it")]
     Done(done::Args),
+
+    #[command(about = "Generate a script to init a fresh machine")]
+    Seed(seed::Args),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -169,5 +173,6 @@ pub fn main() -> Result<()> {
         Commands::Edit(args) => edit::edit(top_level, args),
         Commands::WatchGsettings(args) => watch_gsettings::watch_gsettings(top_level, args),
         Commands::Done(args) => done::done(top_level, args),
+        Commands::Seed(args) => seed::seed(top_level, args, &mut io::stdout().lock()),
     }
 }

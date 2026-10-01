@@ -1,14 +1,21 @@
 use crate::execution_data::ExecutionData;
-use crate::piece::NonBulkPiece;
+use crate::piece::{NonBulkPiece, Piece};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
+use shell_words::quote;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct FalconfInit {
     remote: String,
+}
+
+impl Piece for FalconfInit {
+    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        Ok((format!("falconf init {}", quote(&self.remote)), true, None))
+    }
 }
 
 impl NonBulkPiece for FalconfInit {

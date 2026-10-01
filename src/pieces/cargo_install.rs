@@ -1,11 +1,12 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
-use crate::piece::BulkPiece;
+use crate::piece::{BulkPiece, Piece};
 use crate::utils::which;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
+use shell_words::quote;
 use std::fmt::{Display, Formatter};
 use std::process::Command;
 
@@ -14,6 +15,24 @@ use std::process::Command;
 pub struct CargoInstall {
     /// The crate to install
     crate_: String,
+}
+
+impl Piece for CargoInstall {
+    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        Ok((
+            format!(
+                "if command -v cargo-binstall >/dev/null 2>&1; then \
+                        cargo binstall -y {}; \
+                    else \
+                        cargo install -y {}; \
+                    fi",
+                quote(&self.crate_),
+                quote(&self.crate_)
+            ),
+            true,
+            None,
+        ))
+    }
 }
 
 impl BulkPiece for CargoInstall {

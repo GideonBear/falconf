@@ -1,10 +1,11 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
-use crate::piece::NonBulkPiece;
+use crate::piece::{NonBulkPiece, Piece};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
+use shell_words::quote;
 use std::fmt::{Display, Formatter};
 use std::process::Command;
 
@@ -15,6 +16,21 @@ pub struct Gsettings {
     key: String,
     value: String,
     original_value: String,
+}
+
+impl Piece for Gsettings {
+    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        Ok((
+            format!(
+                "gsettings set {} {} {}",
+                quote(&self.schema),
+                quote(&self.key),
+                quote(&self.value)
+            ),
+            true,
+            None,
+        ))
+    }
 }
 
 impl NonBulkPiece for Gsettings {

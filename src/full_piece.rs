@@ -245,6 +245,10 @@ impl FullPiece {
         }
     }
 
+    pub fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        self.piece.seed(execution_data)
+    }
+
     /// If this is a file piece, get the filename relative to the file dir
     pub fn file(&self) -> Option<&Path> {
         if let PieceEnum::NonBulk(NonBulkPieceEnum::File(file)) = &self.piece {

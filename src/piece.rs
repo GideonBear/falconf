@@ -2,8 +2,12 @@ use crate::execution_data::ExecutionData;
 use color_eyre::Result;
 use std::fmt::Display;
 
+pub trait Piece: Display {
+    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)>;
+}
+
 /// A single piece of configuration (non-bulk)
-pub trait NonBulkPiece: Display {
+pub trait NonBulkPiece: Piece {
     /// Execute a single piece.
     fn execute(&mut self, execution_data: &ExecutionData) -> Result<()>;
 
@@ -12,7 +16,7 @@ pub trait NonBulkPiece: Display {
 }
 
 /// A single piece of configuration (bulk)
-pub trait BulkPiece: Display {
+pub trait BulkPiece: Piece {
     /// Execute multiple of these pieces in bulk.
     fn execute_bulk(pieces: &[&mut Self], execution_data: &ExecutionData) -> Result<()>;
 

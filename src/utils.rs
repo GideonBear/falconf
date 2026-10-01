@@ -84,6 +84,10 @@ pub fn remove_empty_dirs(path: &Path) -> Result<()> {
     Ok(())
 }
 
+pub fn print_id_raw(id: u32) -> String {
+    format!("{id:08x}")
+}
+
 pub fn print_id(id: u32) -> String {
     let id = format!("[{id:08x}]");
     let id = id.magenta();

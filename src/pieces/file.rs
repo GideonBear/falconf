@@ -1,12 +1,13 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt as _;
-use crate::piece::NonBulkPiece;
+use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::{confirm, create_parent};
 use color_eyre::Result;
-use color_eyre::eyre::{WrapErr as _, eyre};
+use color_eyre::eyre::{OptionExt, WrapErr as _, eyre};
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
+use shell_words::quote;
 use std::fmt::{Display, Formatter};
 use std::fs;
 use std::fs::{read_dir, remove_file, rename};
@@ -28,6 +29,26 @@ pub struct File {
     // sudo: bool,
     /// What the file should look like before the operation if it exists
     expected_previous_content: Option<String>,
+}
+
+impl Piece for File {
+    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        let target = self.target_file(execution_data);
+        let content = fs::read_to_string(&target)?;
+        if content.contains("EOF") {
+            // TODO(low)
+            return Err(eyre!("File contains 'EOF' which seed can't handle yet"));
+        }
+        let path = quote(self.location.to_str().ok_or_eyre("Non-unicode path")?);
+        Ok((
+            format!("set -o noclobber && cat <<'EOF' > {path}\n{content}\nEOF"),
+            true,
+            Some(format!(
+                "rm -rf {path} && ln {} {path} --symbolic",
+                quote(target.to_str().ok_or_eyre("Non-unicode path")?)
+            )),
+        ))
+    }
 }
 
 impl NonBulkPiece for File {

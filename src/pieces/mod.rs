@@ -1,7 +1,7 @@
 use crate::cli;
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
-use crate::piece::{BulkPiece, NonBulkPiece as _};
+use crate::piece::{BulkPiece, NonBulkPiece as _, Piece};
 use crate::pieces::apt::Apt;
 use crate::pieces::cargo_install::CargoInstall;
 use crate::pieces::command::Command;
@@ -57,6 +57,16 @@ pub enum BulkPieceEnum {
     CargoInstall(CargoInstall),
 }
 
+impl BulkPieceEnum {
+    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        match self {
+            Self::Apt(apt) => apt.seed(execution_data),
+            Self::DebGet(deb_get) => deb_get.seed(execution_data),
+            Self::CargoInstall(cargo_install) => cargo_install.seed(execution_data),
+        }
+    }
+}
+
 #[non_exhaustive]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
@@ -86,6 +96,16 @@ impl NonBulkPieceEnum {
             Self::Manual(manual) => manual.undo(execution_data),
             Self::Gsettings(gsettings) => gsettings.undo(execution_data),
             Self::FalconfInit(falconf_init) => falconf_init.undo(execution_data),
+        }
+    }
+
+    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        match self {
+            Self::Command(command) => command.seed(execution_data),
+            Self::File(file) => file.seed(execution_data),
+            Self::Manual(manual) => manual.seed(execution_data),
+            Self::Gsettings(gsettings) => gsettings.seed(execution_data),
+            Self::FalconfInit(falconf_init) => falconf_init.seed(execution_data),
         }
     }
 }
@@ -336,6 +356,13 @@ impl PieceEnum {
                 _ => Self::NonBulk(NonBulkPieceEnum::Command(Command::from_cli(args))),
             },
         )
+    }
+
+    pub fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        match self {
+            Self::Bulk(piece) => piece.seed(execution_data),
+            Self::NonBulk(piece) => piece.seed(execution_data),
+        }
     }
 }
 

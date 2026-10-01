@@ -1,7 +1,7 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt as _;
-use crate::piece::NonBulkPiece;
+use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::prompt;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,12 @@ pub struct Command {
     // TODO(test): test the undo_command
     /// The command to run when undoing
     pub undo_command: Option<String>,
+}
+
+impl Piece for Command {
+    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        Ok((self.command.clone(), true, None))
+    }
 }
 
 impl NonBulkPiece for Command {

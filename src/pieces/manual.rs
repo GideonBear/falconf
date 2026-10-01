@@ -1,9 +1,10 @@
 use crate::cli::add;
 use crate::execution_data::ExecutionData;
-use crate::piece::NonBulkPiece;
+use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::press_enter;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
+use shell_words::quote;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11,6 +12,22 @@ use std::fmt::{Display, Formatter};
 pub struct Manual {
     /// The message to show the user
     message: String,
+}
+
+impl Piece for Manual {
+    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+        Ok((
+            format!(
+                "echo 'Manual action required' \
+            && echo {} \
+            && echo 'Continue when the action is performed.' \
+            && read",
+                quote(&self.message)
+            ),
+            true,
+            None,
+        ))
+    }
 }
 
 impl NonBulkPiece for Manual {
