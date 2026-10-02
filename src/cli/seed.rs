@@ -25,7 +25,10 @@ pub fn seed<W: Write>(top_level_args: TopLevelArgs, _args: Args, writer: &mut W)
     for (&id, piece) in pieces {
         let (command, done, post_init) = piece.seed(&execution_data)?;
         writeln!(writer, "{}", command)?;
-        writeln!(writer, "if [ -f ~/.profile ]; then source ~/.profile; fi; if [ -f ~/.bashrc ]; then source ~/.bashrc; fi")?;
+        writeln!(
+            writer,
+            "if [ -f ~/.profile ]; then source ~/.profile; fi; if [ -f ~/.bashrc ]; then source ~/.bashrc; fi"
+        )?;
         if let Some(post_init) = post_init {
             to_write.push_str(&post_init);
             to_write.push('\n');
