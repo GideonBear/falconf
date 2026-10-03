@@ -2,6 +2,7 @@ use crate::cli::add;
 use crate::execution_data::ExecutionData;
 use crate::logging::CommandExt;
 use crate::piece::{NonBulkPiece, Piece};
+use crate::utils::confirm;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
@@ -35,6 +36,15 @@ impl Piece for Gsettings {
 
 impl NonBulkPiece for Gsettings {
     fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+        let current_value = Self::get(&self.schema, &self.key)?;
+        if current_value != self.original_value
+            && !confirm(&format!(
+                "gsettings key {}.{} value differs from recorded original value. Is {}, expected {}. Overwrite anyway?",
+                self.schema, self.key, current_value, self.original_value
+            ))?
+        {
+            return Err(eyre!("Aborted"));
+        }
         Self::set(&self.schema, &self.key, &self.value)
     }
 
