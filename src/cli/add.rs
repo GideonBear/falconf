@@ -7,6 +7,7 @@ use clap::ArgAction::SetTrue;
 use clap::ValueEnum;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
+use log::info;
 use std::path::Path;
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
@@ -130,6 +131,7 @@ pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)
         if let Some(file) = piece.file().map(Path::to_path_buf) {
             files.push(file);
         }
+        info!("Added: {}", piece.print(id));
         pieces.insert(id, piece);
     }
 
