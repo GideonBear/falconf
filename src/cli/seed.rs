@@ -20,6 +20,7 @@ pub fn seed<W: Write>(top_level_args: TopLevelArgs, _args: Args, writer: &mut W)
 
     writeln!(writer, "#!/bin/bash")?;
     writeln!(writer, "set -euxo pipefail")?;
+    writeln!(writer)?;
 
     let mut to_write = String::new();
     for (&id, piece) in pieces {
