@@ -32,7 +32,7 @@ fn parse_path(s: &str) -> Result<PathBuf> {
 #[command(about = "TODO description")] // TODO(med): Edit the description here, in GitHub, in Cargo.toml
 pub struct Cli {
     #[command(subcommand)]
-    command: Box<Commands>,
+    command: Commands,
     #[clap(flatten)]
     pub top_level: TopLevelArgs,
 }
@@ -166,7 +166,7 @@ pub fn main() -> Result<()> {
 
     let Cli { command, top_level } = cli;
 
-    match *command {
+    match command {
         Commands::Init(args) => init::init(top_level, args),
         Commands::Sync(args) => sync::sync(top_level, args),
         Commands::Add(args) => add::add(top_level, args),
