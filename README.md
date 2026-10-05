@@ -20,7 +20,7 @@ you think!
 
 * You have a script to set up a new Linux machine, that you update (semi-)regularly
 * You have a list of manual actions to take to set up a new Linux machine
-* You use Ansible to manage your machines, but find it cumbersome to add/remove tasks
+* You use Ansible to manage your machines, but find it cumbersome to add/remove tasks, or too slow to run
 * You use a home-made script / plain git server for synchronizing dotfiles
 * You regularly forget / have to remind yourself to install a program / tweak something on your other machines as well
 * You're afraid to re-install because you'll lose your configuration
