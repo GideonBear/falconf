@@ -4,7 +4,7 @@ use crate::utils::remove_empty_dirs;
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, WrapErr as _, eyre};
-use git2::{Diff, Error, Repository, Status};
+use git2::{Diff, DiffOptions, Error, Repository, Status};
 use itertools::Itertools as _;
 use log::debug;
 use std::fmt::{Debug, Formatter};
@@ -307,7 +307,15 @@ impl Repo {
     }
 
     pub fn diff_index_to_workdir(&self) -> std::result::Result<Diff<'_>, Error> {
-        self.repository.diff_index_to_workdir(None, None)
+        self.repository.diff_index_to_workdir(
+            None,
+            Some(
+                DiffOptions::new()
+                    .include_untracked(true)
+                    .recurse_untracked_dirs(true)
+                    .show_untracked_content(true),
+            ),
+        )
     }
 
     pub fn clean_file_dir(&self) -> Result<()> {
