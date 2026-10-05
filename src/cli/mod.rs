@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use log::{LevelFilter, debug};
 use std::io;
 use std::path::PathBuf;
-use std::str::FromStr as _;
+use std::str::FromStr;
 
 pub use add::Piece;
 
@@ -139,16 +139,20 @@ impl PieceRef {
     }
 }
 
-fn parse_piece_ref(s: &str) -> Result<PieceRef, String> {
-    if s == "-" {
-        return Ok(PieceRef::Last);
+impl FromStr for PieceRef {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s == "-" {
+            return Ok(PieceRef::Last);
+        }
+        if s.len() != 8 {
+            return Err("Value must be exactly 8 hex digits".to_owned());
+        }
+        u32::from_str_radix(s, 16)
+            .map_err(|_| "Invalid hex format".to_owned())
+            .map(PieceRef::Id)
     }
-    if s.len() != 8 {
-        return Err("Value must be exactly 8 hex digits".to_owned());
-    }
-    u32::from_str_radix(s, 16)
-        .map_err(|_| "Invalid hex format".to_owned())
-        .map(PieceRef::Id)
 }
 
 pub fn main() -> Result<()> {

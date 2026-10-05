@@ -1,5 +1,5 @@
+use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
-use crate::cli::{PieceRef, parse_piece_ref};
 use crate::installation::Installation;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt as _;
@@ -11,10 +11,7 @@ use std::fs::{remove_dir_all, remove_file};
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
-    #[clap(
-        value_parser = parse_piece_ref,
-        required = true
-    )]
+    #[clap(required = true)]
     pub(crate) pieces: Vec<PieceRef>,
 
     /// Remove the piece even if it is not unused

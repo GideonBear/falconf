@@ -1,5 +1,5 @@
+use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
-use crate::cli::{PieceRef, parse_piece_ref};
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -20,7 +20,6 @@ pub struct Args {
     pub remove_comment: bool,
 
     /// Specify the piece id. '-' is a shortcut for the last piece.
-    #[clap(value_parser = parse_piece_ref)]
     pub(crate) piece: PieceRef,
 
     // `value` is intentionally missing
@@ -33,11 +32,11 @@ pub struct Args {
     pub remove_undo: bool,
 
     /// Reorder this piece, moving it after the given piece
-    #[arg(long, value_parser = parse_piece_ref)]
+    #[arg(long)]
     pub move_after: Option<PieceRef>,
 
     /// Reorder this piece, moving it before the given piece
-    #[arg(long, value_parser = parse_piece_ref, conflicts_with = "move_after")]
+    #[arg(long, conflicts_with = "move_after")]
     pub move_before: Option<PieceRef>,
 }
 

@@ -1,5 +1,5 @@
+use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
-use crate::cli::{PieceRef, parse_piece_ref};
 use crate::execution_data::ExecutionData;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
@@ -11,10 +11,7 @@ use std::collections::{HashMap, HashSet};
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
-    #[clap(
-        value_parser = parse_piece_ref,
-        required = true
-    )]
+    #[clap(required = true)]
     pieces: Vec<PieceRef>,
 
     /// Do not undo the piece here (on this machine) immediately

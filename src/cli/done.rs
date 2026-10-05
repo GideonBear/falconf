@@ -1,4 +1,3 @@
-use crate::cli::parse_piece_ref;
 use crate::cli::{PieceRef, TopLevelArgs};
 use crate::execution_data::ExecutionData;
 use crate::installation::Installation;
@@ -8,7 +7,7 @@ use color_eyre::eyre::OptionExt;
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
-    #[clap(value_parser = parse_piece_ref, required = true)]
+    #[clap(required = true)]
     pub(crate) pieces: Vec<PieceRef>,
 }
 
