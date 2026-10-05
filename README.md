@@ -118,7 +118,7 @@ The most similar tool to falconf is Ansible, but there are two main differences:
 | Runs without Git installation                    |    ✅    |  ✅  |    ✅    |    ✅    |    ✅     |
 | Built-in synchronization                         |    ✅    |  ❌  |    ❌    |    ✅    |    ❌     |
 | Topgrade integration                             |    ✅    |  ✅  |    ❌    |    ✅    |    ❌     |
-| dconf support (specific paths)*                  |    ⏳    |  ✅  |    ✅    |    ❌    |    ❌     |
+| dconf support (specific paths)*                  |    ✅    |  ✅  |    ✅    |    ❌    |    ❌     |
 | Temporary one-time pieces                        |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Watch configuration (files, dconf)               |    ⏳    |  ❌  |    ❌    |    ❌    |    ❌     |
 | Secret management                                |    ⏳    |  ✅  |    ✅    |    ✅    |    ❌     |
