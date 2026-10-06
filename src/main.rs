@@ -14,6 +14,7 @@ mod full_piece;
 mod installation;
 mod logging;
 mod machine;
+pub mod migrations;
 mod piece;
 mod pieces;
 mod repo;

@@ -1,6 +1,7 @@
 use crate::data::Data;
 use crate::machine::{Machine, MachineData};
 use crate::utils::remove_empty_dirs;
+use crate::{data, migrations};
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, WrapErr as _, eyre};
@@ -89,7 +90,7 @@ impl Repo {
 
         let data = repo.data_mut();
         data.machines_mut().insert(machine, machine_data);
-        repo.write_and_push(files)
+        repo.write_and_push(files, None)
             .wrap_err("Failed to write_and_push")?;
         Ok(repo)
     }
@@ -115,24 +116,26 @@ impl Repo {
         Self::from_repository(repository)
     }
 
-    fn get_data(repository: &Repository) -> Result<Data> {
-        Data::from_file(&data_path_from_repository(repository)?)
-    }
-
     fn update_data(&mut self) -> Result<()> {
-        self.data = Self::get_data(&self.repository).wrap_err("Failed to get data")?;
+        let data_path = data_path_from_repository(&self.repository)?;
+        self.data = data::from_file::<Data>(&data_path).wrap_err("Failed to get data")?;
         Ok(())
     }
 
     fn from_repository(repository: Repository) -> Result<Self> {
         let auth = GitAuthenticator::default();
-        let data = Self::get_data(&repository).wrap_err("Failed to get data")?;
+        let data_path = data_path_from_repository(&repository)?;
+        let migrated = migrations::run_migrations(&data_path)?;
+        let data = data::from_file::<Data>(&data_path).wrap_err("Failed to get data")?;
 
         let repo = Self {
             repository,
             auth,
             data,
         };
+        if let Some(migrated) = migrated {
+            repo.write_and_push(vec![], Some(migrated))?
+        }
         // This runs at the start of every run, so we do sanity checks here
         if repo.data_changed()? {
             return Err(eyre!("The data file has uncommitted changes"));
@@ -179,8 +182,7 @@ impl Repo {
     }
 
     fn write_data(&self) -> Result<()> {
-        self.data
-            .to_file(&data_path_from_repository(&self.repository)?)
+        data::to_file(&self.data, &data_path_from_repository(&self.repository)?)
     }
 
     /// Returns true if the data file was changed
@@ -193,7 +195,7 @@ impl Repo {
     }
 
     /// `files`: A list of files relative to the file dir that will be committed along with the data file.
-    fn commit(&self, files: Vec<PathBuf>) -> Result<()> {
+    fn commit(&self, files: Vec<PathBuf>, extra_msg: Option<String>) -> Result<()> {
         let mut index = self.repository.index().wrap_err("Failed to get index")?;
 
         let file_dir = self.file_dir()?;
@@ -221,7 +223,10 @@ impl Repo {
             .find_tree(oid)
             .wrap_err("Failed to find tree")?;
 
-        let message = format!("falconf: Update {}", files.iter().join(", "));
+        let mut message = format!("falconf: Update {}", files.iter().join(", "));
+        if let Some(extra_msg) = extra_msg {
+            message.push_str(&format!(" ({extra_msg})"));
+        }
 
         if self.repository.head().is_ok() {
             debug!("Head exists");
@@ -291,7 +296,7 @@ impl Repo {
         Ok(())
     }
 
-    pub fn write_and_push(&self, files: Vec<PathBuf>) -> Result<()> {
+    pub fn write_and_push(&self, files: Vec<PathBuf>, extra_msg: Option<String>) -> Result<()> {
         // If the data file changed or there are other files to commit
         self.write_data().wrap_err("Failed to write data")?;
         if self.data_changed()? || !files.is_empty() {
@@ -300,7 +305,7 @@ impl Repo {
             //         "Somehow, the data file was changed during a dry run. This shouldn't happen."
             //     ));
             // }
-            self.commit(files).wrap_err("Failed to commit")?;
+            self.commit(files, extra_msg).wrap_err("Failed to commit")?;
             self.push().wrap_err("Failed to push")?;
         }
         Ok(())

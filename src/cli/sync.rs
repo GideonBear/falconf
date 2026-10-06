@@ -20,12 +20,12 @@ pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     // Do out-of-sync (todo) changes
     if let Err(err) = FullPiece::do_todo(data.pieces_mut(), &machine, &execution_data) {
         info!("Found error during sync; writing and pushing the changes that *were* done");
-        repo.write_and_push(vec![])?;
+        repo.write_and_push(vec![], None)?;
         return Err(err);
     }
 
     // Push changes
-    repo.write_and_push(vec![])?;
+    repo.write_and_push(vec![], None)?;
 
     Ok(())
 }

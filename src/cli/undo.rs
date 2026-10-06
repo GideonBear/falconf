@@ -47,13 +47,13 @@ pub fn undo(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     for (id, piece) in pieces_to_undo {
         if let Err(err) = piece.undo(id, &args, &execution_data) {
             info!("Found error during undo; writing and pushing the changes that *were* done");
-            repo.write_and_push(vec![])?;
+            repo.write_and_push(vec![], None)?;
             return Err(err);
         }
     }
 
     // Push changes
-    repo.write_and_push(vec![])?;
+    repo.write_and_push(vec![], None)?;
 
     Ok(())
 }

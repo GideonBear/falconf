@@ -28,6 +28,7 @@ auth-git2 = "0.6.0"
 itertools = "0.15.0"
 utf8-command = "1.0.1"
 which = "8.0.6"
+derive-into = { version = "0.3.0", path = "../derive-into/derive-into", features = ["indexmap"] }
 
 [dev-dependencies]
 ctor = "=1.0.13"

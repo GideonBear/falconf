@@ -58,7 +58,7 @@ pub fn push(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     }
 
     // Push changes
-    repo.write_and_push(files)?;
+    repo.write_and_push(files, None)?;
 
     Ok(())
 }
