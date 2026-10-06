@@ -36,7 +36,7 @@ pub fn done(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     }
 
     // Push changes
-    repo.write_and_push(vec![])?;
+    repo.write_and_push(vec![], None)?;
 
     Ok(())
 }

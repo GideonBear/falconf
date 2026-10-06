@@ -136,7 +136,7 @@ pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)
     }
 
     // Push changes
-    repo.write_and_push(files)?;
+    repo.write_and_push(files, None)?;
 
     Ok(())
 }

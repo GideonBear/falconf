@@ -97,7 +97,7 @@ impl Installation {
             let (_id, ref mut falconf_init) = falconf_inits[0];
             falconf_init.done(machine);
 
-            repo.write_and_push(vec![])?;
+            repo.write_and_push(vec![], None)?;
         }
 
         Self::from_repo(top_level_args, repo)

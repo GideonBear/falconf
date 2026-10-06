@@ -28,6 +28,7 @@ auth-git2 = "0.6.0"
 itertools = "0.15.0"
 utf8-command = "1.0.1"
 which = "8.0.6"
+derive-into = { git = "https://github.com/GideonBear/derive-into", branch = "indexmap", features = ["indexmap"] }
 
 [dev-dependencies]
 ctor = "=1.0.13"

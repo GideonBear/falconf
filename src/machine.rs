@@ -13,13 +13,13 @@ impl Machine {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MachineData {
-    hostname: String,
+    pub name: String,
 }
 
 impl MachineData {
     pub fn new_this() -> Result<Self> {
         Ok(Self {
-            hostname: hostname::get()?.to_string_lossy().into_owned(),
+            name: hostname::get()?.to_string_lossy().into_owned(),
         })
     }
 }
