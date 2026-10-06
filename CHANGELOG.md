@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3](https://github.com/GideonBear/falconf/compare/v0.4.2...v0.4.3) - 2026-10-06
+
+### Added
+- *(gsettings)* warn when overwriting value that doesn't match recorded original value
+- log added pieces
+- add falconf seed
+
+### Fixed
+- *(push)* new files too
+- *(seed)* reload shell in between steps
+
 ## [0.4.2](https://github.com/GideonBear/falconf/compare/v0.4.1...v0.4.2) - 2026-09-30
 
 ### Added
