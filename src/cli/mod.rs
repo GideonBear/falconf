@@ -16,6 +16,7 @@ mod done;
 mod edit;
 pub mod init;
 mod list;
+mod machines;
 mod push;
 mod remove;
 pub mod seed;
@@ -119,6 +120,9 @@ enum Commands {
 
     #[command(about = "Generate a script to init a fresh machine")]
     Seed(seed::Args),
+
+    #[command(about = "Show or edit machines")]
+    Machines(machines::Args),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -178,5 +182,6 @@ pub fn main() -> Result<()> {
         Commands::WatchGsettings(args) => watch_gsettings::watch_gsettings(top_level, args),
         Commands::Done(args) => done::done(top_level, args),
         Commands::Seed(args) => seed::seed(top_level, args, &mut io::stdout().lock()),
+        Commands::Machines(args) => machines::machines(top_level, args),
     }
 }

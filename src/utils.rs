@@ -1,6 +1,7 @@
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, eyre};
 use color_eyre::owo_colors::OwoColorize as _;
+use itertools::Itertools;
 use log::debug;
 use std::ffi::OsStr;
 use std::fmt::Debug;
@@ -106,5 +107,38 @@ pub fn which<T: AsRef<OsStr> + Debug>(binary_name: T) -> Result<Option<PathBuf>>
             Ok(None)
         }
         Err(e) => Err(eyre!(e).wrap_err(format!("Detecting {:?} failed", binary_name))),
+    }
+}
+
+pub fn match_prefix<'a>(
+    options: impl IntoIterator<Item = &'a str>,
+    input: &str,
+) -> Result<&'a str> {
+    let matches: Vec<&str> = options
+        .into_iter()
+        .filter(|o| o.starts_with(input))
+        .collect();
+
+    match matches.as_slice() {
+        [] => Err(eyre!("No matches found")),
+        [one] => Ok(one),
+        many => Err(eyre!(
+            "Multiple matches found: {}",
+            many.iter().map(|s| s.to_string()).join(", "),
+        )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_match_prefix() {
+        let opts = ["abc", "abz", "def"];
+        assert_eq!(match_prefix(opts.iter().copied(), "d").unwrap(), "def");
+        assert!(match_prefix(opts.iter().copied(), "a").is_err());
+        assert_eq!(match_prefix(opts.iter().copied(), "abc").unwrap(), "abc");
+        assert!(match_prefix(opts.iter().copied(), "e").is_err());
     }
 }
