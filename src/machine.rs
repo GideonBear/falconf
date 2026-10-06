@@ -22,4 +22,9 @@ impl MachineData {
             name: hostname::get()?.to_string_lossy().into_owned(),
         })
     }
+
+    /// Return information about this machine for printing in the console
+    pub fn print(&self, machine: Machine) -> String {
+        format!("{} {}", &machine.0.to_string()[..8], self.name)
+    }
 }

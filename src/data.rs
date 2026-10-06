@@ -33,6 +33,10 @@ impl Data {
         &mut self.pieces
     }
 
+    pub const fn machines(&self) -> &IndexMap<Machine, MachineData> {
+        &self.machines
+    }
+
     pub const fn machines_mut(&mut self) -> &mut IndexMap<Machine, MachineData> {
         &mut self.machines
     }
