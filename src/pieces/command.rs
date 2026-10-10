@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt as _;
 use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::prompt;
@@ -19,17 +19,17 @@ pub struct Command {
 }
 
 impl Piece for Command {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((self.command.clone(), true, None))
     }
 }
 
 impl NonBulkPiece for Command {
-    fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         Self::run_command(&self.command)
     }
 
-    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         if self.undo_command.is_none() {
             let undo_command =
                 prompt("This command piece is missing an undo command. Undo command to use: ")?;

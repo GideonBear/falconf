@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt;
 use crate::piece::{BulkPiece, Piece};
 use crate::utils::which;
@@ -18,7 +18,7 @@ pub struct CargoInstall {
 }
 
 impl Piece for CargoInstall {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((
             format!(
                 "if command -v cargo-binstall >/dev/null 2>&1; then \
@@ -36,7 +36,7 @@ impl Piece for CargoInstall {
 }
 
 impl BulkPiece for CargoInstall {
-    fn execute_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn execute_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
         let mut cmd = Command::new("cargo");
         if which("cargo-binstall")?.is_some() {
             cmd.arg("binstall");
@@ -49,7 +49,7 @@ impl BulkPiece for CargoInstall {
         Ok(())
     }
 
-    fn undo_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn undo_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
         Command::new("cargo")
             .arg("uninstall")
             .args(pieces.iter().map(|p| &p.crate_))

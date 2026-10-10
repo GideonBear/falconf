@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt as _;
 use crate::piece::{BulkPiece, Piece};
 use color_eyre::Result;
@@ -17,7 +17,7 @@ pub struct DebGet {
 }
 
 impl Piece for DebGet {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((
             format!("deb-get install {}", quote(&self.package)),
             true,
@@ -27,11 +27,11 @@ impl Piece for DebGet {
 }
 
 impl BulkPiece for DebGet {
-    fn execute_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn execute_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
         Self::deb_get_command(&["install"], pieces)
     }
 
-    fn undo_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn undo_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
         Self::deb_get_command(&["remove", "--remove-repo"], pieces)
     }
 }

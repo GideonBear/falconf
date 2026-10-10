@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -118,8 +118,8 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 
 pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)>) -> Result<()> {
     let mut installation = Installation::get(top_level_args)?;
-    let execution_data = ExecutionData::new(&installation, top_level_args)?;
-    installation.pull_and_read(true, &execution_data)?;
+    let ctx = ExecutionContext::new(&installation, top_level_args)?;
+    installation.pull_and_read(true, &ctx)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let (pieces, machines) = data.as_mut_parts();
@@ -127,7 +127,7 @@ pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)
     let mut files = vec![];
     for (mut piece, done) in to_add {
         // Add the piece
-        let id = piece.add(&execution_data, done)?;
+        let id = piece.add(&ctx, done)?;
         if let Some(file) = piece.file().map(Path::to_path_buf) {
             files.push(file);
         }

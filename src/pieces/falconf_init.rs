@@ -1,4 +1,4 @@
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::piece::{NonBulkPiece, Piece};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
@@ -13,19 +13,19 @@ pub struct FalconfInit {
 }
 
 impl Piece for FalconfInit {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((format!("falconf init {}", quote(&self.remote)), true, None))
     }
 }
 
 impl NonBulkPiece for FalconfInit {
-    fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         Err(eyre!(
             "It doesn't make any sense to execute the falconf init piece"
         ))
     }
 
-    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         Err(eyre!(
             "It doesn't make any sense to undo the falconf init piece"
         ))

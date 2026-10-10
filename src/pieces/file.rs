@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt as _;
 use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::{confirm, create_parent};
@@ -32,8 +32,8 @@ pub struct File {
 }
 
 impl Piece for File {
-    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
-        let target = self.target_file(execution_data);
+    fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
+        let target = self.target_file(ctx);
         let content = fs::read_to_string(&target)?;
         if content.contains("EOF") {
             // TODO(low)
@@ -52,8 +52,8 @@ impl Piece for File {
 }
 
 impl NonBulkPiece for File {
-    fn execute(&mut self, execution_data: &ExecutionData) -> Result<()> {
-        let target_file = self.target_file(execution_data);
+    fn execute(&mut self, ctx: &ExecutionContext) -> Result<()> {
+        let target_file = self.target_file(ctx);
 
         if !target_file.exists() {
             // TODO(low): possibly do this better
@@ -122,7 +122,7 @@ impl NonBulkPiece for File {
         Ok(())
     }
 
-    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         if !self.location.is_symlink() {
             return Err(eyre!("File is not a symlink."));
         }
@@ -132,8 +132,8 @@ impl NonBulkPiece for File {
 
 impl File {
     /// Return the file's location in the file dir; the target of the symlink
-    fn target_file(&self, execution_data: &ExecutionData) -> PathBuf {
-        execution_data.file_dir.join(self.relative_location())
+    fn target_file(&self, ctx: &ExecutionContext) -> PathBuf {
+        ctx.file_dir.join(self.relative_location())
     }
 
     /// Return the file's location relative to /; the target of the symlink relative to the file dir

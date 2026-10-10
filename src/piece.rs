@@ -1,25 +1,25 @@
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use color_eyre::Result;
 use std::fmt::Display;
 
 pub trait Piece: Display {
-    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)>;
+    fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)>;
 }
 
 /// A single piece of configuration (non-bulk)
 pub trait NonBulkPiece: Piece {
     /// Execute a single piece.
-    fn execute(&mut self, execution_data: &ExecutionData) -> Result<()>;
+    fn execute(&mut self, ctx: &ExecutionContext) -> Result<()>;
 
     /// Undo a single piece.
-    fn undo(&mut self, execution_data: &ExecutionData) -> Result<()>;
+    fn undo(&mut self, ctx: &ExecutionContext) -> Result<()>;
 }
 
 /// A single piece of configuration (bulk)
 pub trait BulkPiece: Piece {
     /// Execute multiple of these pieces in bulk.
-    fn execute_bulk(pieces: &[&mut Self], execution_data: &ExecutionData) -> Result<()>;
+    fn execute_bulk(pieces: &[&mut Self], ctx: &ExecutionContext) -> Result<()>;
 
     /// Undo multiple of these pieces in bulk.
-    fn undo_bulk(pieces: &[&mut Self], execution_data: &ExecutionData) -> Result<()>;
+    fn undo_bulk(pieces: &[&mut Self], ctx: &ExecutionContext) -> Result<()>;
 }

@@ -5,7 +5,7 @@ use color_eyre::Result;
 use std::path::PathBuf;
 
 #[derive(Debug)]
-pub struct ExecutionData {
+pub struct ExecutionContext {
     pub file_dir: PathBuf,
     pub machine: Machine,
     pub machine_data: MachineData,
@@ -13,7 +13,7 @@ pub struct ExecutionData {
     pub test_run: bool,
 }
 
-impl ExecutionData {
+impl ExecutionContext {
     pub fn new(installation: &Installation, top_level_args: &TopLevelArgs) -> Result<Self> {
         let machine = installation.machine();
         Ok(Self {

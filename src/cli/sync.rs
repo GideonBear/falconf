@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use color_eyre::Result;
@@ -11,13 +11,13 @@ pub struct Args {}
 #[allow(clippy::needless_pass_by_value)]
 pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
-    installation.pull_and_read(false, &execution_data)?;
+    let ctx = ExecutionContext::new(&installation, &top_level_args)?;
+    installation.pull_and_read(false, &ctx)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
 
     // Do out-of-sync (todo) changes
-    if let Err(err) = FullPiece::do_todo(data.pieces_mut(), &execution_data) {
+    if let Err(err) = FullPiece::do_todo(data.pieces_mut(), &ctx) {
         info!("Found error during sync; writing and pushing the changes that *were* done");
         repo.write_and_push(vec![], None)?;
         return Err(err);
