@@ -11,6 +11,7 @@ mod cli;
 mod data;
 mod execution_data;
 mod full_piece;
+mod group;
 mod installation;
 mod logging;
 mod machine;

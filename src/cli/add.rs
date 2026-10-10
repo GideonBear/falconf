@@ -119,10 +119,10 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)>) -> Result<()> {
     let mut installation = Installation::get(top_level_args)?;
     let execution_data = ExecutionData::new(&installation, top_level_args)?;
-    installation.pull_and_read(true)?;
+    installation.pull_and_read(true, &execution_data)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
-    let pieces = data.pieces_mut();
+    let (pieces, machines) = data.as_mut_parts();
 
     let mut files = vec![];
     for (mut piece, done) in to_add {
@@ -131,7 +131,7 @@ pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)
         if let Some(file) = piece.file().map(Path::to_path_buf) {
             files.push(file);
         }
-        info!("Added: {}", piece.print(id));
+        info!("Added: {}", piece.print(id, machines));
         pieces.insert(id, piece);
     }
 

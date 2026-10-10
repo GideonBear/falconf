@@ -1,8 +1,9 @@
+use crate::group::Group;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Machine(pub Uuid);
 
 impl Machine {
@@ -26,5 +27,13 @@ impl MachineData {
     /// Return information about this machine for printing in the console
     pub fn print(&self, machine: Machine) -> String {
         format!("{} {}", &machine.0.to_string()[..8], self.name)
+    }
+
+    pub fn in_group(&self, group: &Group) -> bool {
+        match group {
+            Group::All => true,
+            Group::None => false,
+            Group::Custom(_) => false, // TODO
+        }
     }
 }

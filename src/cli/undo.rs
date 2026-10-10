@@ -13,17 +13,13 @@ pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(required = true)]
     pieces: Vec<PieceRef>,
-
-    /// Do not undo the piece here (on this machine) immediately
-    #[arg(long, short)]
-    pub done_here: bool,
 }
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn undo(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
-    installation.pull_and_read(true)?;
+    installation.pull_and_read(true, &execution_data)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();
@@ -45,7 +41,7 @@ pub fn undo(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 
     // TODO(low): This should be bulk. If it shouldn't, there should be a comment explaining why
     for (id, piece) in pieces_to_undo {
-        if let Err(err) = piece.undo(id, &args, &execution_data) {
+        if let Err(err) = piece.undo(id, &execution_data) {
             info!("Found error during undo; writing and pushing the changes that *were* done");
             repo.write_and_push(vec![], None)?;
             return Err(err);
@@ -68,7 +64,6 @@ pub mod tests {
 
         let args = Args {
             pieces: vec![piece],
-            done_here: true,
         };
 
         undo(top_level_args, args)?;

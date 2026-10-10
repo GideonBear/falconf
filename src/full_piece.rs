@@ -1,15 +1,16 @@
 use crate::cli::add;
-use crate::cli::undo;
 use crate::execution_data::ExecutionData;
-use crate::machine::Machine;
+use crate::group::Group;
+use crate::machine::{Machine, MachineData};
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
-use crate::utils::{print_id, set_eq};
+use crate::utils::print_id;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize as _;
 use indexmap::IndexMap;
 use rand::Rng as _;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
 use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,18 +19,15 @@ pub struct FullPiece {
     pub piece: PieceEnum,
     /// An optional comment to clarify the use of the piece
     pub comment: Option<String>,
-    /// The machines on which this piece is already done
-    done_on: Vec<Machine>,
-    /// `Some` if this piece should be undone
-    /// The machines on which this piece is already undone
-    undone_on: Option<Vec<Machine>>,
-    /// `Some` if this piece should be executed just once (so not on new machines)
-    /// The machines to do it on if `one_time` is true
-    one_time_todo_on: Option<Vec<Machine>>,
+    /// The machines on which this piece is done
+    // Uses a BTreeSet instead of a HashSet to avoid shuffling when writing data again
+    pub done_on: BTreeSet<Machine>,
+    /// The group on which this piece should be done
+    pub group: Group,
 }
 
 #[derive(Debug, Clone)]
-pub enum Todo {
+enum Todo {
     Noop,
     Execute,
     Undo,
@@ -43,42 +41,33 @@ impl FullPiece {
         Self {
             piece,
             comment,
-            done_on: vec![],
-            undone_on: None,
-            one_time_todo_on: None,
+            done_on: BTreeSet::new(),
+            group: Group::All,
         }
     }
 
-    fn todo(&self, machine: &Machine) -> Todo {
-        let done = self.done_on.contains(machine);
-        // `Some` if undo, contains `true` if it was undone on this machine
-        let undone = self
-            .undone_on
-            .as_ref()
-            .map(|undone_on| undone_on.contains(machine));
+    fn todo(&self, execution_data: &ExecutionData) -> Todo {
+        let done = self.done_on.contains(&execution_data.machine);
+        let should_do = execution_data.machine_data.in_group(&self.group);
 
         #[expect(clippy::match_same_arms)]
-        match (done, undone) {
-            (false, None) => Todo::Execute,     // Not done, not to undo: Execute
-            (false, Some(false)) => Todo::Noop, // Not done, but to undo: Noop
-            #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
-            #[expect(clippy::panic, reason = "illegal configuration")]
-            (false, Some(true)) => panic!("illegal configuration"), // SAFETY: bad config; not done, but also undone
-            (true, None) => Todo::Noop,        // Done, not to undo: Noop
-            (true, Some(false)) => Todo::Undo, // Done, but to undo, and not undone yet: Undo
-            (true, Some(true)) => Todo::Noop,  // Done, but to undo, but already undone: Noop
+        match (done, should_do) {
+            (false, true) => Todo::Execute,
+            (false, false) => Todo::Noop,
+            (true, true) => Todo::Noop,
+            (true, false) => Todo::Undo,
         }
     }
 
     pub fn get_todo<'a>(
         pieces: &'a mut IndexMap<u32, Self>,
-        machine: &Machine,
+        execution_data: &ExecutionData,
     ) -> (Vec<IdPiecePair<'a>>, Vec<IdPiecePair<'a>>) {
         let mut to_execute = vec![];
         let mut to_undo = vec![];
 
         for (&id, piece) in pieces {
-            match piece.todo(machine) {
+            match piece.todo(execution_data) {
                 Todo::Noop => {}
                 Todo::Execute => to_execute.push((id, piece)),
                 Todo::Undo => to_undo.push((id, piece)),
@@ -88,19 +77,15 @@ impl FullPiece {
         (to_execute, to_undo)
     }
 
-    pub fn do_todo(
-        pieces: &mut IndexMap<u32, Self>,
-        machine: &Machine,
-        execution_data: &ExecutionData,
-    ) -> Result<()> {
-        let (mut to_execute, mut to_undo) = Self::get_todo(pieces, machine);
+    pub fn do_todo(pieces: &mut IndexMap<u32, Self>, execution_data: &ExecutionData) -> Result<()> {
+        let (mut to_execute, mut to_undo) = Self::get_todo(pieces, execution_data);
 
         PieceEnum::execute_bulk(
             to_execute
                 .iter_mut()
                 .map(|(id, x)| {
                     (*id, &mut x.piece, || {
-                        x.done_on.push(*machine);
+                        x.done_on.insert(execution_data.machine);
                     })
                 })
                 .collect(),
@@ -112,9 +97,13 @@ impl FullPiece {
                 .iter_mut()
                 .map(|(id, x)| {
                     (*id, &mut x.piece, || {
-                        // SAFETY: since we got `Todo::Undo` back we can assume that `piece.undone_one.is_some()`
-                        #[expect(clippy::missing_panics_doc, reason = "code path")]
-                        x.undone_on.as_mut().unwrap().push(*machine);
+                        #[expect(
+                            clippy::missing_panics_doc,
+                            reason = "`todo` only returns `Todo::Undo` if `done_on` contains this machine"
+                        )]
+                        {
+                            assert!(x.done_on.remove(&execution_data.machine));
+                        }
                     })
                 })
                 .collect(),
@@ -125,7 +114,7 @@ impl FullPiece {
     }
 
     pub fn done(&mut self, machine: Machine) {
-        self.done_on.push(machine);
+        self.done_on.insert(machine);
     }
 
     pub fn add(&mut self, execution_data: &ExecutionData, done: bool) -> Result<u32> {
@@ -133,7 +122,7 @@ impl FullPiece {
 
         let mut cb = || {
             // Cannot reuse self.done because of partial borrowing
-            self.done_on.push(execution_data.machine);
+            self.done_on.insert(execution_data.machine);
         };
 
         if done {
@@ -147,21 +136,21 @@ impl FullPiece {
         Ok(id)
     }
 
-    pub fn undo(
-        &mut self,
-        id: u32,
-        args: &undo::Args,
-        execution_data: &ExecutionData,
-    ) -> Result<()> {
-        if self.undone_on.is_some() {
+    pub fn undo(&mut self, id: u32, execution_data: &ExecutionData) -> Result<()> {
+        if let Group::None = self.group {
             return Err(eyre!("This piece is already undone"));
         }
 
+        let undo_here = self.done_on.contains(&execution_data.machine);
+
         let mut cb = || {
-            self.undone_on = Some(vec![execution_data.machine]);
+            // Don't want to assert here; if it doesn't contain it, undo_here is false and we
+            //  just want to set the group
+            self.done_on.remove(&execution_data.machine);
+            self.group = Group::None;
         };
 
-        if !args.done_here {
+        if undo_here {
             // We could bypass `execute_bulk` here, but this is clearer
             PieceEnum::undo_bulk(vec![(id, &mut self.piece, cb)], execution_data)?;
         } else {
@@ -172,27 +161,15 @@ impl FullPiece {
         Ok(())
     }
 
+    /// Returns true if the piece is undone or otherwise should be executed on no machines
+    // TODO: This includes groups that temporarily have no machines. Is that okay?
+    pub fn undone(&self, machines: &IndexMap<Machine, MachineData>) -> bool {
+        self.group.machines(machines).next().is_none()
+    }
+
     /// Returns true if the piece is safe to clean up
-    pub fn unused(&self) -> bool {
-        #[expect(clippy::option_if_let_else)]
-        if let Some(undone_on) = &self.undone_on {
-            // If it's something to undo (whether it's one_time or not),
-            //  we don't want to execute it on new machines and can remove it
-            //  if none of our existing machines need to have it undone
-
-            set_eq(&self.done_on, undone_on)
-        } else if let Some(one_time_todo_on) = &self.one_time_todo_on {
-            // We do not want to check with a list of all machines here, since
-            //  new machines that are added since the addition of the
-            //  one_time piece should not have the piece executed on them.
-
-            set_eq(&self.done_on, one_time_todo_on)
-        } else {
-            // Any non-undo and non-one_time pieces should never be cleaned up,
-            //  since they need to be executed on new machines.
-
-            false
-        }
+    pub fn unused(&self, machines: &IndexMap<Machine, MachineData>) -> bool {
+        self.undone(machines) && self.done_on.is_empty()
     }
 
     pub(crate) fn from_cli(args: &add::Args) -> Result<Self> {
@@ -205,7 +182,7 @@ impl FullPiece {
     }
 
     /// Return information about this piece for printing in the console
-    pub fn print(&self, id: u32) -> String {
+    pub fn print(&self, id: u32, machines: &IndexMap<Machine, MachineData>) -> String {
         let id_prefix = print_id(id);
 
         let undo_suffix = if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &self.piece
@@ -222,12 +199,16 @@ impl FullPiece {
             .as_ref()
             .map_or_else(String::new, |comment| format!(" // {comment}"));
 
-        let unused_suffix = if self.unused() { " (unused)" } else { "" };
+        let unused_suffix = if self.unused(machines) {
+            " (unused)"
+        } else {
+            ""
+        };
         let unused_suffix = unused_suffix.italic();
         let unused_suffix = unused_suffix.bright_cyan();
 
         // TODO(low): Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
-        if self.undone_on.is_some() {
+        if self.undone(machines) {
             format!(
                 "{}{}{}{}{}{}",
                 id_prefix.strikethrough(),
@@ -259,7 +240,7 @@ impl FullPiece {
     }
 
     #[cfg(test)]
-    pub const fn done_on(&self) -> &Vec<Machine> {
+    pub const fn done_on(&self) -> &BTreeSet<Machine> {
         &self.done_on
     }
 }

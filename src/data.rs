@@ -40,6 +40,15 @@ impl Data {
     pub const fn machines_mut(&mut self) -> &mut IndexMap<Machine, MachineData> {
         &mut self.machines
     }
+
+    pub const fn as_mut_parts(
+        &mut self,
+    ) -> (
+        &mut IndexMap<u32, FullPiece>,
+        &mut IndexMap<Machine, MachineData>,
+    ) {
+        (&mut self.pieces, &mut self.machines)
+    }
 }
 
 pub fn from_file<T: DeserializeOwned>(path: &Path) -> Result<T> {
