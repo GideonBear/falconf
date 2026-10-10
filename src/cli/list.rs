@@ -1,5 +1,5 @@
 use crate::cli::TopLevelArgs;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::installation::Installation;
 use std::io::Write;
 
@@ -13,8 +13,8 @@ pub fn list<W: Write>(
     writer: &mut W,
 ) -> color_eyre::Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
-    installation.pull_and_read(true, &execution_data)?;
+    let ctx = ExecutionContext::new(&installation, &top_level_args)?;
+    installation.pull_and_read(true, &ctx)?;
     let repo = installation.repo_mut();
     let data = repo.data();
     let pieces = data.pieces();

@@ -1,6 +1,6 @@
 use crate::cli;
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::piece::{BulkPiece, NonBulkPiece as _, Piece};
 use crate::pieces::apt::Apt;
 use crate::pieces::cargo_install::CargoInstall;
@@ -58,11 +58,11 @@ pub enum BulkPieceEnum {
 }
 
 impl BulkPieceEnum {
-    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         match self {
-            Self::Apt(apt) => apt.seed(execution_data),
-            Self::DebGet(deb_get) => deb_get.seed(execution_data),
-            Self::CargoInstall(cargo_install) => cargo_install.seed(execution_data),
+            Self::Apt(apt) => apt.seed(ctx),
+            Self::DebGet(deb_get) => deb_get.seed(ctx),
+            Self::CargoInstall(cargo_install) => cargo_install.seed(ctx),
         }
     }
 }
@@ -79,33 +79,33 @@ pub enum NonBulkPieceEnum {
 }
 
 impl NonBulkPieceEnum {
-    fn execute(&mut self, execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, ctx: &ExecutionContext) -> Result<()> {
         match self {
-            Self::Command(command) => command.execute(execution_data),
-            Self::File(file) => file.execute(execution_data),
-            Self::Manual(manual) => manual.execute(execution_data),
-            Self::Gsettings(gsettings) => gsettings.execute(execution_data),
-            Self::FalconfInit(falconf_init) => falconf_init.execute(execution_data),
+            Self::Command(command) => command.execute(ctx),
+            Self::File(file) => file.execute(ctx),
+            Self::Manual(manual) => manual.execute(ctx),
+            Self::Gsettings(gsettings) => gsettings.execute(ctx),
+            Self::FalconfInit(falconf_init) => falconf_init.execute(ctx),
         }
     }
 
-    fn undo(&mut self, execution_data: &ExecutionData) -> Result<()> {
+    fn undo(&mut self, ctx: &ExecutionContext) -> Result<()> {
         match self {
-            Self::Command(command) => command.undo(execution_data),
-            Self::File(file) => file.undo(execution_data),
-            Self::Manual(manual) => manual.undo(execution_data),
-            Self::Gsettings(gsettings) => gsettings.undo(execution_data),
-            Self::FalconfInit(falconf_init) => falconf_init.undo(execution_data),
+            Self::Command(command) => command.undo(ctx),
+            Self::File(file) => file.undo(ctx),
+            Self::Manual(manual) => manual.undo(ctx),
+            Self::Gsettings(gsettings) => gsettings.undo(ctx),
+            Self::FalconfInit(falconf_init) => falconf_init.undo(ctx),
         }
     }
 
-    fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         match self {
-            Self::Command(command) => command.seed(execution_data),
-            Self::File(file) => file.seed(execution_data),
-            Self::Manual(manual) => manual.seed(execution_data),
-            Self::Gsettings(gsettings) => gsettings.seed(execution_data),
-            Self::FalconfInit(falconf_init) => falconf_init.seed(execution_data),
+            Self::Command(command) => command.seed(ctx),
+            Self::File(file) => file.seed(ctx),
+            Self::Manual(manual) => manual.seed(ctx),
+            Self::Gsettings(gsettings) => gsettings.seed(ctx),
+            Self::FalconfInit(falconf_init) => falconf_init.seed(ctx),
         }
     }
 }
@@ -116,23 +116,23 @@ impl PieceEnum {
     /// Execute multiple pieces
     pub fn execute_bulk<F: FnMut()>(
         pieces: Vec<(u32, &mut Self, F)>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> Result<()> {
-        // if execution_data.dry_run {
+        // if ctx.dry_run {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
         let (apt, deb_get, cargo_install, non_bulk) = Self::sort_pieces(pieces);
-        Self::execute_bulk_bulk(apt, execution_data)?;
-        Self::execute_bulk_bulk(deb_get, execution_data)?;
-        Self::execute_bulk_bulk(cargo_install, execution_data)?;
-        Self::execute_non_bulk_bulk(non_bulk, execution_data)?;
+        Self::execute_bulk_bulk(apt, ctx)?;
+        Self::execute_bulk_bulk(deb_get, ctx)?;
+        Self::execute_bulk_bulk(cargo_install, ctx)?;
+        Self::execute_non_bulk_bulk(non_bulk, ctx)?;
         Ok(())
     }
 
     fn execute_bulk_bulk<F: FnMut(), P: BulkPiece>(
         pieces: Vec<(u32, &mut P, F)>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> Result<()> {
         if pieces.is_empty() {
             return Ok(());
@@ -150,8 +150,8 @@ impl PieceEnum {
 
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
-        if !execution_data.test_run {
-            P::execute_bulk(&pieces, execution_data)?;
+        if !ctx.test_run {
+            P::execute_bulk(&pieces, ctx)?;
         } else {
             warn!("Test run! Refraining from execution, but marking as normal.");
         }
@@ -164,12 +164,12 @@ impl PieceEnum {
 
     fn execute_non_bulk_bulk<F: FnMut()>(
         pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> Result<()> {
         for (id, piece, mut cb) in pieces {
             info!("Executing piece: {} {piece}", print_id(id));
-            if !execution_data.test_run {
-                piece.execute(execution_data)?;
+            if !ctx.test_run {
+                piece.execute(ctx)?;
             } else {
                 warn!("Test run! Refraining from execution, but marking as normal.");
             }
@@ -181,23 +181,23 @@ impl PieceEnum {
     /// Undo multiple pieces.
     pub fn undo_bulk<F: FnMut()>(
         pieces: Vec<(u32, &mut Self, F)>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> Result<()> {
-        // if execution_data.dry_run {
+        // if ctx.dry_run {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
         let (apt, deb_get, cargo_install, non_bulk) = Self::sort_pieces(pieces);
-        Self::undo_bulk_bulk(apt, execution_data)?;
-        Self::undo_bulk_bulk(deb_get, execution_data)?;
-        Self::undo_bulk_bulk(cargo_install, execution_data)?;
-        Self::undo_non_bulk_bulk(non_bulk, execution_data)?;
+        Self::undo_bulk_bulk(apt, ctx)?;
+        Self::undo_bulk_bulk(deb_get, ctx)?;
+        Self::undo_bulk_bulk(cargo_install, ctx)?;
+        Self::undo_non_bulk_bulk(non_bulk, ctx)?;
         Ok(())
     }
 
     fn undo_bulk_bulk<F: FnMut(), P: BulkPiece>(
         pieces: Vec<(u32, &mut P, F)>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> Result<()> {
         if pieces.is_empty() {
             return Ok(());
@@ -215,8 +215,8 @@ impl PieceEnum {
 
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
-        if !execution_data.test_run {
-            P::undo_bulk(&pieces, execution_data)?;
+        if !ctx.test_run {
+            P::undo_bulk(&pieces, ctx)?;
         } else {
             warn!("Test run! Refraining from execution, but marking as normal.");
         }
@@ -229,12 +229,12 @@ impl PieceEnum {
 
     fn undo_non_bulk_bulk<F: FnMut()>(
         pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> Result<()> {
         for (id, piece, mut cb) in pieces {
             info!("Undoing piece: {} {piece}", print_id(id));
-            if !execution_data.test_run {
-                piece.undo(execution_data)?;
+            if !ctx.test_run {
+                piece.undo(ctx)?;
             } else {
                 warn!("Test run! Refraining from execution, but marking as normal.");
             }
@@ -358,10 +358,10 @@ impl PieceEnum {
         )
     }
 
-    pub fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    pub fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         match self {
-            Self::Bulk(piece) => piece.seed(execution_data),
-            Self::NonBulk(piece) => piece.seed(execution_data),
+            Self::Bulk(piece) => piece.seed(ctx),
+            Self::NonBulk(piece) => piece.seed(ctx),
         }
     }
 }

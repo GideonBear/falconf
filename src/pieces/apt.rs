@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt as _;
 use crate::piece::{BulkPiece, Piece};
 use color_eyre::Result;
@@ -17,17 +17,17 @@ pub struct Apt {
 }
 
 impl Piece for Apt {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((format!("apt install {}", quote(&self.package)), true, None))
     }
 }
 
 impl BulkPiece for Apt {
-    fn execute_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn execute_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
         Self::apt_command(&["install"], pieces)
     }
 
-    fn undo_bulk(pieces: &[&mut Self], _execution_data: &ExecutionData) -> Result<()> {
+    fn undo_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
         Self::apt_command(&["remove", "--autoremove"], pieces)
     }
 }

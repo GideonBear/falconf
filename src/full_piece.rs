@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::group::Group;
 use crate::machine::{Machine, MachineData};
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -46,9 +46,9 @@ impl FullPiece {
         }
     }
 
-    fn todo(&self, execution_data: &ExecutionData) -> Todo {
-        let done = self.done_on.contains(&execution_data.machine);
-        let should_do = execution_data.machine_data.in_group(&self.group);
+    fn todo(&self, ctx: &ExecutionContext) -> Todo {
+        let done = self.done_on.contains(&ctx.machine);
+        let should_do = ctx.machine_data.in_group(&self.group);
 
         #[expect(clippy::match_same_arms)]
         match (done, should_do) {
@@ -61,13 +61,13 @@ impl FullPiece {
 
     pub fn get_todo<'a>(
         pieces: &'a mut IndexMap<u32, Self>,
-        execution_data: &ExecutionData,
+        ctx: &ExecutionContext,
     ) -> (Vec<IdPiecePair<'a>>, Vec<IdPiecePair<'a>>) {
         let mut to_execute = vec![];
         let mut to_undo = vec![];
 
         for (&id, piece) in pieces {
-            match piece.todo(execution_data) {
+            match piece.todo(ctx) {
                 Todo::Noop => {}
                 Todo::Execute => to_execute.push((id, piece)),
                 Todo::Undo => to_undo.push((id, piece)),
@@ -77,19 +77,19 @@ impl FullPiece {
         (to_execute, to_undo)
     }
 
-    pub fn do_todo(pieces: &mut IndexMap<u32, Self>, execution_data: &ExecutionData) -> Result<()> {
-        let (mut to_execute, mut to_undo) = Self::get_todo(pieces, execution_data);
+    pub fn do_todo(pieces: &mut IndexMap<u32, Self>, ctx: &ExecutionContext) -> Result<()> {
+        let (mut to_execute, mut to_undo) = Self::get_todo(pieces, ctx);
 
         PieceEnum::execute_bulk(
             to_execute
                 .iter_mut()
                 .map(|(id, x)| {
                     (*id, &mut x.piece, || {
-                        x.done_on.insert(execution_data.machine);
+                        x.done_on.insert(ctx.machine);
                     })
                 })
                 .collect(),
-            execution_data,
+            ctx,
         )?;
 
         PieceEnum::undo_bulk(
@@ -102,12 +102,12 @@ impl FullPiece {
                             reason = "`todo` only returns `Todo::Undo` if `done_on` contains this machine"
                         )]
                         {
-                            assert!(x.done_on.remove(&execution_data.machine));
+                            assert!(x.done_on.remove(&ctx.machine));
                         }
                     })
                 })
                 .collect(),
-            execution_data,
+            ctx,
         )?;
 
         Ok(())
@@ -117,12 +117,12 @@ impl FullPiece {
         self.done_on.insert(machine);
     }
 
-    pub fn add(&mut self, execution_data: &ExecutionData, done: bool) -> Result<u32> {
+    pub fn add(&mut self, ctx: &ExecutionContext, done: bool) -> Result<u32> {
         let id = Self::new_id();
 
         let mut cb = || {
             // Cannot reuse self.done because of partial borrowing
-            self.done_on.insert(execution_data.machine);
+            self.done_on.insert(ctx.machine);
         };
 
         if done {
@@ -130,29 +130,29 @@ impl FullPiece {
             cb();
         } else {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::execute_bulk(vec![(id, &mut self.piece, cb)], execution_data)?;
+            PieceEnum::execute_bulk(vec![(id, &mut self.piece, cb)], ctx)?;
         }
 
         Ok(id)
     }
 
-    pub fn undo(&mut self, id: u32, execution_data: &ExecutionData) -> Result<()> {
+    pub fn undo(&mut self, id: u32, ctx: &ExecutionContext) -> Result<()> {
         if let Group::None = self.group {
             return Err(eyre!("This piece is already undone"));
         }
 
-        let undo_here = self.done_on.contains(&execution_data.machine);
+        let undo_here = self.done_on.contains(&ctx.machine);
 
         let mut cb = || {
             // Don't want to assert here; if it doesn't contain it, undo_here is false and we
             //  just want to set the group
-            self.done_on.remove(&execution_data.machine);
+            self.done_on.remove(&ctx.machine);
             self.group = Group::None;
         };
 
         if undo_here {
             // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::undo_bulk(vec![(id, &mut self.piece, cb)], execution_data)?;
+            PieceEnum::undo_bulk(vec![(id, &mut self.piece, cb)], ctx)?;
         } else {
             // If we don't execute it, just add it immediately.
             cb();
@@ -226,8 +226,8 @@ impl FullPiece {
         }
     }
 
-    pub fn seed(&self, execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
-        self.piece.seed(execution_data)
+    pub fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
+        self.piece.seed(ctx)
     }
 
     /// If this is a file piece, get the filename relative to the file dir

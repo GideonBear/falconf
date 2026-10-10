@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::press_enter;
 use color_eyre::Result;
@@ -15,7 +15,7 @@ pub struct Manual {
 }
 
 impl Piece for Manual {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((
             format!(
                 "echo 'Manual action required' \
@@ -31,11 +31,11 @@ impl Piece for Manual {
 }
 
 impl NonBulkPiece for Manual {
-    fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         Self::print_message(&self.message)
     }
 
-    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         Self::print_message(&format!("UNDO the following change: {}", self.message))
     }
 }

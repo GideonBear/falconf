@@ -1,5 +1,5 @@
 use crate::cli::add;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt;
 use crate::piece::{NonBulkPiece, Piece};
 use crate::utils::confirm;
@@ -20,7 +20,7 @@ pub struct Gsettings {
 }
 
 impl Piece for Gsettings {
-    fn seed(&self, _execution_data: &ExecutionData) -> Result<(String, bool, Option<String>)> {
+    fn seed(&self, _ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)> {
         Ok((
             format!(
                 "gsettings set {} {} {}",
@@ -35,7 +35,7 @@ impl Piece for Gsettings {
 }
 
 impl NonBulkPiece for Gsettings {
-    fn execute(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn execute(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         let current_value = Self::get(&self.schema, &self.key)?;
         if current_value != self.original_value
             && !confirm(&format!(
@@ -48,7 +48,7 @@ impl NonBulkPiece for Gsettings {
         Self::set(&self.schema, &self.key, &self.value)
     }
 
-    fn undo(&mut self, _execution_data: &ExecutionData) -> Result<()> {
+    fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
         Self::set(&self.schema, &self.key, &self.original_value)
     }
 }

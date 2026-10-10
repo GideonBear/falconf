@@ -1,6 +1,6 @@
 use crate::cli::TopLevelArgs;
 use crate::cli::add::add_internal;
-use crate::execution_data::ExecutionData;
+use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
 use crate::pieces::falconf_init::FalconfInit;
@@ -135,11 +135,11 @@ impl Installation {
         root.join("repository")
     }
 
-    fn check_synced(&mut self, execution_data: &ExecutionData) {
+    fn check_synced(&mut self, ctx: &ExecutionContext) {
         let data = self.repo.data_mut();
         let (pieces, machines) = data.as_mut_parts();
 
-        let (to_execute, to_undo) = FullPiece::get_todo(pieces, execution_data);
+        let (to_execute, to_undo) = FullPiece::get_todo(pieces, ctx);
 
         if !to_execute.is_empty() || !to_undo.is_empty() {
             info!(
@@ -154,14 +154,10 @@ impl Installation {
         }
     }
 
-    pub fn pull_and_read(
-        &mut self,
-        check_synced: bool,
-        execution_data: &ExecutionData,
-    ) -> Result<()> {
+    pub fn pull_and_read(&mut self, check_synced: bool, ctx: &ExecutionContext) -> Result<()> {
         self.repo.pull_and_read()?;
         if check_synced {
-            self.check_synced(execution_data);
+            self.check_synced(ctx);
         }
         Ok(())
     }
