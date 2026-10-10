@@ -1,4 +1,5 @@
 mod migration_2;
+mod migration_3;
 
 use crate::data::{from_file, to_file};
 use color_eyre::Result;
@@ -8,7 +9,7 @@ use log::info;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::path::Path;
 
-pub(crate) const VERSION: u32 = 2;
+pub(crate) const VERSION: u32 = 3;
 
 #[derive(Debug, Clone, Deserialize)]
 struct Data {
@@ -42,6 +43,9 @@ fn migrate(migration: u32, path: &Path) -> Result<()> {
     match migration {
         2 => {
             to_file::<migration_2::NewData>(&from_file::<migration_2::OldData>(path)?.into(), path)
+        }
+        3 => {
+            to_file::<migration_3::NewData>(&from_file::<migration_3::OldData>(path)?.into(), path)
         }
         #[expect(clippy::missing_panics_doc)]
         #[expect(clippy::panic)]

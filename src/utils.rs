@@ -55,10 +55,6 @@ pub fn prompt(question: &str) -> io::Result<String> {
     Ok(input.trim_end().to_owned())
 }
 
-pub fn set_eq<T: Eq>(vec1: &[T], vec2: &[T]) -> bool {
-    vec1.len() == vec2.len() && vec1.iter().all(|x| vec2.contains(x))
-}
-
 pub fn create_parent(path: &Path) -> Result<()> {
     let parent = path.parent().ok_or_eyre("File doesn't have parent")?;
     if !parent.exists() {

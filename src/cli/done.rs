@@ -15,7 +15,7 @@ pub struct Args {
 pub fn done(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
-    installation.pull_and_read(true)?;
+    installation.pull_and_read(true, &execution_data)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let pieces = data.pieces_mut();

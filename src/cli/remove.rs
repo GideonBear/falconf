@@ -1,5 +1,6 @@
 use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
+use crate::execution_data::ExecutionData;
 use crate::installation::Installation;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt as _;
@@ -22,10 +23,12 @@ pub struct Args {
 #[allow(clippy::needless_pass_by_value)]
 pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    installation.pull_and_read(true)?;
+    let execution_data = ExecutionData::new(&installation, &top_level_args)?;
+    installation.pull_and_read(true, &execution_data)?;
     let repo = installation.repo_mut();
     let file_dir = repo.file_dir()?;
-    let pieces = repo.data().pieces();
+    let data = repo.data();
+    let pieces = data.pieces();
 
     let piece_ids = args
         .pieces
@@ -40,7 +43,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 
     // Check if it's unused
     for piece in &pieces_to_remove {
-        if !args.force && !piece.unused() {
+        if !args.force && !piece.unused(data.machines()) {
             return Err(eyre::eyre!(
                 "Piece is still in use. Pass --force to remove it anyway, without undoing."
             ));
@@ -65,7 +68,13 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 
     // Remove the piece
     for piece_id in piece_ids {
-        pieces.shift_remove(&piece_id);
+        #[expect(
+            clippy::missing_panics_doc,
+            reason = "Would have failed with piece not found earlier"
+        )]
+        {
+            assert!(pieces.shift_remove(&piece_id).is_some());
+        }
     }
 
     // Push changes

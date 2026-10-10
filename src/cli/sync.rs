@@ -11,14 +11,13 @@ pub struct Args {}
 #[allow(clippy::needless_pass_by_value)]
 pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let machine = installation.machine();
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
-    installation.pull_and_read(false)?;
+    installation.pull_and_read(false, &execution_data)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
 
     // Do out-of-sync (todo) changes
-    if let Err(err) = FullPiece::do_todo(data.pieces_mut(), &machine, &execution_data) {
+    if let Err(err) = FullPiece::do_todo(data.pieces_mut(), &execution_data) {
         info!("Found error during sync; writing and pushing the changes that *were* done");
         repo.write_and_push(vec![], None)?;
         return Err(err);

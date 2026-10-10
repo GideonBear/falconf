@@ -13,7 +13,7 @@ pub struct Args {}
 pub fn seed<W: Write>(top_level_args: TopLevelArgs, _args: Args, writer: &mut W) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let execution_data = ExecutionData::new(&installation, &top_level_args)?;
-    installation.pull_and_read(true)?;
+    installation.pull_and_read(true, &execution_data)?;
     let repo = installation.repo_mut();
     let data = repo.data();
     let pieces = data.pieces();
