@@ -1,4 +1,5 @@
 use crate::cli::TopLevelArgs;
+use crate::execution_context::ExecutionContext;
 use crate::machine::{Machine, MachineData};
 use crate::utils::match_prefix;
 use clap::Subcommand;
@@ -37,10 +38,10 @@ impl MachineRef {
     fn _resolve(
         self,
         machines: &IndexMap<Machine, MachineData>,
-        this_machine: Machine,
+        ctx: &ExecutionContext,
     ) -> Result<Machine> {
         match self {
-            Self::This => Ok(this_machine),
+            Self::This => Ok(ctx.machine),
             Self::NameOrId(s) => {
                 let mut candidates: HashMap<String, Machine> = HashMap::new();
                 for (&machine, machine_data) in machines {
@@ -55,12 +56,12 @@ impl MachineRef {
     }
 
     #[expect(unused)]
-    fn resolve(
+    fn resolve<'a>(
         self,
-        machines: &IndexMap<Machine, MachineData>,
-        this_machine: Machine,
-    ) -> Result<(Machine, &MachineData)> {
-        let machine = self._resolve(machines, this_machine)?;
+        machines: &'a IndexMap<Machine, MachineData>,
+        ctx: &ExecutionContext,
+    ) -> Result<(Machine, &'a MachineData)> {
+        let machine = self._resolve(machines, ctx)?;
         Ok((
             machine,
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
@@ -71,12 +72,12 @@ impl MachineRef {
         ))
     }
 
-    fn resolve_mut(
+    fn resolve_mut<'a>(
         self,
-        machines: &mut IndexMap<Machine, MachineData>,
-        this_machine: Machine,
-    ) -> Result<(Machine, &mut MachineData)> {
-        let machine = self._resolve(machines, this_machine)?;
+        machines: &'a mut IndexMap<Machine, MachineData>,
+        ctx: &ExecutionContext,
+    ) -> Result<(Machine, &'a mut MachineData)> {
+        let machine = self._resolve(machines, ctx)?;
         Ok((
             machine,
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
