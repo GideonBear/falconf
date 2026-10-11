@@ -116,14 +116,9 @@ impl Repo {
         Self::from_repository(repository)
     }
 
-    fn update_data(&mut self) -> Result<()> {
-        let data_path = data_path_from_repository(&self.repository)?;
-        self.data = data::from_file::<Data>(&data_path).wrap_err("Failed to get data")?;
-        Ok(())
-    }
-
     fn from_repository(repository: Repository) -> Result<Self> {
         let auth = GitAuthenticator::default();
+        Self::pull(&repository, &auth).wrap_err("Failed to pull")?;
         let data_path = data_path_from_repository(&repository)?;
         let migrated = migrations::run_migrations(&data_path)?;
         let data = data::from_file::<Data>(&data_path).wrap_err("Failed to get data")?;
@@ -144,25 +139,20 @@ impl Repo {
         Ok(repo)
     }
 
-    fn pull(&self) -> Result<()> {
-        let mut remote = self
-            .repository
+    fn pull(repository: &Repository, auth: &GitAuthenticator) -> Result<()> {
+        let mut remote = repository
             .find_remote("origin")
             .wrap_err("Failed to find remote")?;
-        self.auth
-            .fetch(&self.repository, &mut remote, &[BRANCH], None)
+        auth.fetch(repository, &mut remote, &[BRANCH], None)
             .wrap_err("Failed to fetch")?;
 
-        let fetch_head = self
-            .repository
+        let fetch_head = repository
             .find_reference("FETCH_HEAD")
             .wrap_err("Failed to find fetch head")?;
-        let fetch_commit = self
-            .repository
+        let fetch_commit = repository
             .reference_to_annotated_commit(&fetch_head)
             .wrap_err("Failed to convert fetch head to annotated commit")?;
-        let (analysis, _preference) = self
-            .repository
+        let (analysis, _preference) = repository
             .merge_analysis(&[&fetch_commit])
             .wrap_err("Failed to do merge analysis")?;
 
@@ -170,11 +160,10 @@ impl Repo {
             Ok(())
         } else if analysis.is_fast_forward() {
             let refname = format!("refs/heads/{BRANCH}");
-            let mut reference = self.repository.find_reference(&refname)?;
+            let mut reference = repository.find_reference(&refname)?;
             reference.set_target(fetch_commit.id(), "Fast-Forward")?;
-            self.repository.set_head(&refname)?;
-            self.repository
-                .checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
+            repository.set_head(&refname)?;
+            repository.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
             Ok(())
         } else {
             Err(eyre!("Branches have diverted"))
@@ -287,12 +276,6 @@ impl Repo {
                 &[&format!("refs/heads/{BRANCH}")],
             )
             .wrap_err("Failed to push")?;
-        Ok(())
-    }
-
-    pub fn pull_and_read(&mut self) -> Result<()> {
-        self.pull().wrap_err("Failed to pull")?;
-        self.update_data().wrap_err("Failed to update data")?;
         Ok(())
     }
 

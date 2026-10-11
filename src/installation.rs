@@ -105,6 +105,14 @@ impl Installation {
     }
 
     pub fn get(top_level_args: &TopLevelArgs) -> Result<Self> {
+        let mut installation = Self::get_no_check_synced(top_level_args)?;
+        // TODO(low): this constructs an ExecutionContext twice
+        let ctx = ExecutionContext::new(&installation, top_level_args)?;
+        installation.check_synced(&ctx);
+        Ok(installation)
+    }
+
+    pub fn get_no_check_synced(top_level_args: &TopLevelArgs) -> Result<Self> {
         let root = &top_level_args.path;
         debug!("Looking at {}", root.display());
 
@@ -152,13 +160,5 @@ impl Installation {
                 info!("- Undo: {}", piece.print(id, machines));
             }
         }
-    }
-
-    pub fn pull_and_read(&mut self, check_synced: bool, ctx: &ExecutionContext) -> Result<()> {
-        self.repo.pull_and_read()?;
-        if check_synced {
-            self.check_synced(ctx);
-        }
-        Ok(())
     }
 }

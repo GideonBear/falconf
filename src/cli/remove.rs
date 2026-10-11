@@ -1,6 +1,5 @@
 use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
-use crate::execution_context::ExecutionContext;
 use crate::installation::Installation;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt as _;
@@ -23,8 +22,6 @@ pub struct Args {
 #[allow(clippy::needless_pass_by_value)]
 pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
-    let ctx = ExecutionContext::new(&installation, &top_level_args)?;
-    installation.pull_and_read(true, &ctx)?;
     let repo = installation.repo_mut();
     let file_dir = repo.file_dir()?;
     let data = repo.data();

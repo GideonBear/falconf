@@ -119,7 +119,6 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)>) -> Result<()> {
     let mut installation = Installation::get(top_level_args)?;
     let ctx = ExecutionContext::new(&installation, top_level_args)?;
-    installation.pull_and_read(true, &ctx)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let (pieces, machines) = data.as_mut_parts();

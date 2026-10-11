@@ -10,9 +10,8 @@ pub struct Args {}
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
-    let mut installation = Installation::get(&top_level_args)?;
+    let mut installation = Installation::get_no_check_synced(&top_level_args)?;
     let ctx = ExecutionContext::new(&installation, &top_level_args)?;
-    installation.pull_and_read(false, &ctx)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
 
