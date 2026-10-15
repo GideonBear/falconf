@@ -1,6 +1,8 @@
 use crate::group::Group;
 use color_eyre::Result;
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -29,11 +31,19 @@ impl MachineData {
         format!("{} {}", &machine.0.to_string()[..8], self.name)
     }
 
-    pub fn in_group(&self, group: &Group) -> bool {
+    pub fn in_group(&self, machine: Machine, group: &Group) -> bool {
         match group {
             Group::All => true,
             Group::None => false,
+            Group::Machine(target) => *target == machine,
             Group::Custom(_) => false, // TODO
         }
     }
+}
+
+pub fn machines_by_name(machines: &IndexMap<Machine, MachineData>) -> HashMap<&str, Machine> {
+    machines
+        .iter()
+        .map(|(&machine, machine_data)| (machine_data.name.as_str(), machine))
+        .collect()
 }

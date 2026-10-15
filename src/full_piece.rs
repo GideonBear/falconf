@@ -48,7 +48,7 @@ impl FullPiece {
 
     fn todo(&self, ctx: &ExecutionContext) -> Todo {
         let done = self.done_on.contains(&ctx.machine);
-        let should_do = ctx.machine_data.in_group(&self.group);
+        let should_do = ctx.machine_data.in_group(ctx.machine, &self.group);
 
         #[expect(clippy::match_same_arms)]
         match (done, should_do) {
