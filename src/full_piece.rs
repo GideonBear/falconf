@@ -21,9 +21,9 @@ pub struct FullPiece {
     pub comment: Option<String>,
     /// The machines on which this piece is done
     // Uses a BTreeSet instead of a HashSet to avoid shuffling when writing data again
-    pub done_on: BTreeSet<Machine>,
+    done_on: BTreeSet<Machine>,
     /// The group on which this piece should be done
-    pub group: Group,
+    group: Group,
 }
 
 #[derive(Debug, Clone)]

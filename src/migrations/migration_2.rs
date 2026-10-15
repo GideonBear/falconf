@@ -1,15 +1,20 @@
 use crate::full_piece::FullPiece;
-use crate::machine::{Machine, MachineData};
+use crate::machine::Machine;
 use crate::migrations::LitU32;
 use derive_into::Convert;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Convert)]
-#[convert(into(path = "MachineData"))]
+#[convert(into(path = "NewMachineData"))]
 struct OldMachineData {
     #[convert(rename = "name")]
-    pub hostname: String,
+    hostname: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct NewMachineData {
+    name: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Convert)]
@@ -26,5 +31,5 @@ pub(super) struct OldData {
 pub(super) struct NewData {
     version: LitU32<2>,
     pieces: IndexMap<u32, FullPiece>,
-    machines: IndexMap<Machine, MachineData>,
+    machines: IndexMap<Machine, NewMachineData>,
 }

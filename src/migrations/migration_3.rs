@@ -1,4 +1,3 @@
-use crate::full_piece::FullPiece;
 use crate::group::Group;
 use crate::machine::{Machine, MachineData};
 use crate::migrations::LitU32;
@@ -17,7 +16,15 @@ struct OldFullPiece {
     one_time_todo_on: Option<Vec<Machine>>,
 }
 
-impl From<OldFullPiece> for FullPiece {
+#[derive(Debug, Clone, Serialize)]
+struct NewFullPiece {
+    piece: PieceEnum,
+    comment: Option<String>,
+    done_on: BTreeSet<Machine>,
+    group: Group,
+}
+
+impl From<OldFullPiece> for NewFullPiece {
     fn from(old: OldFullPiece) -> Self {
         // Was never written or used so should be None
         assert!(old.one_time_todo_on.is_none());
@@ -51,6 +58,6 @@ pub(super) struct OldData {
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct NewData {
     version: LitU32<3>,
-    pieces: IndexMap<u32, FullPiece>,
+    pieces: IndexMap<u32, NewFullPiece>,
     machines: IndexMap<Machine, MachineData>,
 }
