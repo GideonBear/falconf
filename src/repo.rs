@@ -1,5 +1,5 @@
 use crate::data::Data;
-use crate::machine::{Machine, MachineData};
+use crate::machine::{Machine, MachineData, machines_by_name};
 use crate::utils::remove_empty_dirs;
 use crate::{data, migrations};
 use auth_git2::GitAuthenticator;
@@ -89,6 +89,13 @@ impl Repo {
             .wrap_err("Failed to set user.email")?;
 
         let data = repo.data_mut();
+        if machines_by_name(data.machines()).contains_key(machine_data.name.as_str()) {
+            // TODO: allow passing machine name with `--name` to `falconf init`
+            return Err(eyre!(
+                "Machine name '{}' is already taken",
+                machine_data.name
+            ));
+        }
         data.machines_mut().insert(machine, machine_data);
         repo.write_and_push(files, None)
             .wrap_err("Failed to write_and_push")?;
