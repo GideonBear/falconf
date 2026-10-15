@@ -34,6 +34,7 @@ pub mod tests {
     use crate::cli::undo::tests::undo_util;
     use crate::cli::{PieceRef, add, edit};
     use crate::full_piece::FullPiece;
+    use crate::group::Group;
     use crate::pieces::falconf_init::FalconfInit;
     use crate::pieces::gsettings::Gsettings;
     use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -95,6 +96,7 @@ pub mod tests {
         // Gsettings
         // Cannot use add_util as it will attempt to fetch the original value
         add_internal(
+            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
             &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
             vec![(
                 FullPiece::new(
@@ -105,6 +107,7 @@ pub mod tests {
                         "old".to_string(),
                     )?)),
                     None,
+                    Group::All,
                 ),
                 false,
             )],
@@ -124,6 +127,7 @@ pub mod tests {
         // Falconf init
         // Cannot use add_util as FalconfInit is not constructible from the cli
         add_internal(
+            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
             &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
             vec![(
                 FullPiece::new(
@@ -131,6 +135,7 @@ pub mod tests {
                         String::from("https://github.com/user/repo"),
                     ))),
                     None,
+                    Group::All,
                 ),
                 false,
             )],

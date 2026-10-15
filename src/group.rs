@@ -14,7 +14,6 @@ pub enum Group {
 }
 
 impl Group {
-    #[expect(unused)] // TODO
     pub fn parse_for_piece(s: &str, machines: &IndexMap<Machine, MachineData>) -> Self {
         match s {
             "all" => Self::All,

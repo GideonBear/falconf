@@ -37,12 +37,12 @@ type IdPiecePair<'a> = (u32, &'a mut FullPiece);
 
 impl FullPiece {
     // TODO(low): one-time support (in all below methods), and then in cli
-    pub const fn new(piece: PieceEnum, comment: Option<String>) -> Self {
+    pub const fn new(piece: PieceEnum, comment: Option<String>, group: Group) -> Self {
         Self {
             piece,
             comment,
             done_on: BTreeSet::new(),
-            group: Group::All,
+            group,
         }
     }
 
@@ -172,9 +172,16 @@ impl FullPiece {
         self.undone(machines) && self.done_on.is_empty()
     }
 
-    pub(crate) fn from_cli(args: &add::Args) -> Result<Self> {
+    pub(crate) fn from_cli(
+        args: &mut add::Args,
+        machines: &IndexMap<Machine, MachineData>,
+    ) -> Result<Self> {
         let comment = args.comment.clone();
-        Ok(Self::new(PieceEnum::from_cli(args)?, comment))
+        let group = args
+            .group
+            .take()
+            .map_or(Group::All, |x| Group::parse_for_piece(&x, machines));
+        Ok(Self::new(PieceEnum::from_cli(args)?, comment, group))
     }
 
     fn new_id() -> u32 {

@@ -27,6 +27,7 @@ pub fn init(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 pub mod tests {
     use super::*;
     use crate::full_piece::FullPiece;
+    use crate::group::Group;
     use crate::pieces::falconf_init::FalconfInit;
     use crate::pieces::{NonBulkPieceEnum, PieceEnum};
     use crate::testing::{TempDirSub, TestRemote};
@@ -81,6 +82,7 @@ pub mod tests {
                 remote.address().to_string(),
             ))),
             None,
+            Group::All,
         );
         expected.done(installation.machine());
         assert_eq!(pieces[0], expected);

@@ -82,6 +82,10 @@ pub struct Args {
     #[arg(trailing_var_arg = true, required = true)]
     pub value: Vec<String>,
 
+    /// The group/machine to execute this on (default: all)
+    #[arg(long)]
+    pub group: Option<String>,
+
     /// (command) Command to execute when undoing this
     #[arg(short, long)]
     pub undo: Option<String>,
@@ -92,8 +96,11 @@ pub struct Args {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
-    let piece = FullPiece::from_cli(&args)?;
+pub fn add(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
+    let mut installation = Installation::get(&top_level_args)?;
+    let machines = installation.repo().data().machines();
+
+    let piece = FullPiece::from_cli(&mut args, machines)?;
 
     let is_file = piece.file().is_some();
     if args.done && is_file {
@@ -113,12 +120,15 @@ pub fn add(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
         ));
     }
 
-    add_internal(&top_level_args, vec![(piece, args.done)])
+    add_internal(&mut installation, &top_level_args, vec![(piece, args.done)])
 }
 
-pub fn add_internal(top_level_args: &TopLevelArgs, to_add: Vec<(FullPiece, bool)>) -> Result<()> {
-    let mut installation = Installation::get(top_level_args)?;
-    let ctx = ExecutionContext::new(&installation, top_level_args)?;
+pub fn add_internal(
+    installation: &mut Installation,
+    top_level_args: &TopLevelArgs,
+    to_add: Vec<(FullPiece, bool)>,
+) -> Result<()> {
+    let ctx = ExecutionContext::new(installation, top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
     let (pieces, machines) = data.as_mut_parts();
@@ -161,6 +171,7 @@ pub mod tests {
             _deb_get: (),
             _cargo_install: (),
             value,
+            group: None,
             undo: None,
             done: false,
         }

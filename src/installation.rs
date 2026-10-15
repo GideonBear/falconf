@@ -2,6 +2,7 @@ use crate::cli::add::add_internal;
 use crate::cli::{TopLevelArgs, init};
 use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
+use crate::group::Group;
 use crate::machine::{Machine, MachineData};
 use crate::pieces::falconf_init::FalconfInit;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -63,7 +64,7 @@ impl Installation {
         fs::write(&machine_path, machine.0.to_string())?;
         let machine_data = MachineData::new_this(args.name)?;
 
-        let mut repo = Repo::init(
+        let repo = Repo::init(
             &args.remote,
             &repository_path,
             machine,
@@ -71,8 +72,12 @@ impl Installation {
             args.new,
         )?;
 
+        let mut installation = Self::from_repo(top_level_args, repo)?;
+        let repo = installation.repo_mut();
+
         if args.new {
             add_internal(
+                &mut installation,
                 top_level_args,
                 vec![(
                     FullPiece::new(
@@ -80,6 +85,7 @@ impl Installation {
                             args.remote.to_string(),
                         ))),
                         None,
+                        Group::All,
                     ),
                     true,
                 )],
@@ -107,7 +113,7 @@ impl Installation {
             repo.write_and_push(vec![], None)?;
         }
 
-        Self::from_repo(top_level_args, repo)
+        Ok(installation)
     }
 
     pub fn get(top_level_args: &TopLevelArgs) -> Result<Self> {

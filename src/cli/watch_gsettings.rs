@@ -1,6 +1,8 @@
 use crate::cli::TopLevelArgs;
 use crate::cli::add::add_internal;
 use crate::full_piece::FullPiece;
+use crate::group::Group;
+use crate::installation::Installation;
 use crate::logging::CommandExt;
 use crate::pieces::gsettings::Gsettings;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
@@ -18,6 +20,8 @@ pub struct Args {}
 #[expect(clippy::print_stdout)]
 #[allow(clippy::needless_pass_by_value)]
 pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
+    let mut installation = Installation::get(&top_level_args)?;
+
     fn get_values() -> Result<BTreeMap<(String, String), String>> {
         Command::new("gsettings")
             .arg("list-recursively")
@@ -91,6 +95,7 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
     }
 
     add_internal(
+        &mut installation,
         &top_level_args,
         changes
             .into_iter()
@@ -101,6 +106,7 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
                             Gsettings::new_with_original(schema, key, new_value, old_value)?,
                         )),
                         None,
+                        Group::All,
                     ),
                     true,
                 ))
