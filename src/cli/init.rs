@@ -7,16 +7,19 @@ use color_eyre::eyre::WrapErr as _;
 pub struct Args {
     /// Create a new repo instead of cloning an existing one
     #[arg(long, short)]
-    new: bool,
+    pub new: bool,
 
     /// The remote url
-    remote: String,
+    pub remote: String,
+
+    /// The name of this machine (defaults to hostname)
+    #[arg(long)]
+    pub name: Option<String>,
 }
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn init(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
-    let _installation =
-        Installation::init(&top_level_args, &args.remote, args.new).wrap_err("Failed to init")?;
+    let _installation = Installation::init(&top_level_args, args).wrap_err("Failed to init")?;
     Ok(())
 }
 
@@ -29,6 +32,7 @@ pub mod tests {
     use crate::testing::{TempDirSub, TestRemote};
     use log::debug;
     use tempfile::TempDir;
+    use uuid::Uuid;
 
     pub fn init_util(remote: &TestRemote, new: bool) -> Result<TempDirSub> {
         let temp = TempDir::new()?;
@@ -39,6 +43,7 @@ pub mod tests {
         let args = Args {
             new,
             remote: remote.address().to_string(),
+            name: Some(Uuid::new_v4().to_string()),
         };
 
         if new {

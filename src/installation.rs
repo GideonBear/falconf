@@ -1,5 +1,5 @@
-use crate::cli::TopLevelArgs;
 use crate::cli::add::add_internal;
+use crate::cli::{TopLevelArgs, init};
 use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
 use crate::machine::{Machine, MachineData};
@@ -32,7 +32,7 @@ impl Installation {
         &mut self.repo
     }
 
-    pub fn init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<Self> {
+    pub fn init(top_level_args: &TopLevelArgs, args: init::Args) -> Result<Self> {
         let root = &top_level_args.path;
         debug!("Looking at {}", root.display());
 
@@ -41,7 +41,7 @@ impl Installation {
         }
         fs::create_dir(root)?;
 
-        match Self::_init(top_level_args, remote, new) {
+        match Self::_init(top_level_args, args) {
             Ok(installation) => Ok(installation),
             Err(e) => {
                 info!(
@@ -53,7 +53,7 @@ impl Installation {
         }
     }
 
-    fn _init(top_level_args: &TopLevelArgs, remote: &str, new: bool) -> Result<Self> {
+    fn _init(top_level_args: &TopLevelArgs, args: init::Args) -> Result<Self> {
         let root = &top_level_args.path;
 
         let machine_path = root.join("machine");
@@ -61,17 +61,23 @@ impl Installation {
 
         let machine = Machine::new();
         fs::write(&machine_path, machine.0.to_string())?;
-        let machine_data = MachineData::new_this()?;
+        let machine_data = MachineData::new_this(args.name)?;
 
-        let mut repo = Repo::init(remote, &repository_path, machine, machine_data, new)?;
+        let mut repo = Repo::init(
+            &args.remote,
+            &repository_path,
+            machine,
+            machine_data,
+            args.new,
+        )?;
 
-        if new {
+        if args.new {
             add_internal(
                 top_level_args,
                 vec![(
                     FullPiece::new(
                         PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
-                            remote.to_string(),
+                            args.remote.to_string(),
                         ))),
                         None,
                     ),

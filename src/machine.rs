@@ -1,4 +1,5 @@
 use crate::group::Group;
+use crate::utils::OptionExt;
 use color_eyre::Result;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -20,9 +21,10 @@ pub struct MachineData {
 }
 
 impl MachineData {
-    pub fn new_this() -> Result<Self> {
+    pub fn new_this(name: Option<String>) -> Result<Self> {
         Ok(Self {
-            name: hostname::get()?.to_string_lossy().into_owned(),
+            name: name
+                .unwrap_or_else_fallible(|| Ok(hostname::get()?.to_string_lossy().into_owned()))?,
         })
     }
 

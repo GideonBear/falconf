@@ -125,6 +125,19 @@ pub fn match_prefix<'a>(
     }
 }
 
+pub trait OptionExt<T> {
+    fn unwrap_or_else_fallible<F: FnOnce() -> Result<T>>(self, f: F) -> Result<T>;
+}
+
+impl<T> OptionExt<T> for Option<T> {
+    fn unwrap_or_else_fallible<F: FnOnce() -> Result<T>>(self, f: F) -> Result<T> {
+        match self {
+            Some(x) => Ok(x),
+            None => f(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
