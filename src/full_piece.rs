@@ -205,6 +205,8 @@ impl FullPiece {
             .comment
             .as_ref()
             .map_or_else(String::new, |comment| format!(" // {comment}"));
+        let comment_suffix = comment_suffix.italic();
+        let comment_suffix = comment_suffix.dimmed();
 
         let unused_suffix = if self.unused(machines) {
             " (unused)"
