@@ -6,6 +6,7 @@ use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use itertools::Itertools;
 use log::info;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::path::Path;
 
@@ -41,16 +42,21 @@ pub(crate) fn run_migrations(path: &Path) -> Result<Option<String>> {
 
 fn migrate(migration: u32, path: &Path) -> Result<()> {
     match migration {
-        2 => {
-            to_file::<migration_2::NewData>(&from_file::<migration_2::OldData>(path)?.into(), path)
-        }
-        3 => {
-            to_file::<migration_3::NewData>(&from_file::<migration_3::OldData>(path)?.into(), path)
-        }
+        2 => migrate_generic::<migration_2::OldData, migration_2::NewData>(path),
+        3 => migrate_generic::<migration_3::OldData, migration_3::NewData>(path),
         #[expect(clippy::missing_panics_doc)]
         #[expect(clippy::panic)]
         _ => panic!("All migrations up to VERSION should be present in the match"),
     }
+}
+
+fn migrate_generic<OldData, NewData>(path: &Path) -> Result<()>
+where
+    OldData: DeserializeOwned,
+    NewData: Serialize,
+    OldData: Into<NewData>,
+{
+    to_file::<NewData>(&from_file::<OldData>(path)?.into(), path)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
