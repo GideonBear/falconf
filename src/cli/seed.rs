@@ -4,6 +4,7 @@ use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use crate::utils::print_id_raw;
 use color_eyre::Result;
+use itertools::Itertools;
 use std::io::Write;
 
 #[derive(clap::Args, Debug)]
@@ -22,6 +23,7 @@ pub fn seed<W: Write>(top_level_args: TopLevelArgs, _args: Args, writer: &mut W)
     writeln!(writer)?;
 
     let mut to_write = String::new();
+    let mut to_done = vec![];
     for (&id, piece) in pieces {
         let (command, done, post_init) = piece.seed(&ctx)?;
         writeln!(writer, "{}", command)?;
@@ -34,8 +36,7 @@ pub fn seed<W: Write>(top_level_args: TopLevelArgs, _args: Args, writer: &mut W)
             to_write.push('\n');
         }
         if done {
-            to_write.push_str(&format!("falconf done {}", print_id_raw(id)));
-            to_write.push('\n');
+            to_done.push(id);
         }
 
         if let PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(_)) = piece.piece {
@@ -43,6 +44,11 @@ pub fn seed<W: Write>(top_level_args: TopLevelArgs, _args: Args, writer: &mut W)
         }
     }
     write!(writer, "{to_write}")?;
+    writeln!(
+        writer,
+        "falconf done {}",
+        to_done.into_iter().map(print_id_raw).join(" ")
+    )?;
 
     Ok(())
 }
