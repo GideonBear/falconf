@@ -1,7 +1,7 @@
 use crate::full_piece::FullPiece;
 use crate::machine::Machine;
 use crate::migrations::LitU32;
-use derive_into::Convert;
+use derive_into_2::Convert;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;

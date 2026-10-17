@@ -2,7 +2,7 @@ use crate::group::Group;
 use crate::machine::{Machine, MachineData};
 use crate::migrations::LitU32;
 use crate::pieces::PieceEnum;
-use derive_into::Convert;
+use derive_into_2::Convert;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
