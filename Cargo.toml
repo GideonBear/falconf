@@ -32,6 +32,6 @@ derive-into = { git = "https://github.com/GideonBear/derive-into", branch = "ind
 
 [dev-dependencies]
 ctor = "=1.0.13"
-libc = "=0.2.190"
+libc = "=0.2.191"
 regex = "=1.13.1"
 tempfile = "=3.27.0"
