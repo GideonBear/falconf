@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/GideonBear/falconf/compare/v0.4.2...v0.5.0) - 2026-10-17
+
+### Breaking changes
+- improve internal done_on structure and lay groundwork for machines groups, and remove `falconf undo --done-here`
+
+### Added
+- *(machines list)* list machine groups
+- *(machines edit)* allow adding custom groups to machines
+- *(edit)* allow editing piece group
+- *(list)* show groups
+- *(list)* make comments italic and dimmed
+- *(add)* allow specifying group for piece
+- *(init)* allow setting machine name with --name
+- *(groups)* add implicit machine groups
+- add `falconf machines list` and `falconf machines edit`
+- add migrations and rename MachineData.hostname to name
+- *(gsettings)* warn when overwriting value that doesn't match recorded original value
+- log added pieces
+- add falconf seed
+
+### Fixed
+- disallow assigning a custom group to a piece that has no matching machines
+- *(gsettings)* add 'value differs' check and message to undoes as well
+- *(gsettings)* add new value to 'value differs' message
+- *(init)* do not allow multiple machines with the same name
+- *(machines edit)* do not allow multiple machines with the same name
+- pull repo before running migrations
+- *(push)* new files too
+- *(seed)* reload shell in between steps
+
 ## [0.4.2](https://github.com/GideonBear/falconf/compare/v0.4.1...v0.4.2) - 2026-09-30
 
 ### Added
