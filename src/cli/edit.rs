@@ -79,7 +79,7 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
         }));
     }
     if let Some(group) = args.group.take() {
-        let group = Group::parse_for_piece(&group, machines);
+        let group = Group::parse_for_piece(&group, machines)?;
         #[expect(clippy::missing_panics_doc, reason = "Checked above")]
         let piece = pieces.get(&id).unwrap();
         if let Group::Machine(group) = &piece.group {

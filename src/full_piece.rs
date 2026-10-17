@@ -177,10 +177,10 @@ impl FullPiece {
         machines: &IndexMap<Machine, MachineData>,
     ) -> Result<Self> {
         let comment = args.comment.clone();
-        let group = args
-            .group
-            .take()
-            .map_or(Group::All, |x| Group::parse_for_piece(&x, machines));
+        let group = match args.group.take() {
+            None => Group::All,
+            Some(group) => Group::parse_for_piece(&group, machines)?,
+        };
         Ok(Self::new(PieceEnum::from_cli(args)?, comment, group))
     }
 

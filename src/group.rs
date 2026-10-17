@@ -14,27 +14,37 @@ pub enum Group {
 }
 
 impl Group {
-    pub fn parse_for_piece(s: &str, machines: &IndexMap<Machine, MachineData>) -> Self {
+    pub fn parse_for_piece(s: &str, machines: &IndexMap<Machine, MachineData>) -> Result<Self> {
         match s {
-            "all" => Self::All,
-            "none" => Self::None,
+            "all" => Ok(Self::All),
+            "none" => Ok(Self::None),
             machine_name if let Some(&machine) = machines_by_name(machines).get(machine_name) => {
-                Self::Machine(machine)
+                Ok(Self::Machine(machine))
             }
-            s => Self::Custom(s.to_string()),
+            s => {
+                let group = Self::Custom(s.to_string());
+                if group.machines(machines).next().is_none() {
+                    return Err(eyre!(
+                        "This group has no machines yet. Add this group to a machine first, using `falconf machines edit`."
+                    ));
+                }
+                Ok(group)
+            }
         }
     }
 
     #[expect(unused)] // TODO
     pub fn parse_for_machine(s: &str, machines: &IndexMap<Machine, MachineData>) -> Result<Self> {
-        match Self::parse_for_piece(s, machines) {
-            Self::All | Self::None => Err(eyre!(format!(
+        match s {
+            "all" | "none" => Err(eyre!(format!(
                 "Cannot use reserved '{s}' group for a machine"
             ))),
-            Self::Machine(_) => Err(eyre!(format!(
-                "Cannot use machine name '{s}' as a group, it is already implicitly a group containing that machine"
-            ))),
-            Self::Custom(custom) => Ok(Self::Custom(custom)),
+            machine_name if let Some(&machine) = machines_by_name(machines).get(machine_name) => {
+                Err(eyre!(format!(
+                    "Cannot use machine name '{s}' as a group, it is already implicitly a group containing that machine"
+                )))
+            }
+            custom => Ok(Self::Custom(custom.to_string())),
         }
     }
 
