@@ -23,7 +23,7 @@ pub struct FullPiece {
     // Uses a BTreeSet instead of a HashSet to avoid shuffling when writing data again
     done_on: BTreeSet<Machine>,
     /// The group on which this piece should be done
-    group: Group,
+    pub group: Group,
 }
 
 #[derive(Debug, Clone)]

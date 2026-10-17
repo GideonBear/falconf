@@ -71,6 +71,7 @@ pub mod tests {
                 comment: None,
                 remove_comment: false,
                 piece: PieceRef::Last,
+                group: None,
                 undo: Some("echo I am undoing this piece".to_string()),
                 remove_undo: false,
                 move_after: None,

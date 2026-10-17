@@ -1,6 +1,7 @@
 use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
 use crate::full_piece::FullPiece;
+use crate::group::Group;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
@@ -21,6 +22,10 @@ pub struct Args {
 
     /// Specify the piece id. '-' is a shortcut for the last piece.
     pub(crate) piece: PieceRef,
+
+    /// The group/machine to execute this on (use `all` to execute on all machines)
+    #[arg(long)]
+    pub group: Option<String>,
 
     // `value` is intentionally missing
     /// (command) Command to execute when undoing this
@@ -45,7 +50,7 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();
-    let pieces = data.pieces_mut();
+    let (pieces, machines) = data.as_mut_parts();
 
     let id = args.piece.resolve(pieces)?;
     let piece = pieces.get(&id).ok_or_eyre("Piece not found")?;
@@ -72,6 +77,28 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
             let piece = pieces.get_mut(&id).unwrap();
             piece.comment = None;
         }));
+    }
+    if let Some(group) = args.group.take() {
+        let group = Group::parse_for_piece(&group, machines);
+        #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+        let piece = pieces.get(&id).unwrap();
+        if let Group::Machine(group) = &piece.group {
+            #[expect(clippy::missing_panics_doc, reason = "Invalid config")]
+            {
+                warn!(
+                    "Overwriting existing (machine) group: {}",
+                    machines.get(group).unwrap().name
+                );
+            }
+        }
+        if let Group::Custom(group) = &piece.group {
+            warn!("Overwriting existing group: {group}")
+        }
+        operations.push(Box::new(move |pieces| {
+            #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+            let piece = pieces.get_mut(&id).unwrap();
+            piece.group = group;
+        }))
     }
     if let Some(undo) = args.undo.take() {
         if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(_)) = &piece.piece {
