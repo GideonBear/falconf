@@ -377,26 +377,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "derive-into"
-version = "0.3.0"
-source = "git+https://github.com/GideonBear/derive-into?branch=indexmap#d62b242b41a440ca86e69def096172f7b4969a2f"
+name = "derive-into-2"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bce18706a93a1e1abf9719afc23fed80ae2b9961612e8fb4c34b98c9b757d3d1"
 dependencies = [
- "derive-into-error",
- "derive-into-macros",
+ "derive-into-2-error",
+ "derive-into-2-macros",
 ]
 
 [[package]]
-name = "derive-into-error"
+name = "derive-into-2-error"
 version = "0.3.0"
-source = "git+https://github.com/GideonBear/derive-into?branch=indexmap#d62b242b41a440ca86e69def096172f7b4969a2f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88f3154aaee6d57c7753862ee8df59f2694dfb5abfbcb283f324060a00ff6193"
 dependencies = [
  "thiserror 2.0.21",
 ]
 
 [[package]]
-name = "derive-into-macros"
+name = "derive-into-2-macros"
 version = "0.3.0"
-source = "git+https://github.com/GideonBear/derive-into?branch=indexmap#d62b242b41a440ca86e69def096172f7b4969a2f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6bea29fbf81172acfd41b20030fa88c816a3cca6df8da4ddb5331d830cafafa"
 dependencies = [
  "darling",
  "indexmap",
@@ -530,7 +533,7 @@ dependencies = [
  "color-eyre",
  "command-error",
  "ctor",
- "derive-into",
+ "derive-into-2",
  "env_logger",
  "expanduser",
  "git2",
