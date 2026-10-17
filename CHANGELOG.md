@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1](https://github.com/GideonBear/falconf/compare/v0.5.0...v0.5.1) - 2026-10-17
+
+### Fixed
+- *(deps)* switch to derive-into-2 to fix publishing to crates.io
+
 ## [0.5.0](https://github.com/GideonBear/falconf/compare/v0.4.2...v0.5.0) - 2026-10-17
 
 ### Breaking changes
