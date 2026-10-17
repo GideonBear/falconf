@@ -49,6 +49,15 @@ impl NonBulkPiece for Gsettings {
     }
 
     fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
+        let current_value = Self::get(&self.schema, &self.key)?;
+        if current_value != self.value
+            && !confirm(&format!(
+                "gsettings key {}.{} value differs from piece value. Is {}, expected {}. Overwrite anyway with original ({}) anyway?",
+                self.schema, self.key, current_value, self.value, self.original_value
+            ))?
+        {
+            return Err(eyre!("Aborted"));
+        }
         Self::set(&self.schema, &self.key, &self.original_value)
     }
 }
