@@ -28,9 +28,9 @@ pub fn list<W: Write>(
 pub mod tests {
     use super::*;
     use crate::cli::add::add_internal;
-    use crate::cli::add::tests::{add_util, add_util_comment};
+    use crate::cli::add::tests::{add_util, add_util_comment, add_util_group};
     use crate::cli::edit::edit;
-    use crate::cli::init::tests::init_util;
+    use crate::cli::init::tests::init_util_name;
     use crate::cli::undo::tests::undo_util;
     use crate::cli::{PieceRef, add, edit};
     use crate::full_piece::FullPiece;
@@ -49,7 +49,7 @@ pub mod tests {
     #[test]
     fn test_list() -> Result<()> {
         let remote = TestRemote::new()?;
-        let local = init_util(&remote, true)?;
+        let local = init_util_name(&remote, true, "some_machine".to_string())?;
 
         // Apt
         add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
@@ -150,6 +150,20 @@ pub mod tests {
         // Undone & unused
         add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
         undo_util(local.path(), PieceRef::Last)?;
+        // Machine group
+        add_util_group(
+            local.path(),
+            add::Piece::Apt,
+            vec![String::from("cowsay")],
+            "some_machine".to_string(),
+        )?;
+        // Custom group
+        add_util_group(
+            local.path(),
+            add::Piece::Apt,
+            vec![String::from("cowsay")],
+            "some_group".to_string(),
+        )?;
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
         let args = Args {};
@@ -168,18 +182,20 @@ pub mod tests {
 
         let expected = format!(
             "
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m (undo: echo I am undoing this piece)\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m (undo: echo I am undoing this piece)\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on: some_machine)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on group: some_group)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 ",
             remote.address(),
             test1.display()

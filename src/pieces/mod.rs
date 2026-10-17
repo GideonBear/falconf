@@ -412,6 +412,7 @@ mod tests {
                 "rolldice".to_string(),
             ],
             None,
+            None,
         );
         let piece = PieceEnum::from_cli(&args)?;
         assert!(matches!(piece, PieceEnum::Bulk(BulkPieceEnum::Apt(_))));
@@ -421,7 +422,7 @@ mod tests {
 
     #[test]
     fn test_from_cli_autodetect_works_combined() -> Result<()> {
-        let args = add_args_util(None, vec!["apt install rolldice".to_string()], None);
+        let args = add_args_util(None, vec!["apt install rolldice".to_string()], None, None);
         let piece = PieceEnum::from_cli(&args)?;
         assert!(matches!(piece, PieceEnum::Bulk(BulkPieceEnum::Apt(_))));
 

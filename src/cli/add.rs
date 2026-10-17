@@ -159,6 +159,7 @@ pub mod tests {
         piece: Option<Piece>,
         value: Vec<String>,
         comment: Option<String>,
+        group: Option<String>,
     ) -> Args {
         Args {
             comment,
@@ -171,7 +172,7 @@ pub mod tests {
             _deb_get: (),
             _cargo_install: (),
             value,
-            group: None,
+            group,
             undo: None,
             done: false,
         }
@@ -183,10 +184,11 @@ pub mod tests {
         value: Vec<String>,
         test_run: bool,
         comment: Option<String>,
+        group: Option<String>,
     ) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), test_run);
 
-        let args = add_args_util(Some(piece), value, comment);
+        let args = add_args_util(Some(piece), value, comment, group);
 
         add(top_level_args, args)?;
 
@@ -194,7 +196,7 @@ pub mod tests {
     }
 
     pub fn add_util(falconf_path: &Path, piece: Piece, value: Vec<String>) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, None)
+        add_util_opts(falconf_path, piece, value, true, None, None)
     }
 
     pub fn add_util_no_test_run(
@@ -202,7 +204,7 @@ pub mod tests {
         piece: Piece,
         value: Vec<String>,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, false, None)
+        add_util_opts(falconf_path, piece, value, false, None, None)
     }
 
     pub fn add_util_comment(
@@ -211,7 +213,16 @@ pub mod tests {
         value: Vec<String>,
         comment: String,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, Some(comment))
+        add_util_opts(falconf_path, piece, value, true, Some(comment), None)
+    }
+
+    pub fn add_util_group(
+        falconf_path: &Path,
+        piece: Piece,
+        value: Vec<String>,
+        group: String,
+    ) -> Result<()> {
+        add_util_opts(falconf_path, piece, value, true, None, Some(group))
     }
 
     // Add is tested in sync

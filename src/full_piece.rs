@@ -208,6 +208,18 @@ impl FullPiece {
         let comment_suffix = comment_suffix.italic();
         let comment_suffix = comment_suffix.dimmed();
 
+        let group_suffix = if let Group::Machine(machine) = &self.group {
+            #[expect(clippy::missing_panics_doc, reason = "Invalid config")]
+            {
+                format!(" (runs on: {})", machines.get(machine).unwrap().name)
+            }
+        } else if let Group::Custom(custom) = &self.group {
+            format!(" (runs on group: {})", custom)
+        } else {
+            String::new()
+        };
+        let group_suffix = group_suffix.bright_green();
+
         let unused_suffix = if self.unused(machines) {
             " (unused)"
         } else {
@@ -219,18 +231,19 @@ impl FullPiece {
         // TODO(low): Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
         if self.undone(machines) {
             format!(
-                "{}{}{}{}{}{}",
+                "{}{}{}{}{}{}{}",
                 id_prefix.strikethrough(),
                 " ".strikethrough(),
                 self.piece.strikethrough(),
                 undo_suffix.strikethrough(),
                 comment_suffix.strikethrough(),
+                group_suffix,
                 unused_suffix,
             )
         } else {
             format!(
-                "{} {}{}{}{}",
-                id_prefix, self.piece, undo_suffix, comment_suffix, unused_suffix,
+                "{} {}{}{}{}{}",
+                id_prefix, self.piece, undo_suffix, comment_suffix, group_suffix, unused_suffix,
             )
         }
     }

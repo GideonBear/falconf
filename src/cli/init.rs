@@ -36,6 +36,10 @@ pub mod tests {
     use uuid::Uuid;
 
     pub fn init_util(remote: &TestRemote, new: bool) -> Result<TempDirSub> {
+        init_util_name(remote, new, Uuid::new_v4().to_string())
+    }
+
+    pub fn init_util_name(remote: &TestRemote, new: bool, name: String) -> Result<TempDirSub> {
         let temp = TempDir::new()?;
         let falconf_path = temp.path().join("test_.falconf_dir");
 
@@ -44,7 +48,7 @@ pub mod tests {
         let args = Args {
             new,
             remote: remote.address().to_string(),
-            name: Some(Uuid::new_v4().to_string()),
+            name: Some(name),
         };
 
         if new {
