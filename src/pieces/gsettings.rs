@@ -39,8 +39,8 @@ impl NonBulkPiece for Gsettings {
         let current_value = Self::get(&self.schema, &self.key)?;
         if current_value != self.original_value
             && !confirm(&format!(
-                "gsettings key {}.{} value differs from recorded original value. Is {}, expected {}. Overwrite anyway?",
-                self.schema, self.key, current_value, self.original_value
+                "gsettings key {}.{} value differs from recorded original value. Is {}, expected {}. Overwrite with piece value ({}) anyway?",
+                self.schema, self.key, current_value, self.original_value, self.value
             ))?
         {
             return Err(eyre!("Aborted"));
