@@ -1,7 +1,9 @@
 use crate::group::Group;
 use crate::utils::OptionExt;
 use color_eyre::Result;
+use color_eyre::owo_colors::OwoColorize;
 use indexmap::IndexMap;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
 use uuid::Uuid;
@@ -33,7 +35,17 @@ impl MachineData {
 
     /// Return information about this machine for printing in the console
     pub fn print(&self, machine: Machine) -> String {
-        format!("{} {}", &machine.0.to_string()[..8], self.name)
+        let groups_suffix = if self.groups.is_empty() {
+            String::new()
+        } else {
+            format!(" - {}", self.groups.iter().join(" "))
+        };
+        let groups_suffix = groups_suffix.bright_green();
+        format!(
+            "{} {}{groups_suffix}",
+            &machine.0.to_string()[..8],
+            self.name
+        )
     }
 
     pub fn in_group(&self, machine: Machine, group: &Group) -> bool {
