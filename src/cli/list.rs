@@ -31,8 +31,9 @@ pub mod tests {
     use crate::cli::add::tests::{add_util, add_util_comment, add_util_group};
     use crate::cli::edit::edit;
     use crate::cli::init::tests::init_util_name;
+    use crate::cli::machines::MachineRef;
     use crate::cli::undo::tests::undo_util;
-    use crate::cli::{PieceRef, add, edit};
+    use crate::cli::{PieceRef, add, edit, machines};
     use crate::full_piece::FullPiece;
     use crate::group::Group;
     use crate::pieces::falconf_init::FalconfInit;
@@ -159,6 +160,10 @@ pub mod tests {
             "some_machine".to_string(),
         )?;
         // Custom group
+        machines::edit::edit(
+            TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            machines::edit::Args::new_testing(MachineRef::This, "some_group".to_string()),
+        )?;
         add_util_group(
             local.path(),
             add::Piece::Apt,
@@ -196,7 +201,7 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on: some_machine)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on group: some_group)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on group: some_group)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 ",
             remote.address(),
             test1.display()

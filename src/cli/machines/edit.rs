@@ -25,6 +25,18 @@ pub struct Args {
     remove_group: Vec<String>,
 }
 
+impl Args {
+    #[cfg(test)]
+    pub fn new_testing(machine: MachineRef, group: String) -> Self {
+        Self {
+            machine,
+            name: None,
+            group: vec![group],
+            remove_group: vec![],
+        }
+    }
+}
+
 pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let ctx = ExecutionContext::new(&installation, &top_level_args)?;

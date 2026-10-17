@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::io;
 use std::str::FromStr;
 
-mod edit;
+pub mod edit;
 mod list;
 
 #[derive(clap::Args, Debug)]
