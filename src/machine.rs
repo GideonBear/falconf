@@ -3,7 +3,7 @@ use crate::utils::OptionExt;
 use color_eyre::Result;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -18,6 +18,8 @@ impl Machine {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MachineData {
     pub name: String,
+    // Uses a BTreeSet instead of a HashSet to avoid shuffling when writing data again
+    pub groups: BTreeSet<String>,
 }
 
 impl MachineData {
@@ -25,6 +27,7 @@ impl MachineData {
         Ok(Self {
             name: name
                 .unwrap_or_else_fallible(|| Ok(hostname::get()?.to_string_lossy().into_owned()))?,
+            groups: BTreeSet::new(),
         })
     }
 
@@ -38,7 +41,7 @@ impl MachineData {
             Group::All => true,
             Group::None => false,
             Group::Machine(target) => *target == machine,
-            Group::Custom(_) => false, // TODO
+            Group::Custom(group) => self.groups.contains(group),
         }
     }
 }

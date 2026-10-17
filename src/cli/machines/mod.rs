@@ -36,7 +36,7 @@ pub enum MachineRef {
 
 impl MachineRef {
     fn _resolve(
-        self,
+        &self,
         machines: &IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
     ) -> Result<Machine> {
@@ -48,16 +48,15 @@ impl MachineRef {
                     candidates.insert(machine.0.to_string(), machine);
                     candidates.insert(machine_data.name.clone(), machine);
                 }
-                let found = match_prefix(candidates.keys().map(|s| s.as_str()), &s)
+                let found = match_prefix(candidates.keys().map(|s| s.as_str()), s)
                     .wrap_err("Couldn't match with a machine name or id")?;
                 Ok(candidates[found])
             }
         }
     }
 
-    #[expect(unused)]
     fn resolve<'a>(
-        self,
+        &self,
         machines: &'a IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
     ) -> Result<(Machine, &'a MachineData)> {
@@ -73,7 +72,7 @@ impl MachineRef {
     }
 
     fn resolve_mut<'a>(
-        self,
+        &self,
         machines: &'a mut IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
     ) -> Result<(Machine, &'a mut MachineData)> {

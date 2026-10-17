@@ -1,5 +1,6 @@
 mod migration_2;
 mod migration_3;
+mod migration_4;
 
 use crate::data::{from_file, to_file};
 use color_eyre::Result;
@@ -10,7 +11,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::path::Path;
 
-pub(crate) const VERSION: u32 = 3;
+pub(crate) const VERSION: u32 = 4;
 
 #[derive(Debug, Clone, Deserialize)]
 struct Data {
@@ -44,6 +45,7 @@ fn migrate(migration: u32, path: &Path) -> Result<()> {
     match migration {
         2 => migrate_generic::<migration_2::OldData, migration_2::NewData>(path),
         3 => migrate_generic::<migration_3::OldData, migration_3::NewData>(path),
+        4 => migrate_generic::<migration_4::OldData, migration_4::NewData>(path),
         #[expect(clippy::missing_panics_doc)]
         #[expect(clippy::panic)]
         _ => panic!("All migrations up to VERSION should be present in the match"),
