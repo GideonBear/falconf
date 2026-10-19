@@ -44,7 +44,6 @@ pub mod tests {
     use log::debug;
     use regex::Regex;
     use std::fs::File;
-    use std::io;
     use tempfile::TempDir;
 
     #[test]
@@ -173,12 +172,12 @@ pub mod tests {
 
         let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
         let args = Args {};
-        let mut writer = io::Cursor::new(vec![]);
+        let mut writer = vec![];
 
         list(top_level_args, args, &mut writer)?;
 
         let id_re = Regex::new(r"[0-9a-fA-F]{8}").unwrap();
-        let output = String::from_utf8(writer.into_inner())?;
+        let output = String::from_utf8(writer)?;
         debug!("Got:\n{output}");
         let output = output
             .lines()
