@@ -1,7 +1,6 @@
 use crate::group::Group;
-use crate::machine::{Machine, MachineData};
-use crate::migrations::LitU32;
-use crate::pieces::PieceEnum;
+use crate::machine::Machine;
+use crate::migrations::{LitU32, RawValue};
 use derive_into_2::Convert;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -9,7 +8,7 @@ use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Deserialize)]
 struct OldFullPiece {
-    piece: PieceEnum,
+    piece: RawValue,
     comment: Option<String>,
     done_on: Vec<Machine>,
     undone_on: Option<Vec<Machine>>,
@@ -18,7 +17,7 @@ struct OldFullPiece {
 
 #[derive(Debug, Clone, Serialize)]
 struct NewFullPiece {
-    piece: PieceEnum,
+    piece: RawValue,
     comment: Option<String>,
     done_on: BTreeSet<Machine>,
     group: Group,
@@ -49,15 +48,15 @@ impl From<OldFullPiece> for NewFullPiece {
 #[convert(into(path = "NewData"))]
 pub(super) struct OldData {
     #[convert(default)]
-    #[allow(unused)]
+    #[expect(unused)]
     version: LitU32<2>,
-    pieces: IndexMap<u32, OldFullPiece>,
-    machines: IndexMap<Machine, MachineData>,
+    pieces: IndexMap<RawValue, OldFullPiece>,
+    machines: RawValue,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct NewData {
     version: LitU32<3>,
-    pieces: IndexMap<u32, NewFullPiece>,
-    machines: IndexMap<Machine, MachineData>,
+    pieces: IndexMap<RawValue, NewFullPiece>,
+    machines: RawValue,
 }

@@ -1,6 +1,4 @@
-use crate::full_piece::FullPiece;
-use crate::machine::Machine;
-use crate::migrations::LitU32;
+use crate::migrations::{LitU32, RawValue};
 use derive_into_2::Convert;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -17,15 +15,15 @@ struct OldAndNewMachineData {
 #[convert(into(path = "NewData"))]
 pub(super) struct OldData {
     #[convert(default)]
-    #[allow(unused)]
+    #[expect(unused)]
     version: LitU32<3>,
-    pieces: IndexMap<u32, FullPiece>,
-    machines: IndexMap<Machine, OldAndNewMachineData>,
+    pieces: RawValue,
+    machines: IndexMap<RawValue, OldAndNewMachineData>,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct NewData {
     version: LitU32<4>,
-    pieces: IndexMap<u32, FullPiece>,
-    machines: IndexMap<Machine, OldAndNewMachineData>,
+    pieces: RawValue,
+    machines: IndexMap<RawValue, OldAndNewMachineData>,
 }
