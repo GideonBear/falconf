@@ -8,6 +8,7 @@ use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use itertools::Itertools;
 use log::info;
+use seq_macro::seq;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::path::Path;
@@ -43,15 +44,14 @@ pub(crate) fn run_migrations(path: &Path) -> Result<Option<String>> {
 }
 
 fn migrate(migration: u32, path: &Path) -> Result<()> {
-    match migration {
-        2 => migrate_generic::<migration_2::OldData, migration_2::NewData>(path),
-        3 => migrate_generic::<migration_3::OldData, migration_3::NewData>(path),
-        4 => migrate_generic::<migration_4::OldData, migration_4::NewData>(path),
-        5 => migrate_generic::<migration_5::OldData, migration_5::NewData>(path),
-        #[expect(clippy::missing_panics_doc)]
-        #[expect(clippy::panic)]
-        _ => panic!("All migrations up to VERSION should be present in the match"),
-    }
+    seq!(N in 2..=5 {
+        match migration {
+            #( N => migrate_generic::<migration_~N::OldData, migration_~N::NewData>(path), )*
+            #[expect(clippy::missing_panics_doc)]
+            #[expect(clippy::panic)]
+            _ => panic!("All migrations up to VERSION should be present in the match"),
+        }
+    })
 }
 
 fn migrate_generic<OldData, NewData>(path: &Path) -> Result<()>
