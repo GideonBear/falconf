@@ -33,7 +33,7 @@ derive-into-2 = { version = "0.3.1", features = ["indexmap"] }
 [dev-dependencies]
 ctor = "=1.0.13"
 include_optional = "=1.1.1"
-libc = "=0.2.190"
+libc = "=0.2.191"
 regex = "=1.13.1"
 tempfile = "=3.27.0"
 with_builtin_macros = "=0.1.0"
