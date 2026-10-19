@@ -152,4 +152,13 @@ mod tests {
         from_reader::<crate::data::Data>(CURRENT_BYTES)?;
         Ok(())
     }
+
+    #[test]
+    fn test_current_remains_unchanged() -> Result<()> {
+        let data = from_reader::<crate::data::Data>(CURRENT_BYTES)?;
+        let mut writer = vec![];
+        to_writer(&data, &mut writer)?;
+        assert_eq!(CURRENT_BYTES, writer);
+        Ok(())
+    }
 }
