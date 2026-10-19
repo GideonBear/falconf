@@ -6,7 +6,7 @@ use indexmap::IndexMap;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{BufReader, BufWriter, Write as _};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -51,17 +51,26 @@ impl Data {
     }
 }
 
+pub fn from_reader<T: DeserializeOwned>(reader: impl Read) -> Result<T> {
+    Ok(ron::de::from_reader(reader)?)
+}
+
 pub fn from_file<T: DeserializeOwned>(path: &Path) -> Result<T> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
-    let data = ron::de::from_reader(reader)?;
-    Ok(data)
+    from_reader(reader)
+}
+
+pub fn to_writer<T: Serialize>(data: &T, writer: impl Write) -> Result<()> {
+    Ok(ron::Options::default().to_io_writer_pretty(
+        writer,
+        data,
+        ron::ser::PrettyConfig::default(),
+    )?)
 }
 
 pub fn to_file<T: Serialize>(data: &T, path: &Path) -> Result<()> {
     let file = File::create(path)?;
-    let string = ron::ser::to_string_pretty(data, ron::ser::PrettyConfig::default())?;
-    let mut writer = BufWriter::new(file);
-    writer.write_all(string.as_bytes())?;
-    Ok(())
+    let writer = BufWriter::new(file);
+    to_writer(data, writer)
 }
