@@ -2,6 +2,7 @@
 #![warn(clippy::print_stdout)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::panic)]
+#![cfg_attr(test, allow(clippy::panic))]
 #![warn(clippy::missing_panics_doc)] // Catches other panics (unwrap, expect)
 #![cfg_attr(test, allow(clippy::missing_panics_doc))]
 

@@ -1,0 +1,21 @@
+(
+    version: 4,
+    pieces: {
+        3517312011: (
+            piece: Bulk(Apt((
+                package: "curl",
+            ))),
+            comment: None,
+            done_on: [
+                ("e945ed09-3c1d-4b07-8453-4b435e1ba53f"),
+            ],
+            group: All,
+        ),
+    },
+    machines: {
+        ("e945ed09-3c1d-4b07-8453-4b435e1ba53f"): (
+            name: "some_machine",
+            groups: [],
+        ),
+    },
+)

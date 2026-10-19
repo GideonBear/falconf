@@ -1,3 +1,5 @@
+src/migrations/test_data/suggested_*
+
 .idea
 tarpaulin-report.html
 
