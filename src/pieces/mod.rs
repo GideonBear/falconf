@@ -43,6 +43,7 @@ macro_rules! unknown {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
+#[serde(untagged)]
 pub enum PieceEnum {
     Bulk(BulkPieceEnum),
     NonBulk(NonBulkPieceEnum),
