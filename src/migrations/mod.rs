@@ -64,6 +64,9 @@ where
 }
 
 // Necessary because of https://github.com/ron-rs/ron/issues/631
+// Additionally, using a RawValue might cause problems in the future when
+//  the nesting level is changed. Switch to a Value as soon as
+//  https://github.com/ron-rs/ron/issues/122 is implemented.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
 #[serde(transparent)]
 pub struct RawValue(Box<ron::value::RawValue>);
