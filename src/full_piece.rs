@@ -80,18 +80,6 @@ impl FullPiece {
     pub fn do_todo(pieces: &mut IndexMap<u32, Self>, ctx: &ExecutionContext) -> Result<()> {
         let (mut to_execute, mut to_undo) = Self::get_todo(pieces, ctx);
 
-        PieceEnum::execute_bulk(
-            to_execute
-                .iter_mut()
-                .map(|(id, x)| {
-                    (*id, &mut x.piece, || {
-                        x.done_on.insert(ctx.machine);
-                    })
-                })
-                .collect(),
-            ctx,
-        )?;
-
         PieceEnum::undo_bulk(
             to_undo
                 .iter_mut()
@@ -104,6 +92,18 @@ impl FullPiece {
                         {
                             assert!(x.done_on.remove(&ctx.machine));
                         }
+                    })
+                })
+                .collect(),
+            ctx,
+        )?;
+
+        PieceEnum::execute_bulk(
+            to_execute
+                .iter_mut()
+                .map(|(id, x)| {
+                    (*id, &mut x.piece, || {
+                        x.done_on.insert(ctx.machine);
                     })
                 })
                 .collect(),
