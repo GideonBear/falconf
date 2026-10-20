@@ -1,7 +1,7 @@
 use crate::cli::add;
 use crate::execution_context::ExecutionContext;
 use crate::piece::{BulkPiece, Piece};
-use crate::utils::confirm;
+use crate::utils::{confirm, write_file};
 use color_eyre::Result;
 use color_eyre::eyre::{Context, eyre};
 use ini_preserve::Ini;
@@ -95,10 +95,7 @@ impl Conf {
                 cb(piece, &mut ini)?;
             }
 
-            // TODO: unwritable files
-            ini.save(&file)
-                .map_err(|s| eyre!(s))
-                .wrap_err("Failed to write ini file")?;
+            write_file(&file, &ini.to_string()).wrap_err("Failed to write ini file")?;
         }
         Ok(())
     }

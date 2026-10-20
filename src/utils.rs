@@ -1,12 +1,14 @@
 use color_eyre::Result;
-use color_eyre::eyre::{OptionExt as _, eyre};
+use color_eyre::eyre::{Context, OptionExt as _, eyre};
 use color_eyre::owo_colors::OwoColorize as _;
+use command_error::{ChildExt, CommandExt};
 use itertools::Itertools;
-use log::debug;
+use log::{debug, info};
 use std::ffi::OsStr;
 use std::fmt::Debug;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 use std::{fs, io};
 
 // pub fn if_sudo(program: &str, sudo: bool) -> process::Command {
@@ -136,6 +138,39 @@ impl<T> OptionExt<T> for Option<T> {
             None => f(),
         }
     }
+}
+
+pub fn write_file(path: &Path, contents: &str) -> Result<()> {
+    match fs::write(path, contents) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == io::ErrorKind::PermissionDenied => sudo_write_file(path, contents),
+        Err(e) => Err(e.into()),
+    }
+}
+
+fn sudo_write_file(path: &Path, contents: &str) -> Result<()> {
+    info!("Using sudo to write to {}", path.display());
+    let mut child = Command::new("sudo")
+        .arg("tee")
+        .arg("--")
+        .arg(path)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .spawn_checked()?;
+    #[expect(clippy::missing_panics_doc, reason = "stdin was piped")]
+    child
+        .child_mut()
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(contents.as_bytes())?;
+    child.wait_checked().wrap_err_with(|| {
+        format!(
+            "Failed to write to '{}' as root using `sudo tee`",
+            path.display()
+        )
+    })?;
+    Ok(())
 }
 
 #[cfg(test)]
