@@ -540,6 +540,7 @@ dependencies = [
  "hostname",
  "include_optional",
  "indexmap",
+ "ini-preserve",
  "itertools",
  "libc",
  "log",
@@ -811,6 +812,12 @@ dependencies = [
  "serde",
  "serde_core",
 ]
+
+[[package]]
+name = "ini-preserve"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15c550c43f4e976d6abe93e6990fe207007cf8b328a453bb20757bb85aee5c98"
 
 [[package]]
 name = "is_terminal_polyfill"

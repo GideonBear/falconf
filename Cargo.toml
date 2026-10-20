@@ -30,6 +30,7 @@ utf8-command = "1.0.1"
 which = "8.0.6"
 derive-into-2 = { version = "0.3.1", features = ["indexmap"] }
 seq-macro = "0.3.6"
+ini-preserve = "0.1.4"
 
 [dev-dependencies]
 ctor = "=1.0.13"

@@ -36,9 +36,10 @@ pub mod tests {
     use crate::cli::{PieceRef, add, edit, machines};
     use crate::full_piece::FullPiece;
     use crate::group::Group;
+    use crate::pieces::conf::Conf;
     use crate::pieces::falconf_init::FalconfInit;
     use crate::pieces::gsettings::Gsettings;
-    use crate::pieces::{NonBulkPieceEnum, PieceEnum};
+    use crate::pieces::{BulkPieceEnum, NonBulkPieceEnum, PieceEnum};
     use crate::testing::TestRemote;
     use color_eyre::Result;
     use log::debug;
@@ -125,6 +126,26 @@ pub mod tests {
             add::Piece::CargoInstall,
             vec![String::from("cowsay")],
         )?;
+        // Conf
+        // Cannot use add_util as it will attempt to fetch the original value
+        add_internal(
+            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
+            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            vec![(
+                FullPiece::new(
+                    PieceEnum::Bulk(BulkPieceEnum::Conf(Conf::new_with_original(
+                        "/etc/something.conf".parse()?,
+                        "Section".to_string(),
+                        "cursor-theme".to_string(),
+                        "blah".to_string(),
+                        None,
+                    ))),
+                    None,
+                    Group::All,
+                ),
+                false,
+            )],
+        )?;
         // Falconf init
         // Cannot use add_util as FalconfInit is not constructible from the cli
         add_internal(
@@ -196,6 +217,7 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m In /etc/something.conf: [Section] cursor-theme=blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m

@@ -5,6 +5,7 @@ use crate::piece::{BulkPiece, NonBulkPiece as _, Piece};
 use crate::pieces::apt::Apt;
 use crate::pieces::cargo_install::CargoInstall;
 use crate::pieces::command::Command;
+use crate::pieces::conf::Conf;
 use crate::pieces::deb_get::DebGet;
 use crate::pieces::falconf_init::FalconfInit;
 use crate::pieces::file::File;
@@ -22,6 +23,7 @@ use std::path::Path;
 pub mod apt;
 pub mod cargo_install;
 pub mod command;
+pub mod conf;
 pub mod deb_get;
 pub mod falconf_init;
 pub mod file;
@@ -56,6 +58,7 @@ pub enum BulkPieceEnum {
     Apt(Apt),
     DebGet(DebGet),
     CargoInstall(CargoInstall),
+    Conf(Conf),
 }
 
 impl BulkPieceEnum {
@@ -64,6 +67,7 @@ impl BulkPieceEnum {
             Self::Apt(apt) => apt.seed(ctx),
             Self::DebGet(deb_get) => deb_get.seed(ctx),
             Self::CargoInstall(cargo_install) => cargo_install.seed(ctx),
+            Self::Conf(conf) => conf.seed(ctx),
         }
     }
 }
@@ -123,10 +127,11 @@ impl PieceEnum {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
-        let (apt, deb_get, cargo_install, non_bulk) = Self::sort_pieces(pieces);
+        let (apt, deb_get, cargo_install, conf, non_bulk) = Self::sort_pieces(pieces);
         Self::execute_bulk_bulk(apt, ctx)?;
         Self::execute_bulk_bulk(deb_get, ctx)?;
         Self::execute_bulk_bulk(cargo_install, ctx)?;
+        Self::execute_bulk_bulk(conf, ctx)?;
         Self::execute_non_bulk_bulk(non_bulk, ctx)?;
         Ok(())
     }
@@ -188,10 +193,11 @@ impl PieceEnum {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
-        let (apt, deb_get, cargo_install, non_bulk) = Self::sort_pieces(pieces);
+        let (apt, deb_get, cargo_install, conf, non_bulk) = Self::sort_pieces(pieces);
         Self::undo_bulk_bulk(apt, ctx)?;
         Self::undo_bulk_bulk(deb_get, ctx)?;
         Self::undo_bulk_bulk(cargo_install, ctx)?;
+        Self::undo_bulk_bulk(conf, ctx)?;
         Self::undo_non_bulk_bulk(non_bulk, ctx)?;
         Ok(())
     }
@@ -251,21 +257,24 @@ impl PieceEnum {
         Vec<(u32, &mut Apt, F)>,
         Vec<(u32, &mut DebGet, F)>,
         Vec<(u32, &mut CargoInstall, F)>,
+        Vec<(u32, &mut Conf, F)>,
         Vec<(u32, &mut NonBulkPieceEnum, F)>,
     ) {
         let mut apt = vec![];
         let mut deb_get = vec![];
         let mut cargo_install = vec![];
+        let mut conf = vec![];
         let mut non_bulk = vec![];
         for (id, piece, cb) in pieces {
             match piece {
                 Self::Bulk(BulkPieceEnum::Apt(p)) => apt.push((id, p, cb)),
                 Self::Bulk(BulkPieceEnum::DebGet(p)) => deb_get.push((id, p, cb)),
                 Self::Bulk(BulkPieceEnum::CargoInstall(p)) => cargo_install.push((id, p, cb)),
+                Self::Bulk(BulkPieceEnum::Conf(p)) => conf.push((id, p, cb)),
                 Self::NonBulk(piece) => non_bulk.push((id, piece, cb)),
             }
         }
-        (apt, deb_get, cargo_install, non_bulk)
+        (apt, deb_get, cargo_install, conf, non_bulk)
     }
 
     pub fn from_cli(args: &add::Args) -> Result<Self> {
@@ -290,6 +299,7 @@ impl PieceEnum {
             cli::Piece::CargoInstall => {
                 Self::Bulk(BulkPieceEnum::CargoInstall(CargoInstall::from_cli(args)?))
             }
+            cli::Piece::Conf => Self::Bulk(BulkPieceEnum::Conf(Conf::from_cli(args)?)),
         })
     }
 
@@ -373,6 +383,7 @@ impl Display for BulkPieceEnum {
             Self::Apt(piece) => piece.fmt(f),
             Self::DebGet(piece) => piece.fmt(f),
             Self::CargoInstall(piece) => piece.fmt(f),
+            Self::Conf(piece) => piece.fmt(f),
         }
     }
 }
