@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2](https://github.com/GideonBear/falconf/compare/v0.5.1...v0.5.2) - 2026-10-20
+
+### Added
+- *(conf)* support writing files using sudo
+- *(piece)* add conf piece
+
+### Fixed
+- *(conf)* support creating new files
+- *(add)* fix --cargo-install flag
+- *(migrations)* fix older migrations by using RawValue where possible
+
 ## [0.5.1](https://github.com/GideonBear/falconf/compare/v0.5.0...v0.5.1) - 2026-10-17
 
 ### Fixed
