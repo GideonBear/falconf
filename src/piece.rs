@@ -19,8 +19,8 @@ pub trait NonBulkPiece: Piece {
 /// A single piece of configuration (bulk)
 pub trait BulkPiece: Piece {
     /// Execute multiple of these pieces in bulk.
-    fn execute_bulk(pieces: &[&mut Self], ctx: &ExecutionContext) -> Result<()>;
+    fn execute_bulk(pieces: Vec<&mut Self>, ctx: &ExecutionContext) -> Result<()>;
 
     /// Undo multiple of these pieces in bulk.
-    fn undo_bulk(pieces: &[&mut Self], ctx: &ExecutionContext) -> Result<()>;
+    fn undo_bulk(pieces: Vec<&mut Self>, ctx: &ExecutionContext) -> Result<()>;
 }

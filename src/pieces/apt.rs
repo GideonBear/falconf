@@ -23,17 +23,17 @@ impl Piece for Apt {
 }
 
 impl BulkPiece for Apt {
-    fn execute_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
+    fn execute_bulk(pieces: Vec<&mut Self>, _ctx: &ExecutionContext) -> Result<()> {
         Self::apt_command(&["install"], pieces)
     }
 
-    fn undo_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
+    fn undo_bulk(pieces: Vec<&mut Self>, _ctx: &ExecutionContext) -> Result<()> {
         Self::apt_command(&["remove", "--autoremove"], pieces)
     }
 }
 
 impl Apt {
-    fn apt_command(command: &[&str], pieces: &[&mut Self]) -> Result<()> {
+    fn apt_command(command: &[&str], pieces: Vec<&mut Self>) -> Result<()> {
         process::Command::new("apt")
             .args(command)
             .args(pieces.iter().map(|p| &p.package))

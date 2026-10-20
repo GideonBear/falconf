@@ -152,7 +152,7 @@ impl PieceEnum {
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
         if !ctx.test_run {
-            P::execute_bulk(&pieces, ctx)?;
+            P::execute_bulk(pieces, ctx)?;
         } else {
             warn!("Test run! Refraining from execution, but marking as normal.");
         }
@@ -217,7 +217,7 @@ impl PieceEnum {
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
         if !ctx.test_run {
-            P::undo_bulk(&pieces, ctx)?;
+            P::undo_bulk(pieces, ctx)?;
         } else {
             warn!("Test run! Refraining from execution, but marking as normal.");
         }

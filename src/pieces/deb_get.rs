@@ -27,17 +27,17 @@ impl Piece for DebGet {
 }
 
 impl BulkPiece for DebGet {
-    fn execute_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
+    fn execute_bulk(pieces: Vec<&mut Self>, _ctx: &ExecutionContext) -> Result<()> {
         Self::deb_get_command(&["install"], pieces)
     }
 
-    fn undo_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
+    fn undo_bulk(pieces: Vec<&mut Self>, _ctx: &ExecutionContext) -> Result<()> {
         Self::deb_get_command(&["remove", "--remove-repo"], pieces)
     }
 }
 
 impl DebGet {
-    fn deb_get_command(command: &[&str], pieces: &[&mut Self]) -> Result<()> {
+    fn deb_get_command(command: &[&str], pieces: Vec<&mut Self>) -> Result<()> {
         process::Command::new("deb-get")
             .args(command)
             .args(pieces.iter().map(|p| &p.package))

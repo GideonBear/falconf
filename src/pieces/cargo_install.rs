@@ -36,7 +36,7 @@ impl Piece for CargoInstall {
 }
 
 impl BulkPiece for CargoInstall {
-    fn execute_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
+    fn execute_bulk(pieces: Vec<&mut Self>, _ctx: &ExecutionContext) -> Result<()> {
         let mut cmd = Command::new("cargo");
         if which("cargo-binstall")?.is_some() {
             cmd.arg("binstall");
@@ -49,7 +49,7 @@ impl BulkPiece for CargoInstall {
         Ok(())
     }
 
-    fn undo_bulk(pieces: &[&mut Self], _ctx: &ExecutionContext) -> Result<()> {
+    fn undo_bulk(pieces: Vec<&mut Self>, _ctx: &ExecutionContext) -> Result<()> {
         Command::new("cargo")
             .arg("uninstall")
             .args(pieces.iter().map(|p| &p.crate_))
