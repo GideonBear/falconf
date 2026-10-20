@@ -87,9 +87,13 @@ impl Conf {
             .into_iter()
             .into_group_map_by(|piece| piece.file.clone());
         for (file, pieces) in by_file {
-            let mut ini = Ini::load(&file)
-                .map_err(|s| eyre!(s))
-                .wrap_err("Failed to parse ini file")?;
+            let mut ini = if file.exists() {
+                Ini::load(&file)
+                    .map_err(|s| eyre!(s))
+                    .wrap_err("Failed to parse ini file")?
+            } else {
+                Ini::new()
+            };
 
             for piece in pieces {
                 cb(piece, &mut ini)?;
