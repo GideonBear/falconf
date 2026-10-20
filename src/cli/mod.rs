@@ -22,6 +22,7 @@ mod remove;
 pub mod seed;
 pub mod sync;
 pub mod undo;
+mod watch_conf;
 mod watch_gsettings;
 
 fn parse_path(s: &str) -> Result<PathBuf> {
@@ -115,6 +116,9 @@ enum Commands {
     #[command(about = "Watch gsettings for changes while you edit settings")]
     WatchGsettings(watch_gsettings::Args),
 
+    #[command(about = "Watch a conf/ini file for changes while you edit settings")]
+    WatchConf(watch_conf::Args),
+
     #[command(about = "Mark a piece as done on this machine without executing it")]
     Done(done::Args),
 
@@ -180,6 +184,7 @@ pub fn main() -> Result<()> {
         Commands::Push(args) => push::push(top_level, args),
         Commands::Edit(args) => edit::edit(top_level, args),
         Commands::WatchGsettings(args) => watch_gsettings::watch_gsettings(top_level, args),
+        Commands::WatchConf(args) => watch_conf::watch_conf(top_level, args),
         Commands::Done(args) => done::done(top_level, args),
         Commands::Seed(args) => seed::seed(top_level, args, &mut io::stdout().lock()),
         Commands::Machines(args) => machines::machines(top_level, args),

@@ -124,7 +124,6 @@ impl Conf {
         })
     }
 
-    #[allow(unused)]
     pub fn new_with_original(
         file: PathBuf,
         section: String,
