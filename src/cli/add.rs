@@ -45,6 +45,7 @@ pub struct Args {
         ("_manual", "true", "manual"),
         ("_gsettings", "true", "gsettings"),
         ("_deb_get", "true", "deb-get"),
+        ("_cargo_install", "true", "cargo-install"),
     ])]
     pub piece: Option<Piece>,
 
