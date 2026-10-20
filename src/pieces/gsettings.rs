@@ -97,13 +97,13 @@ impl Gsettings {
         key: String,
         value: String,
         original_value: String,
-    ) -> Result<Self> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             schema,
             key,
             value,
             original_value,
-        })
+        }
     }
 
     pub fn from_cli(args: &add::Args) -> Result<Self> {

@@ -100,18 +100,18 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
         changes
             .into_iter()
             .map(|((schema, key), old_value, new_value)| {
-                Ok((
+                (
                     FullPiece::new(
                         PieceEnum::NonBulk(NonBulkPieceEnum::Gsettings(
-                            Gsettings::new_with_original(schema, key, new_value, old_value)?,
+                            Gsettings::new_with_original(schema, key, new_value, old_value),
                         )),
                         None,
                         Group::All,
                     ),
                     true,
-                ))
+                )
             })
-            .collect::<Result<_>>()?,
+            .collect(),
     )?;
 
     Ok(())

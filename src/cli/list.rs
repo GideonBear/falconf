@@ -106,7 +106,7 @@ pub mod tests {
                         "cursor-theme".to_string(),
                         "blah".to_string(),
                         "old".to_string(),
-                    )?)),
+                    ))),
                     None,
                     Group::All,
                 ),
