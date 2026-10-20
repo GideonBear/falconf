@@ -3,6 +3,7 @@ use color_eyre::Result;
 use std::fmt::Display;
 
 pub trait Piece: Display {
+    /// Returns: (command, done, post_init_command)
     fn seed(&self, ctx: &ExecutionContext) -> Result<(String, bool, Option<String>)>;
 }
 
