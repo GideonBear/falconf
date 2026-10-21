@@ -8,11 +8,15 @@ use std::path::Path;
 use std::path::PathBuf;
 
 #[derive(clap::Args, Debug)]
-pub struct Args {}
+pub struct Args {
+    /// Push without asking for confirmation
+    #[arg(short, long)]
+    pub yes: bool,
+}
 
 #[expect(clippy::print_stdout)]
 #[allow(clippy::needless_pass_by_value)]
-pub fn push(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
+pub fn push(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
 
@@ -52,7 +56,7 @@ pub fn push(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
         true
     })?;
 
-    if !confirm("The above diff will be committed. Do you want to continue?")? {
+    if !args.yes && !confirm("The above diff will be committed. Do you want to continue?")? {
         return Err(eyre!("Aborted"));
     }
 
