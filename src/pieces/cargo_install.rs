@@ -77,6 +77,10 @@ impl CargoInstall {
 
 impl Display for CargoInstall {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "cargo install {}", self.crate_)
+        write!(
+            f,
+            "{}",
+            shell_words::join(["cargo", "install", &self.crate_])
+        )
     }
 }

@@ -63,6 +63,10 @@ impl DebGet {
 
 impl Display for DebGet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "deb-get install {}", self.package)
+        write!(
+            f,
+            "{}",
+            shell_words::join(["deb-get", "install", &self.package])
+        )
     }
 }

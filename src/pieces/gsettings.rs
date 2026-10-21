@@ -125,8 +125,8 @@ impl Display for Gsettings {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "gsettings set {} {} {}",
-            self.schema, self.key, self.value
+            "{}",
+            shell_words::join(["gsettings", "set", &self.schema, &self.key, &self.value])
         )
     }
 }

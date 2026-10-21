@@ -59,6 +59,10 @@ impl Apt {
 
 impl Display for Apt {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "apt install {}", self.package)
+        write!(
+            f,
+            "{}",
+            shell_words::join(["apt", "install", &self.package])
+        )
     }
 }

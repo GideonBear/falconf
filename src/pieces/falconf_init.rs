@@ -40,6 +40,10 @@ impl FalconfInit {
 
 impl Display for FalconfInit {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "falconf init {}", self.remote)
+        write!(
+            f,
+            "{}",
+            shell_words::join(["falconf", "init", &self.remote])
+        )
     }
 }
