@@ -60,7 +60,7 @@ pub struct TopLevelArgs {
     // pub dry_run: bool,
     /// Don't execute any commands, but mark pieces as executed. WARNING: this
     /// is not safe to use, and is meant for testing purposes only.
-    #[arg(long)]
+    #[arg(long, hide = true)]
     pub test_run: bool,
 }
 
