@@ -63,24 +63,10 @@ where
     to_file::<NewData>(&from_file::<OldData>(path)?.into(), path)
 }
 
-// Necessary because of https://github.com/ron-rs/ron/issues/631
-// Additionally, using a RawValue might cause problems in the future when
+// Using a RawValue might cause problems in the future when
 //  the nesting level is changed. Switch to a Value as soon as
 //  https://github.com/ron-rs/ron/issues/122 is implemented.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
-#[serde(transparent)]
-pub struct RawValue(Box<ron::value::RawValue>);
-
-impl<'de> Deserialize<'de> for RawValue {
-    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-        let raw = Box::<ron::value::RawValue>::deserialize(d)?;
-        Ok(Self(
-            ron::value::RawValue::from_ron(raw.get_ron().trim())
-                .map_err(serde::de::Error::custom)?
-                .to_owned(),
-        ))
-    }
-}
+type RawValue = Box<ron::value::RawValue>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct LitU32<const N: u32>;
