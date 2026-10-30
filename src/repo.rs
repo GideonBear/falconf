@@ -337,20 +337,25 @@ mod tests {
     use crate::cli::init::tests::init_util;
     use crate::installation::Installation;
     use crate::testing::TestRemote;
+    use std::fs;
     use std::fs::OpenOptions;
     use std::io::Write;
+    use tempfile::TempDir;
 
     #[test]
     fn test_error_on_changed_data_file() -> Result<()> {
         let remote = TestRemote::new()?;
         let local = init_util(&remote, true)?;
+        let temp = TempDir::new()?;
+        let root = temp.path().join("root");
+        fs::create_dir(&root)?;
         // Write a single newline to the end
         let mut file = OpenOptions::new()
             .append(true)
             .open(local.path().join("repository").join(DATA_PATH))?;
         writeln!(file)?;
         // It should now crash
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
+        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), root.clone(), true);
         assert_eq!(
             Installation::get(&top_level_args).unwrap_err().to_string(),
             "The data file has uncommitted changes"

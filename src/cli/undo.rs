@@ -56,10 +56,10 @@ pub fn undo(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
-    pub fn undo_util(falconf_path: &Path, piece: PieceRef) -> Result<()> {
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), true);
+    pub fn undo_util(falconf_path: &Path, root: PathBuf, piece: PieceRef) -> Result<()> {
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), root, true);
 
         let args = Args {
             pieces: vec![piece],

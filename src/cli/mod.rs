@@ -62,6 +62,11 @@ pub struct TopLevelArgs {
     /// is not safe to use, and is meant for testing purposes only.
     #[arg(long, hide = true)]
     pub test_run: bool,
+
+    /// Set a different root directory for files.
+    /// WARNING: this is not safe to use, and is meant for testing purposes only.
+    #[arg(long, hide = true)]
+    pub root_dir: Option<PathBuf>,
 }
 
 impl TopLevelArgs {
@@ -74,13 +79,14 @@ impl TopLevelArgs {
     }
 
     #[cfg(test)]
-    pub const fn new_testing(falconf_path: PathBuf, test_run: bool) -> Self {
+    pub const fn new_testing(falconf_path: PathBuf, root_dir: PathBuf, test_run: bool) -> Self {
         Self {
             log_level: String::new(),
             verbose: false,
             path: falconf_path,
             // dry_run: false,
             test_run,
+            root_dir: Some(root_dir),
         }
     }
 }

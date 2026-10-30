@@ -161,7 +161,7 @@ pub fn add_internal(
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     pub fn add_args_util(
         piece: Option<Piece>,
@@ -189,13 +189,14 @@ pub mod tests {
 
     fn add_util_opts(
         falconf_path: &Path,
+        root: PathBuf,
         piece: Piece,
         value: Vec<String>,
         test_run: bool,
         comment: Option<String>,
         group: Option<String>,
     ) -> Result<()> {
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), test_run);
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), root, test_run);
 
         let args = add_args_util(Some(piece), value, comment, group);
 
@@ -204,34 +205,42 @@ pub mod tests {
         Ok(())
     }
 
-    pub fn add_util(falconf_path: &Path, piece: Piece, value: Vec<String>) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, None, None)
+    pub fn add_util(
+        falconf_path: &Path,
+        root: PathBuf,
+        piece: Piece,
+        value: Vec<String>,
+    ) -> Result<()> {
+        add_util_opts(falconf_path, root, piece, value, true, None, None)
     }
 
     pub fn add_util_no_test_run(
         falconf_path: &Path,
+        root: PathBuf,
         piece: Piece,
         value: Vec<String>,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, false, None, None)
+        add_util_opts(falconf_path, root, piece, value, false, None, None)
     }
 
     pub fn add_util_comment(
         falconf_path: &Path,
+        root: PathBuf,
         piece: Piece,
         value: Vec<String>,
         comment: String,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, Some(comment), None)
+        add_util_opts(falconf_path, root, piece, value, true, Some(comment), None)
     }
 
     pub fn add_util_group(
         falconf_path: &Path,
+        root: PathBuf,
         piece: Piece,
         value: Vec<String>,
         group: String,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, None, Some(group))
+        add_util_opts(falconf_path, root, piece, value, true, None, Some(group))
     }
 
     // Add is tested in sync

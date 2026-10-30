@@ -32,6 +32,7 @@ pub mod tests {
     use crate::pieces::{NonBulkPieceEnum, PieceEnum};
     use crate::testing::{TempDirSub, TestRemote};
     use log::debug;
+    use std::fs;
     use tempfile::TempDir;
     use uuid::Uuid;
 
@@ -41,9 +42,11 @@ pub mod tests {
 
     pub fn init_util_name(remote: &TestRemote, new: bool, name: String) -> Result<TempDirSub> {
         let temp = TempDir::new()?;
+        let root = temp.path().join("root");
+        fs::create_dir(&root)?;
         let falconf_path = temp.path().join("test_.falconf_dir");
 
-        let top_level_args = TopLevelArgs::new_testing(falconf_path.clone(), true);
+        let top_level_args = TopLevelArgs::new_testing(falconf_path.clone(), root, true);
 
         let args = Args {
             new,
@@ -76,8 +79,11 @@ pub mod tests {
         let remote = TestRemote::new()?;
 
         let local = init_util(&remote, true)?;
+        let temp = TempDir::new()?;
+        let root = temp.path().join("root");
+        fs::create_dir(&root)?;
 
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
+        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), root.clone(), true);
         let installation = Installation::get(&top_level_args)?;
         let pieces = installation.repo().data().pieces();
         assert_eq!(pieces.len(), 1);

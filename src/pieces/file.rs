@@ -1,4 +1,4 @@
-use crate::cli::add;
+use crate::cli::{TopLevelArgs, add};
 use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt as _;
 use crate::piece::{NonBulkPiece, Piece};
@@ -39,7 +39,8 @@ impl Piece for File {
             // TODO(low)
             return Err(eyre!("File contains 'EOF' which seed can't handle yet"));
         }
-        let path = quote(self.location.to_str().ok_or_eyre("Non-unicode path")?);
+        let location = self.location(ctx);
+        let path = quote(location.to_str().ok_or_eyre("Non-unicode path")?);
         Ok((
             format!("set -o noclobber && cat <<'EOF' > {path}\n{content}\nEOF"),
             true,
@@ -54,30 +55,31 @@ impl Piece for File {
 impl NonBulkPiece for File {
     fn execute(&mut self, ctx: &ExecutionContext) -> Result<()> {
         let target_file = self.target_file(ctx);
+        let location = self.location(ctx);
 
         if !target_file.exists() {
             // TODO(low): possibly do this better
             info!("Repo (target) file doesn't exist, assuming this is newly added");
             debug!(
                 "Moving the file into the repo: {} to {}",
-                self.location.display(),
+                location.display(),
                 target_file.display()
             );
             create_parent(&target_file)?;
-            rename(&self.location, &target_file).wrap_err("Failed to move file into repo")?;
+            rename(&location, &target_file).wrap_err("Failed to move file into repo")?;
             if target_file.is_dir() && read_dir(&target_file)?.next().is_none() {
                 fs::File::create(target_file.join(".falconfkeep"))?;
             }
         }
 
-        if self.location.exists() {
-            if self.location.is_symlink() {
+        if location.exists() {
+            if location.is_symlink() {
                 return Err(eyre!("File already exists and is a symlink."));
             }
 
             // TODO(test): test expected content etc. Test all this logic.
             if let Some(expected_previous_content) = &self.expected_previous_content {
-                let actual_content = std::fs::read_to_string(&self.location)?;
+                let actual_content = std::fs::read_to_string(&location)?;
                 if actual_content != *expected_previous_content {
                     return Err(eyre!(
                         "File already exists and has different content than expected. Expected content: '{expected_previous_content}', actual content: '{actual_content}'."
@@ -87,7 +89,7 @@ impl NonBulkPiece for File {
             } else {
                 let diff = Command::new("diff")
                     .arg(&target_file)
-                    .arg(&self.location)
+                    .arg(&location)
                     .output_fallible()?;
 
                 #[expect(clippy::collapsible_else_if)] // Clearer this way
@@ -100,7 +102,7 @@ impl NonBulkPiece for File {
                     ))? {
                         info!("Overwriting file according to user input.");
                         debug!("Removing file");
-                        remove_file(&self.location).wrap_err("Failed to remove file.")?;
+                        remove_file(&location).wrap_err("Failed to remove file.")?;
                     } else {
                         return Err(eyre!("Aborted"));
                     }
@@ -112,25 +114,35 @@ impl NonBulkPiece for File {
             ));
         }
 
-        create_parent(&self.location)?;
+        create_parent(&location)?;
 
         Command::new("ln")
             .arg(target_file)
-            .arg(&self.location)
+            .arg(&location)
             .arg("--symbolic")
             .status_checked()?;
         Ok(())
     }
 
-    fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
-        if !self.location.is_symlink() {
+    fn undo(&mut self, ctx: &ExecutionContext) -> Result<()> {
+        let location = self.location(ctx);
+        if !location.is_symlink() {
             return Err(eyre!("File is not a symlink."));
         }
-        remove_file(&self.location).wrap_err("Failed to remove file as part of undo")
+        remove_file(&location).wrap_err("Failed to remove file as part of undo")
     }
 }
 
 impl File {
+    /// Return the actual location of this file, keeping the root_dir in mind
+    fn location(&self, ctx: &ExecutionContext) -> PathBuf {
+        ctx.root_dir
+            .clone()
+            .map_or(self.location.clone(), |root_dir| {
+                root_dir.join(self.relative_location())
+            })
+    }
+
     /// Return the file's location in the file dir; the target of the symlink
     fn target_file(&self, ctx: &ExecutionContext) -> PathBuf {
         ctx.file_dir.join(self.relative_location())
@@ -195,6 +207,10 @@ mod tests {
     fn test_file_dir() -> Result<()> {
         let remote = TestRemote::new()?;
         let temp = TempDir::new()?;
+        let root_1 = temp.path().join("root_1");
+        fs::create_dir(&root_1)?;
+        let root_2 = temp.path().join("root_2");
+        fs::create_dir(&root_2)?;
         let test_d = temp.path().join("dir");
         create_dir(&test_d)?;
         let test_1 = test_d.join("test_1");
@@ -204,7 +220,12 @@ mod tests {
 
         let local_1 = init_util(&remote, true)?;
         let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), crate::cli::add::Piece::File, vec![test_d_s])?;
+        add_util_no_test_run(
+            local_1.path(),
+            root_1.clone(),
+            crate::cli::add::Piece::File,
+            vec![test_d_s],
+        )?;
 
         assert!(test_1.exists());
         assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
@@ -219,7 +240,8 @@ mod tests {
 
         let local_2 = init_util(&remote, false)?;
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
         let args = sync::Args {};
         sync(top_level_args, args)?;
 
@@ -236,12 +258,21 @@ mod tests {
     fn test_empty_dir() -> Result<()> {
         let remote = TestRemote::new()?;
         let temp = TempDir::new()?;
+        let root_1 = temp.path().join("root_1");
+        fs::create_dir(&root_1)?;
+        let root_2 = temp.path().join("root_2");
+        fs::create_dir(&root_2)?;
         let test_d = temp.path().join("dir");
         create_dir(&test_d)?;
 
         let local_1 = init_util(&remote, true)?;
         let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), crate::cli::add::Piece::File, vec![test_d_s])?;
+        add_util_no_test_run(
+            local_1.path(),
+            root_1.clone(),
+            crate::cli::add::Piece::File,
+            vec![test_d_s],
+        )?;
 
         // Switching to being another machine, the dir doesn't exist yet
         remove_dir_all(&test_d)?;
@@ -249,7 +280,8 @@ mod tests {
 
         let local_2 = init_util(&remote, false)?;
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
         let args = sync::Args {};
         sync(top_level_args, args)?;
 

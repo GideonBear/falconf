@@ -171,8 +171,8 @@ impl TempDirSub {
     }
 }
 
-pub fn get_piece(falconf_dir: &Path, position: usize) -> Result<PieceRef> {
-    let top_level_args = TopLevelArgs::new_testing(falconf_dir.to_path_buf(), true);
+pub fn get_piece(falconf_dir: &Path, root: PathBuf, position: usize) -> Result<PieceRef> {
+    let top_level_args = TopLevelArgs::new_testing(falconf_dir.to_path_buf(), root, true);
     let mut installation = Installation::get(&top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data_mut();

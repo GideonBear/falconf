@@ -109,7 +109,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 //         assert!(!test1.exists());
 //
 //         let local_2 = init_util(&remote, false)?;
-//         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+//         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
 //         let args = sync::Args {};
 //         sync(top_level_args, args)?;
 //
@@ -125,7 +125,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 //         undo_util(local_1.path(), get_last_piece(local_1.path())?)?;
 //         assert!(test1.exists());
 //
-//         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+//         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
 //         let args = sync::Args {};
 //         sync(top_level_args, args)?;
 //

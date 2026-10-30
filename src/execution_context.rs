@@ -11,6 +11,7 @@ pub struct ExecutionContext {
     pub machine_data: MachineData,
     // pub dry_run: bool,
     pub test_run: bool,
+    pub root_dir: Option<PathBuf>,
 }
 
 impl ExecutionContext {
@@ -29,6 +30,7 @@ impl ExecutionContext {
                 .clone(),
             // dry_run: top_level_args.dry_run,
             test_run: top_level_args.test_run,
+            root_dir: top_level_args.root_dir.clone(),
         })
     }
 }

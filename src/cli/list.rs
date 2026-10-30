@@ -44,6 +44,7 @@ pub mod tests {
     use color_eyre::Result;
     use log::debug;
     use regex::Regex;
+    use std::fs;
     use std::fs::File;
     use tempfile::TempDir;
 
@@ -51,23 +52,33 @@ pub mod tests {
     fn test_list() -> Result<()> {
         let remote = TestRemote::new()?;
         let local = init_util_name(&remote, true, "some_machine".to_string())?;
+        let temp = TempDir::new()?;
+        let root = temp.path().join("root");
+        fs::create_dir(&root)?;
 
         // Apt
-        add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
+        add_util(
+            local.path(),
+            root.clone(),
+            add::Piece::Apt,
+            vec![String::from("cowsay")],
+        )?;
         // Command
         add_util(
             local.path(),
+            root.clone(),
             add::Piece::Command,
             vec![String::from("echo"), String::from("some text")],
         )?;
         // Command with undo
         add_util(
             local.path(),
+            root.clone(),
             add::Piece::Command,
             vec![String::from("echo"), String::from("some text")],
         )?;
         edit(
-            TopLevelArgs::new_testing(local.path().clone(), true),
+            TopLevelArgs::new_testing(local.path().clone(), root.clone(), true),
             edit::Args {
                 comment: None,
                 remove_comment: false,
@@ -86,20 +97,26 @@ pub mod tests {
         debug!("Created {test1:?}");
         add_util(
             local.path(),
+            root.clone(),
             add::Piece::File,
             vec![test1.display().to_string()],
         )?;
         // Manual
         add_util(
             local.path(),
+            root.clone(),
             add::Piece::Manual,
             vec![String::from("some"), String::from("message")],
         )?;
         // Gsettings
         // Cannot use add_util as it will attempt to fetch the original value
         add_internal(
-            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
-            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            &mut Installation::get(&TopLevelArgs::new_testing(
+                local.path().to_path_buf(),
+                root.clone(),
+                true,
+            ))?,
+            &TopLevelArgs::new_testing(local.path().to_path_buf(), root.clone(), true),
             vec![(
                 FullPiece::new(
                     PieceEnum::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::new_with_original(
@@ -117,20 +134,26 @@ pub mod tests {
         // Deb-get
         add_util(
             local.path(),
+            root.clone(),
             add::Piece::DebGet,
             vec![String::from("cowsay-2")],
         )?;
         // Cargo-install
         add_util(
             local.path(),
+            root.clone(),
             add::Piece::CargoInstall,
             vec![String::from("cowsay")],
         )?;
         // Conf
         // Cannot use add_util as it will attempt to fetch the original value
         add_internal(
-            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
-            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            &mut Installation::get(&TopLevelArgs::new_testing(
+                local.path().to_path_buf(),
+                root.clone(),
+                true,
+            ))?,
+            &TopLevelArgs::new_testing(local.path().to_path_buf(), root.clone(), true),
             vec![(
                 FullPiece::new(
                     PieceEnum::Bulk(BulkPieceEnum::Conf(Conf::new_with_original(
@@ -149,8 +172,12 @@ pub mod tests {
         // Falconf init
         // Cannot use add_util as FalconfInit is not constructible from the cli
         add_internal(
-            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
-            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            &mut Installation::get(&TopLevelArgs::new_testing(
+                local.path().to_path_buf(),
+                root.clone(),
+                true,
+            ))?,
+            &TopLevelArgs::new_testing(local.path().to_path_buf(), root.clone(), true),
             vec![(
                 FullPiece::new(
                     PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
@@ -165,33 +192,41 @@ pub mod tests {
         // With comment
         add_util_comment(
             local.path(),
+            root.clone(),
             add::Piece::Apt,
             vec![String::from("cowsay")],
             String::from("This is a comment!"),
         )?;
         // Undone & unused
-        add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
-        undo_util(local.path(), PieceRef::Last)?;
+        add_util(
+            local.path(),
+            root.clone(),
+            add::Piece::Apt,
+            vec![String::from("cowsay")],
+        )?;
+        undo_util(local.path(), root.clone(), PieceRef::Last)?;
         // Machine group
         add_util_group(
             local.path(),
+            root.clone(),
             add::Piece::Apt,
             vec![String::from("cowsay")],
             "some_machine".to_string(),
         )?;
         // Custom group
         machines::edit::edit(
-            TopLevelArgs::new_testing(local.path().to_path_buf(), true),
+            TopLevelArgs::new_testing(local.path().to_path_buf(), root.clone(), true),
             machines::edit::Args::new_testing(MachineRef::This, "some_group".to_string()),
         )?;
         add_util_group(
             local.path(),
+            root.clone(),
             add::Piece::Apt,
             vec![String::from("cowsay")],
             "some_group".to_string(),
         )?;
 
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
+        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), root.clone(), true);
         let args = Args {};
         let mut writer = vec![];
 

@@ -39,6 +39,7 @@ mod tests {
     use crate::testing::{TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
+    use std::fs;
     use std::fs::{File, remove_file};
     use std::io::Write;
     use tempfile::TempDir;
@@ -47,31 +48,40 @@ mod tests {
     fn test_sync() -> Result<()> {
         let remote = TestRemote::new()?;
         let temp = TempDir::new()?;
-        let test_1 = temp.path().join("test_1.txt");
-        File::create(&test_1)?.write_all(b"test_1_content")?;
+        let root_1 = temp.path().join("root_1");
+        fs::create_dir(&root_1)?;
+        let root_2 = temp.path().join("root_2");
+        fs::create_dir(&root_2)?;
+        let test_1 = root_1.join("test.txt");
+        let test_2 = root_2.join("test.txt");
+        File::create(&test_1)?.write_all(b"test_content")?;
 
         let local_1 = init_util(&remote, true)?;
         debug!("Created {test_1:?}");
-        let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), add::Piece::File, vec![test_1_s.clone()])?;
+        add_util_no_test_run(
+            local_1.path(),
+            root_1.clone(),
+            add::Piece::File,
+            vec!["/test.txt".to_string()],
+        )?;
         // Testing the order. This should execute after the file is added.
         add_util(
             local_1.path(),
+            root_1.clone(),
             add::Piece::Command,
-            vec![format!("test -L '{}'", test_1_s)],
+            vec![format!("test -L '{}'", test_1.to_str().unwrap())],
         )?;
 
         assert!(test_1.exists());
         assert!(test_1.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+        assert_eq!(std::fs::read_to_string(&test_1)?, "test_content");
 
-        // Switching to being another machine, the file doesn't exist yet
-        remove_file(&test_1)?;
-        assert!(!test_1.exists());
+        assert!(!test_2.exists());
 
         let local_2 = init_util(&remote, false)?;
         // Remove with no args; this is for manual testing of check_synced
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
         remove(
             top_level_args,
             remove::Args {
@@ -79,27 +89,33 @@ mod tests {
                 force: false,
             },
         )?;
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
         let args = Args {};
         sync(top_level_args, args)?;
 
         // After syncing, the file is created
-        assert!(test_1.exists());
-        assert!(test_1.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+        assert!(test_2.exists());
+        assert!(test_2.is_symlink());
+        assert_eq!(std::fs::read_to_string(&test_2)?, "test_content");
 
         // Explicitly do not pull local 1 here to test auto-pulling
 
-        undo_util(local_1.path(), get_piece(local_1.path(), 1)?)?;
+        undo_util(
+            local_1.path(),
+            root_1.clone(),
+            get_piece(local_1.path(), root_1, 1)?,
+        )?;
         // Is a test run
         assert!(test_1.exists());
         assert!(test_1.is_symlink());
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
         let args = Args {};
         sync(top_level_args, args)?;
 
-        assert!(!test_1.exists());
+        assert!(!test_2.exists());
 
         Ok(())
     }
@@ -109,25 +125,34 @@ mod tests {
         let remote = TestRemote::new()?;
 
         let local_1 = init_util(&remote, true)?;
+        let temp = TempDir::new()?;
+        let root_1 = temp.path().join("root_1");
+        fs::create_dir(&root_1)?;
+        let root_2 = temp.path().join("root_2");
+        fs::create_dir(&root_2)?;
 
         // Always succeeds
         add_util(
             local_1.path(),
+            root_1.clone(),
             add::Piece::Command,
             vec![String::from("true")],
         )?;
         // Always fails
         add_util(
             local_1.path(),
+            root_1.clone(),
             add::Piece::Command,
             vec![String::from("false")],
         )?;
 
         let local_2 = init_util(&remote, false)?;
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), false);
         assert!(sync(top_level_args, Args {}).is_err());
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), true);
+        let top_level_args =
+            TopLevelArgs::new_testing(local_2.path().clone(), root_2.clone(), true);
         let installation = Installation::get(&top_level_args)?;
         // The first one (true) was successfully marked as done
         assert!(
