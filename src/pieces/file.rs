@@ -211,7 +211,7 @@ mod tests {
         fs::create_dir(&root_1)?;
         let root_2 = temp.path().join("root_2");
         fs::create_dir(&root_2)?;
-        let test_d = temp.path().join("dir");
+        let test_d = root_1.join("dir");
         create_dir(&test_d)?;
         let test_1 = test_d.join("test_1");
         fs::File::create(&test_1)?.write_all(b"test_1_content")?;
@@ -219,12 +219,11 @@ mod tests {
         fs::File::create(&test_2)?.write_all(b"test_2_content")?;
 
         let local_1 = init_util(&remote, true)?;
-        let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
         add_util_no_test_run(
             local_1.path(),
             root_1.clone(),
             crate::cli::add::Piece::File,
-            vec![test_d_s],
+            vec!["/dir".to_string()],
         )?;
 
         assert!(test_1.exists());
