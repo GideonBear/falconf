@@ -33,9 +33,10 @@ mod tests {
     use super::*;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
     use crate::cli::init::tests::init_util;
+    use crate::cli::push::push;
     use crate::cli::remove::remove;
     use crate::cli::undo::tests::undo_util;
-    use crate::cli::{add, remove};
+    use crate::cli::{add, push, remove};
     use crate::testing::{TestRemote, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
@@ -153,6 +154,34 @@ mod tests {
                 .done_on()
                 .contains(&installation.machine())
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_changes_to_files_not_overridden() -> Result<()> {
+        let remote = TestRemote::new()?;
+        let temp = TempDir::new()?;
+        let test_1 = temp.path().join("test_1.txt");
+        File::create(&test_1)?.write_all(b"test_1_content")?;
+
+        let local_1 = init_util(&remote, true)?;
+        debug!("Created {test_1:?}");
+        let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
+        add_util_no_test_run(local_1.path(), add::Piece::File, vec![test_1_s.clone()])?;
+
+        // Switching to being another machine, the file doesn't exist yet
+        remove_file(&test_1)?;
+
+        let local_2 = init_util(&remote, false)?;
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        let args = Args {};
+        sync(top_level_args, args)?;
+        File::open(&test_1)?.write_all(b"test_1_content_edit_local_2")?;
+        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+        push(top_level_args, push::Args { yes: true })?;
+
+        File::open(&test_1)?.write_all(b"test_1_content_edit_local_1")?;
 
         Ok(())
     }
