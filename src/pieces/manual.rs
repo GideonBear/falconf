@@ -1,7 +1,7 @@
 use crate::cli::add;
 use crate::execution_context::ExecutionContext;
 use crate::piece::{NonBulkPiece, Piece};
-use crate::utils::press_enter;
+use crate::utils::{join_value, press_enter};
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use shell_words::quote;
@@ -52,7 +52,7 @@ impl Manual {
 
     pub fn from_cli(args: &add::Args) -> Self {
         Self {
-            message: shell_words::join(&args.value),
+            message: join_value(&args.value),
         }
     }
 }

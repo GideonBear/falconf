@@ -2,7 +2,7 @@ use crate::cli::add;
 use crate::execution_context::ExecutionContext;
 use crate::logging::CommandExt as _;
 use crate::piece::{NonBulkPiece, Piece};
-use crate::utils::prompt;
+use crate::utils::{join_value, prompt};
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -51,19 +51,8 @@ impl Command {
 
     pub fn from_cli(args: &add::Args) -> Self {
         Self {
-            command: Self::parse_value(&args.value),
+            command: join_value(&args.value),
             undo_command: args.undo.clone(),
-        }
-    }
-
-    fn parse_value(value: &Vec<String>) -> String {
-        if value.len() == 1 {
-            // TODO(low): This branch should not be hit outside of testing,
-            //  since if value.len() == 1 { command = shell_words::split(&command[0]); }.
-            //  But it doesn't matter that much, it's too much effort to change all the tests.
-            value[0].clone()
-        } else {
-            shell_words::join(value)
         }
     }
 }
@@ -71,35 +60,5 @@ impl Command {
 impl Display for Command {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.command)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn testcase(input: Vec<&str>, output: &str) {
-        assert_eq!(
-            Command::parse_value(&input.into_iter().map(ToString::to_string).collect()),
-            output,
-        );
-    }
-
-    #[expect(clippy::needless_raw_string_hashes)]
-    #[test]
-    fn test_parse_value() {
-        testcase(vec!["echo", "one two"], r#"echo 'one two'"#);
-        testcase(vec!["echo", "'one two'"], r#"echo ''\''one two'\'''"#);
-        testcase(vec!["echo", r#""one two""#], r#"echo '"one two"'"#);
-        testcase(vec!["echo 'one two'"], r#"echo 'one two'"#);
-        testcase(vec!["echo"], r#"echo"#);
-        testcase(vec!["echo one"], r#"echo one"#);
-        testcase(vec!["'echo one'"], r#"'echo one'"#);
-    }
-
-    #[test]
-    fn test_parse_value_pipe_not_escaped() {
-        let command = "curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get";
-        assert_eq!(Command::parse_value(&vec![command.to_string()]), command);
     }
 }

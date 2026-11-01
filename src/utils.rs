@@ -173,6 +173,15 @@ fn sudo_write_file(path: &Path, contents: &str) -> Result<()> {
     Ok(())
 }
 
+/// Joins a value using shell_words::join when necessary
+pub fn join_value(value: &Vec<String>) -> String {
+    if value.len() == 1 {
+        value[0].clone()
+    } else {
+        shell_words::join(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -184,5 +193,30 @@ mod tests {
         assert!(match_prefix(opts.iter().copied(), "a").is_err());
         assert_eq!(match_prefix(opts.iter().copied(), "abc").unwrap(), "abc");
         assert!(match_prefix(opts.iter().copied(), "e").is_err());
+    }
+
+    fn testcase_join_value(input: Vec<&str>, output: &str) {
+        assert_eq!(
+            join_value(&input.into_iter().map(ToString::to_string).collect()),
+            output,
+        );
+    }
+
+    #[expect(clippy::needless_raw_string_hashes)]
+    #[test]
+    fn test_join_value() {
+        testcase_join_value(vec!["echo", "one two"], r#"echo 'one two'"#);
+        testcase_join_value(vec!["echo", "'one two'"], r#"echo ''\''one two'\'''"#);
+        testcase_join_value(vec!["echo", r#""one two""#], r#"echo '"one two"'"#);
+        testcase_join_value(vec!["echo 'one two'"], r#"echo 'one two'"#);
+        testcase_join_value(vec!["echo"], r#"echo"#);
+        testcase_join_value(vec!["echo one"], r#"echo one"#);
+        testcase_join_value(vec!["'echo one'"], r#"'echo one'"#);
+    }
+
+    #[test]
+    fn test_join_value_pipe_not_escaped() {
+        let command = "curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get";
+        assert_eq!(join_value(&vec![command.to_string()]), command);
     }
 }
