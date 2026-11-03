@@ -42,7 +42,7 @@ pub mod tests {
 
         let args = Args {
             new,
-            remote: remote.address().to_string(),
+            remote: remote.address.to_string(),
             name: Some(name),
         };
 
@@ -69,7 +69,7 @@ pub mod tests {
     #[test]
     fn test_init_adds_falconf_init() -> Result<()> {
         let mut env = TestEnv::new(1)?;
-        let address = env.remote.address().to_string();
+        let address = env.remote.address.to_string();
 
         env.with(0, |f| {
             let top_level_args = TopLevelArgs::new_testing(f.clone(), true);

@@ -49,7 +49,7 @@ pub mod tests {
     #[test]
     fn test_list() -> Result<()> {
         let mut env = TestEnv::new(1)?;
-        let address = env.remote.address();
+        let address = env.remote.address.to_string();
 
         env.with(0, |f| {
             // Apt
