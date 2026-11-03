@@ -32,127 +32,125 @@ pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
 mod tests {
     use super::*;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
-    use crate::cli::init::tests::init_util;
     use crate::cli::remove::remove;
     use crate::cli::undo::tests::undo_util;
     use crate::cli::{add, remove};
-    use crate::testing::{TestRemote, get_piece};
+    use crate::testing::{TestEnv, get_piece};
     use color_eyre::eyre::OptionExt;
     use log::debug;
-    use std::fs::{File, remove_file};
+    use std::fs::File;
     use std::io::Write;
-    use tempfile::TempDir;
 
     #[test]
     fn test_sync() -> Result<()> {
-        let remote = TestRemote::new()?;
-        let temp = TempDir::new()?;
-        let test_1 = temp.path().join("test_1.txt");
-        File::create(&test_1)?.write_all(b"test_1_content")?;
+        let mut env = TestEnv::new(2)?;
+        let test_1 = env.fs.join("test_1.txt");
 
-        let local_1 = init_util(&remote, true)?;
-        debug!("Created {test_1:?}");
-        let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), add::Piece::File, vec![test_1_s.clone()])?;
-        // Testing the order. This should execute after the file is added.
-        add_util(
-            local_1.path(),
-            add::Piece::Command,
-            vec![format!("test -L '{}'", test_1_s)],
-        )?;
+        env.with(0, |f| {
+            File::create(&test_1)?.write_all(b"test_1_content")?;
+            debug!("Created {test_1:?}");
+            let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
+            add_util_no_test_run(f, add::Piece::File, vec![test_1_s.clone()])?;
+            // Testing the order. This should execute after the file is added.
+            add_util(
+                f,
+                add::Piece::Command,
+                vec![format!("test -L '{}'", test_1_s)],
+            )?;
 
-        assert!(test_1.exists());
-        assert!(test_1.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+            assert!(test_1.exists());
+            assert!(test_1.is_symlink());
+            assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+            Ok(())
+        })?;
 
-        // Switching to being another machine, the file doesn't exist yet
-        remove_file(&test_1)?;
-        assert!(!test_1.exists());
+        env.with(1, |f| {
+            // Remove with no args; this is for manual testing of check_synced
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
+            remove(
+                top_level_args,
+                remove::Args {
+                    pieces: vec![],
+                    force: false,
+                },
+            )?;
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
+            let args = Args {};
+            sync(top_level_args, args)?;
 
-        let local_2 = init_util(&remote, false)?;
-        // Remove with no args; this is for manual testing of check_synced
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        remove(
-            top_level_args,
-            remove::Args {
-                pieces: vec![],
-                force: false,
-            },
-        )?;
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = Args {};
-        sync(top_level_args, args)?;
+            // After syncing, the file is created
+            assert!(test_1.exists());
+            assert!(test_1.is_symlink());
+            assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+            Ok(())
+        })?;
 
-        // After syncing, the file is created
-        assert!(test_1.exists());
-        assert!(test_1.is_symlink());
-        assert_eq!(std::fs::read_to_string(&test_1)?, "test_1_content");
+        env.with(0, |f| {
+            // Explicitly do not pull machine 0 here to test auto-pulling
 
-        // Explicitly do not pull local 1 here to test auto-pulling
+            undo_util(f, get_piece(f, 1)?)?;
+            // Is a test run
+            assert!(test_1.exists());
+            assert!(test_1.is_symlink());
+            Ok(())
+        })?;
 
-        undo_util(local_1.path(), get_piece(local_1.path(), 1)?)?;
-        // Is a test run
-        assert!(test_1.exists());
-        assert!(test_1.is_symlink());
+        env.with(1, |f| {
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
+            let args = Args {};
+            sync(top_level_args, args)?;
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = Args {};
-        sync(top_level_args, args)?;
-
-        assert!(!test_1.exists());
+            assert!(!test_1.exists());
+            Ok(())
+        })?;
 
         Ok(())
     }
 
     #[test]
     fn test_atomic() -> Result<()> {
-        let remote = TestRemote::new()?;
+        let mut env = TestEnv::new(2)?;
 
-        let local_1 = init_util(&remote, true)?;
+        env.with(0, |f| {
+            // Always succeeds
+            add_util(f, add::Piece::Command, vec![String::from("true")])?;
+            // Always fails
+            add_util(f, add::Piece::Command, vec![String::from("false")])?;
+            Ok(())
+        })?;
 
-        // Always succeeds
-        add_util(
-            local_1.path(),
-            add::Piece::Command,
-            vec![String::from("true")],
-        )?;
-        // Always fails
-        add_util(
-            local_1.path(),
-            add::Piece::Command,
-            vec![String::from("false")],
-        )?;
+        env.with(1, |f| {
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
+            assert!(sync(top_level_args, Args {}).is_err());
 
-        let local_2 = init_util(&remote, false)?;
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        assert!(sync(top_level_args, Args {}).is_err());
-
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), true);
-        let installation = Installation::get(&top_level_args)?;
-        // The first one (true) was successfully marked as done
-        assert!(
-            installation
-                .repo()
-                .data()
-                .pieces()
-                .get_index(1)
-                .ok_or_eyre("Cannot find added piece")?
-                .1
-                .done_on()
-                .contains(&installation.machine())
-        );
-        // The second one (false) wasn't marked as done
-        assert!(
-            !installation
-                .repo()
-                .data()
-                .pieces()
-                .get_index(2)
-                .ok_or_eyre("Cannot find added piece")?
-                .1
-                .done_on()
-                .contains(&installation.machine())
-        );
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
+            let installation = Installation::get(&top_level_args)?;
+            // The first one (true) was successfully marked as done
+            assert!(
+                installation
+                    .repo()
+                    .data()
+                    .pieces()
+                    .get_index(1)
+                    .ok_or_eyre("Cannot find added piece")?
+                    .1
+                    .done_on()
+                    .contains(&installation.machine())
+            );
+            // The second one (false) wasn't marked as done
+            assert!(
+                !installation
+                    .repo()
+                    .data()
+                    .pieces()
+                    .get_index(2)
+                    .ok_or_eyre("Cannot find added piece")?
+                    .1
+                    .done_on()
+                    .contains(&installation.machine())
+            );
+            Ok(())
+        })?;
 
         Ok(())
     }

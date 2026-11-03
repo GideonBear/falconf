@@ -30,7 +30,6 @@ pub mod tests {
     use crate::cli::add::add_internal;
     use crate::cli::add::tests::{add_util, add_util_comment, add_util_group};
     use crate::cli::edit::edit;
-    use crate::cli::init::tests::init_util_name;
     use crate::cli::machines::MachineRef;
     use crate::cli::undo::tests::undo_util;
     use crate::cli::{PieceRef, add, edit, machines};
@@ -40,7 +39,7 @@ pub mod tests {
     use crate::pieces::falconf_init::FalconfInit;
     use crate::pieces::gsettings::Gsettings;
     use crate::pieces::{BulkPieceEnum, NonBulkPieceEnum, PieceEnum};
-    use crate::testing::TestRemote;
+    use crate::testing::TestEnv;
     use color_eyre::Result;
     use log::debug;
     use regex::Regex;
@@ -49,165 +48,154 @@ pub mod tests {
 
     #[test]
     fn test_list() -> Result<()> {
-        let remote = TestRemote::new()?;
-        let local = init_util_name(&remote, true, "some_machine".to_string())?;
+        let mut env = TestEnv::new(1)?;
+        let address = env.remote.address();
 
-        // Apt
-        add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
-        // Command
-        add_util(
-            local.path(),
-            add::Piece::Command,
-            vec![String::from("echo"), String::from("some text")],
-        )?;
-        // Command with undo
-        add_util(
-            local.path(),
-            add::Piece::Command,
-            vec![String::from("echo"), String::from("some text")],
-        )?;
-        edit(
-            TopLevelArgs::new_testing(local.path().clone(), true),
-            edit::Args {
-                comment: None,
-                remove_comment: false,
-                piece: PieceRef::Last,
-                group: None,
-                undo: Some("echo I am undoing this piece".to_string()),
-                remove_undo: false,
-                move_after: None,
-                move_before: None,
-            },
-        )?;
-        // File
-        let temp = TempDir::new()?;
-        let test1 = temp.path().join("test1.txt");
-        File::create(&test1)?.write_all(b"test1")?;
-        debug!("Created {test1:?}");
-        add_util(
-            local.path(),
-            add::Piece::File,
-            vec![test1.display().to_string()],
-        )?;
-        // Manual
-        add_util(
-            local.path(),
-            add::Piece::Manual,
-            vec![String::from("some"), String::from("message")],
-        )?;
-        // Gsettings
-        // Cannot use add_util as it will attempt to fetch the original value
-        add_internal(
-            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
-            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
-            vec![(
-                FullPiece::new(
-                    PieceEnum::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::new_with_original(
-                        "org.gnome.desktop.interface".to_string(),
-                        "cursor-theme".to_string(),
-                        "blah".to_string(),
-                        "old".to_string(),
-                    ))),
-                    None,
-                    Group::All,
-                ),
-                false,
-            )],
-        )?;
-        // Deb-get
-        add_util(
-            local.path(),
-            add::Piece::DebGet,
-            vec![String::from("cowsay-2")],
-        )?;
-        // Cargo-install
-        add_util(
-            local.path(),
-            add::Piece::CargoInstall,
-            vec![String::from("cowsay")],
-        )?;
-        // Conf
-        // Cannot use add_util as it will attempt to fetch the original value
-        add_internal(
-            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
-            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
-            vec![(
-                FullPiece::new(
-                    PieceEnum::Bulk(BulkPieceEnum::Conf(Conf::new_with_original(
-                        "/etc/something.conf".parse()?,
-                        "Section".to_string(),
-                        "cursor-theme".to_string(),
-                        "blah".to_string(),
+        env.with(0, |f| {
+            // Apt
+            add_util(f, add::Piece::Apt, vec![String::from("cowsay")])?;
+            // Command
+            add_util(
+                f,
+                add::Piece::Command,
+                vec![String::from("echo"), String::from("some text")],
+            )?;
+            // Command with undo
+            add_util(
+                f,
+                add::Piece::Command,
+                vec![String::from("echo"), String::from("some text")],
+            )?;
+            edit(
+                TopLevelArgs::new_testing(f.clone(), true),
+                edit::Args {
+                    comment: None,
+                    remove_comment: false,
+                    piece: PieceRef::Last,
+                    group: None,
+                    undo: Some("echo I am undoing this piece".to_string()),
+                    remove_undo: false,
+                    move_after: None,
+                    move_before: None,
+                },
+            )?;
+            // File
+            let temp = TempDir::new()?;
+            let test1 = temp.path().join("test1.txt");
+            File::create(&test1)?.write_all(b"test1")?;
+            debug!("Created {test1:?}");
+            add_util(f, add::Piece::File, vec![test1.display().to_string()])?;
+            // Manual
+            add_util(
+                f,
+                add::Piece::Manual,
+                vec![String::from("some"), String::from("message")],
+            )?;
+            // Gsettings
+            // Cannot use add_util as it will attempt to fetch the original value
+            add_internal(
+                &mut Installation::get(&TopLevelArgs::new_testing(f.to_path_buf(), true))?,
+                &TopLevelArgs::new_testing(f.to_path_buf(), true),
+                vec![(
+                    FullPiece::new(
+                        PieceEnum::NonBulk(NonBulkPieceEnum::Gsettings(Gsettings::new_with_original(
+                            "org.gnome.desktop.interface".to_string(),
+                            "cursor-theme".to_string(),
+                            "blah".to_string(),
+                            "old".to_string(),
+                        ))),
                         None,
-                    ))),
-                    None,
-                    Group::All,
-                ),
-                false,
-            )],
-        )?;
-        // Falconf init
-        // Cannot use add_util as FalconfInit is not constructible from the cli
-        add_internal(
-            &mut Installation::get(&TopLevelArgs::new_testing(local.path().to_path_buf(), true))?,
-            &TopLevelArgs::new_testing(local.path().to_path_buf(), true),
-            vec![(
-                FullPiece::new(
-                    PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
-                        String::from("https://github.com/user/repo"),
-                    ))),
-                    None,
-                    Group::All,
-                ),
-                false,
-            )],
-        )?;
-        // With comment
-        add_util_comment(
-            local.path(),
-            add::Piece::Apt,
-            vec![String::from("cowsay")],
-            String::from("This is a comment!"),
-        )?;
-        // Undone & unused
-        add_util(local.path(), add::Piece::Apt, vec![String::from("cowsay")])?;
-        undo_util(local.path(), PieceRef::Last)?;
-        // Machine group
-        add_util_group(
-            local.path(),
-            add::Piece::Apt,
-            vec![String::from("cowsay")],
-            "some_machine".to_string(),
-        )?;
-        // Custom group
-        machines::edit::edit(
-            TopLevelArgs::new_testing(local.path().to_path_buf(), true),
-            machines::edit::Args::new_testing(MachineRef::This, "some_group".to_string()),
-        )?;
-        add_util_group(
-            local.path(),
-            add::Piece::Apt,
-            vec![String::from("cowsay")],
-            "some_group".to_string(),
-        )?;
+                        Group::All,
+                    ),
+                    false,
+                )],
+            )?;
+            // Deb-get
+            add_util(f, add::Piece::DebGet, vec![String::from("cowsay-2")])?;
+            // Cargo-install
+            add_util(f, add::Piece::CargoInstall, vec![String::from("cowsay")])?;
+            // Conf
+            // Cannot use add_util as it will attempt to fetch the original value
+            add_internal(
+                &mut Installation::get(&TopLevelArgs::new_testing(f.to_path_buf(), true))?,
+                &TopLevelArgs::new_testing(f.to_path_buf(), true),
+                vec![(
+                    FullPiece::new(
+                        PieceEnum::Bulk(BulkPieceEnum::Conf(Conf::new_with_original(
+                            "/etc/something.conf".parse()?,
+                            "Section".to_string(),
+                            "cursor-theme".to_string(),
+                            "blah".to_string(),
+                            None,
+                        ))),
+                        None,
+                        Group::All,
+                    ),
+                    false,
+                )],
+            )?;
+            // Falconf init
+            // Cannot use add_util as FalconfInit is not constructible from the cli
+            add_internal(
+                &mut Installation::get(&TopLevelArgs::new_testing(f.to_path_buf(), true))?,
+                &TopLevelArgs::new_testing(f.to_path_buf(), true),
+                vec![(
+                    FullPiece::new(
+                        PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
+                            String::from("https://github.com/user/repo"),
+                        ))),
+                        None,
+                        Group::All,
+                    ),
+                    false,
+                )],
+            )?;
+            // With comment
+            add_util_comment(
+                f,
+                add::Piece::Apt,
+                vec![String::from("cowsay")],
+                String::from("This is a comment!"),
+            )?;
+            // Undone & unused
+            add_util(f, add::Piece::Apt, vec![String::from("cowsay")])?;
+            undo_util(f, PieceRef::Last)?;
+            // Machine group
+            add_util_group(
+                f,
+                add::Piece::Apt,
+                vec![String::from("cowsay")],
+                "machine_0".to_string(),
+            )?;
+            // Custom group
+            machines::edit::edit(
+                TopLevelArgs::new_testing(f.to_path_buf(), true),
+                machines::edit::Args::new_testing(MachineRef::This, "some_group".to_string()),
+            )?;
+            add_util_group(
+                f,
+                add::Piece::Apt,
+                vec![String::from("cowsay")],
+                "some_group".to_string(),
+            )?;
 
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
-        let args = Args {};
-        let mut writer = vec![];
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
+            let args = Args {};
+            let mut writer = vec![];
 
-        list(top_level_args, args, &mut writer)?;
+            list(top_level_args, args, &mut writer)?;
 
-        let id_re = Regex::new(r"[0-9a-fA-F]{8}").unwrap();
-        let output = String::from_utf8(writer)?;
-        debug!("Got:\n{output}");
-        let output = output
-            .lines()
-            .map(|line| id_re.replace(line, "ID_WAS_HERE").to_string())
-            .collect::<Vec<_>>()
-            .join("\n");
+            let id_re = Regex::new(r"[0-9a-fA-F]{8}").unwrap();
+            let output = String::from_utf8(writer)?;
+            debug!("Got:\n{output}");
+            let output = output
+                .lines()
+                .map(|line| id_re.replace(line, "ID_WAS_HERE").to_string())
+                .collect::<Vec<_>>()
+                .join("\n");
 
-        let expected = format!(
-            "
+            let expected = format!(
+                "
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
@@ -221,26 +209,27 @@ pub mod tests {
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on: some_machine)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on: machine_0)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 \u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on group: some_group)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 ",
-            remote.address(),
-            test1.display()
-        );
-        debug!("Expect:{expected}");
-        debug!(
-            "Got (raw):\n{}",
-            format!("{output:?}").trim_matches('"').replace("\\n", "\n")
-        );
-        debug!(
-            "Expect (raw):{}",
-            format!("{expected:?}")
-                .trim_matches('"')
-                .replace("\\n", "\n")
-        );
+                address,
+                test1.display()
+            );
+            debug!("Expect:{expected}");
+            debug!(
+                "Got (raw):\n{}",
+                format!("{output:?}").trim_matches('"').replace("\\n", "\n")
+            );
+            debug!(
+                "Expect (raw):{}",
+                format!("{expected:?}")
+                    .trim_matches('"')
+                    .replace("\\n", "\n")
+            );
 
-        assert_eq!(format!("\n{output}\n"), expected,);
+            assert_eq!(format!("\n{output}\n"), expected,);
 
-        Ok(())
+            Ok(())
+        })
     }
 }

@@ -1,3 +1,4 @@
+use crate::cli::init::tests::init_util;
 use crate::cli::{PieceRef, TopLevelArgs};
 use crate::installation::Installation;
 use color_eyre::Result;
@@ -7,6 +8,7 @@ use ctor::ctor;
 use libc::{SIGTERM, kill};
 use log::LevelFilter;
 use std::env::set_current_dir;
+use std::fs::{create_dir, rename};
 use std::io::{BufRead, BufReader, Read};
 use std::os::unix::prelude::CommandExt as UnixCommandExt;
 use std::path::{Path, PathBuf};
@@ -185,6 +187,49 @@ pub fn get_piece(falconf_dir: &Path, position: usize) -> Result<PieceRef> {
     Ok(PieceRef::Id(id))
 }
 
+/// Simulates one remote and several machines, sharing one filesystem location.
+/// Only the entered machine's files are at `fs`, the others are stashed away.
+/// All machines are initialized, machine 0 is newly initialized.
+pub struct TestEnv {
+    pub remote: TestRemote,
+    pub fs: PathBuf,
+    stashes: Vec<PathBuf>,
+    falconf_dirs: Vec<TempDirSub>,
+    _tempdir: TempDir,
+}
+
+impl TestEnv {
+    pub fn new(count: usize) -> Result<Self> {
+        let remote = TestRemote::new()?;
+        let tempdir = TempDir::new()?;
+        let (stashes, falconf_dirs) = (0..count)
+            .map(|i| {
+                let name = format!("machine_{i}");
+                let stash = tempdir.path().join(&name);
+                create_dir(&stash)?;
+                let falconf_dir = init_util(&remote, i == 0, name)?;
+                Ok((stash, falconf_dir))
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .unzip();
+        Ok(Self {
+            remote,
+            fs: tempdir.path().join("fs"),
+            stashes,
+            falconf_dirs,
+            _tempdir: tempdir,
+        })
+    }
+
+    pub fn with(&mut self, machine: usize, f: impl FnOnce(&PathBuf) -> Result<()>) -> Result<()> {
+        rename(&self.stashes[machine], &self.fs)?;
+        let result = f(self.falconf_dirs[machine].path());
+        rename(&self.fs, &self.stashes[machine])?;
+        result
+    }
+}
+
 #[ctor(unsafe)]
 fn setup_test() {
     color_eyre::install().unwrap();
@@ -202,6 +247,7 @@ mod tests {
 
     #[test]
     fn test_test_remote() -> Result<()> {
+        // Doesn't use TestEnv on purpose
         let remote = TestRemote::new()?;
 
         // 1

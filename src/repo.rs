@@ -334,28 +334,28 @@ fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
 mod tests {
     use super::*;
     use crate::cli::TopLevelArgs;
-    use crate::cli::init::tests::init_util;
     use crate::installation::Installation;
-    use crate::testing::TestRemote;
+    use crate::testing::TestEnv;
     use std::fs::OpenOptions;
     use std::io::Write;
 
     #[test]
     fn test_error_on_changed_data_file() -> Result<()> {
-        let remote = TestRemote::new()?;
-        let local = init_util(&remote, true)?;
-        // Write a single newline to the end
-        let mut file = OpenOptions::new()
-            .append(true)
-            .open(local.path().join("repository").join(DATA_PATH))?;
-        writeln!(file)?;
-        // It should now crash
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
-        assert_eq!(
-            Installation::get(&top_level_args).unwrap_err().to_string(),
-            "The data file has uncommitted changes"
-        );
+        let mut env = TestEnv::new(1)?;
 
-        Ok(())
+        env.with(0, |f| {
+            // Write a single newline to the end
+            let mut file = OpenOptions::new()
+                .append(true)
+                .open(f.join("repository").join(DATA_PATH))?;
+            writeln!(file)?;
+            // It should now crash
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
+            assert_eq!(
+                Installation::get(&top_level_args).unwrap_err().to_string(),
+                "The data file has uncommitted changes"
+            );
+            Ok(())
+        })
     }
 }

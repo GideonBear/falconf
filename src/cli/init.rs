@@ -30,16 +30,11 @@ pub mod tests {
     use crate::group::Group;
     use crate::pieces::falconf_init::FalconfInit;
     use crate::pieces::{NonBulkPieceEnum, PieceEnum};
-    use crate::testing::{TempDirSub, TestRemote};
+    use crate::testing::{TempDirSub, TestEnv, TestRemote};
     use log::debug;
     use tempfile::TempDir;
-    use uuid::Uuid;
 
-    pub fn init_util(remote: &TestRemote, new: bool) -> Result<TempDirSub> {
-        init_util_name(remote, new, Uuid::new_v4().to_string())
-    }
-
-    pub fn init_util_name(remote: &TestRemote, new: bool, name: String) -> Result<TempDirSub> {
+    pub fn init_util(remote: &TestRemote, new: bool, name: String) -> Result<TempDirSub> {
         let temp = TempDir::new()?;
         let falconf_path = temp.path().join("test_.falconf_dir");
 
@@ -65,33 +60,32 @@ pub mod tests {
     fn test_init() -> Result<()> {
         let remote = TestRemote::new()?;
 
-        init_util(&remote, true)?;
-        init_util(&remote, false)?;
+        init_util(&remote, true, "machine_0".to_string())?;
+        init_util(&remote, false, "machine_1".to_string())?;
 
         Ok(())
     }
 
     #[test]
     fn test_init_adds_falconf_init() -> Result<()> {
-        let remote = TestRemote::new()?;
+        let mut env = TestEnv::new(1)?;
+        let address = env.remote.address().to_string();
 
-        let local = init_util(&remote, true)?;
+        env.with(0, |f| {
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
+            let installation = Installation::get(&top_level_args)?;
+            let pieces = installation.repo().data().pieces();
+            assert_eq!(pieces.len(), 1);
+            let mut expected = FullPiece::new(
+                PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(address))),
+                None,
+                Group::All,
+            );
+            expected.done(installation.machine());
+            assert_eq!(pieces[0], expected);
 
-        let top_level_args = TopLevelArgs::new_testing(local.path().clone(), true);
-        let installation = Installation::get(&top_level_args)?;
-        let pieces = installation.repo().data().pieces();
-        assert_eq!(pieces.len(), 1);
-        let mut expected = FullPiece::new(
-            PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
-                remote.address().to_string(),
-            ))),
-            None,
-            Group::All,
-        );
-        expected.done(installation.machine());
-        assert_eq!(pieces[0], expected);
-
-        Ok(())
+            Ok(())
+        })
     }
 
     // Init is tested more extensively in sync

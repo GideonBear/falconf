@@ -101,7 +101,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 //
 //         let local = init_util(&remote, true)?;
 //         add_util(
-//             local_1.path(),
+//             f,
 //             cli::Piece::Command,
 //             vec!["echo hello".to_string()],
 //         )?;
@@ -109,7 +109,7 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 //         assert!(!test1.exists());
 //
 //         let local_2 = init_util(&remote, false)?;
-//         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+//         let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
 //         let args = sync::Args {};
 //         sync(top_level_args, args)?;
 //
@@ -122,10 +122,10 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
 //
 //         // Explicitly do not pull local 1 here to test auto-syncing
 //
-//         undo_util(local_1.path(), get_last_piece(local_1.path())?)?;
+//         undo_util(f, get_last_piece(f)?)?;
 //         assert!(test1.exists());
 //
-//         let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
+//         let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
 //         let args = sync::Args {};
 //         sync(top_level_args, args)?;
 //

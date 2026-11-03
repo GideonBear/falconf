@@ -181,87 +181,76 @@ impl Display for File {
 mod tests {
     use super::*;
     use crate::cli::add::tests::add_util_no_test_run;
-    use crate::cli::init::tests::init_util;
     use crate::cli::sync::sync;
     use crate::cli::{TopLevelArgs, sync};
-    use crate::testing::TestRemote;
+    use crate::testing::TestEnv;
     use color_eyre::eyre::OptionExt;
-    use std::fs::{create_dir, remove_dir_all};
+    use std::fs::create_dir;
     use std::io::Write;
     use std::{fs, io};
-    use tempfile::TempDir;
 
     #[test]
     fn test_file_dir() -> Result<()> {
-        let remote = TestRemote::new()?;
-        let temp = TempDir::new()?;
-        let test_d = temp.path().join("dir");
-        create_dir(&test_d)?;
-        let test_1 = test_d.join("test_1");
-        fs::File::create(&test_1)?.write_all(b"test_1_content")?;
-        let test_2 = test_d.join("test_2");
-        fs::File::create(&test_2)?.write_all(b"test_2_content")?;
+        let mut env = TestEnv::new(2)?;
+        let test_d = env.fs.join("dir");
 
-        let local_1 = init_util(&remote, true)?;
-        let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), crate::cli::add::Piece::File, vec![test_d_s])?;
+        env.with(0, |f| {
+            create_dir(&test_d)?;
+            fs::File::create(test_d.join("test_1"))?.write_all(b"test_1_content")?;
+            fs::File::create(test_d.join("test_2"))?.write_all(b"test_2_content")?;
 
-        assert!(test_1.exists());
-        assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
-        assert!(test_2.exists());
-        assert_eq!(fs::read_to_string(&test_2)?, "test_2_content");
+            let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
+            add_util_no_test_run(f, crate::cli::add::Piece::File, vec![test_d_s])?;
 
-        // Switching to being another machine, the dir doesn't exist yet
-        remove_dir_all(&test_d)?;
-        assert!(!test_d.exists());
-        assert!(!test_1.exists());
-        assert!(!test_2.exists());
+            assert!(test_d.join("test_1").is_file());
+            Ok(())
+        })?;
 
-        let local_2 = init_util(&remote, false)?;
+        env.with(1, |f| {
+            // Another machine, the dir doesn't exist yet
+            assert!(!test_d.exists());
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = sync::Args {};
-        sync(top_level_args, args)?;
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
+            sync(top_level_args, sync::Args {})?;
 
-        // After syncing, the dir is created
-        assert!(test_1.exists());
-        assert_eq!(fs::read_to_string(&test_1)?, "test_1_content");
-        assert!(test_2.exists());
-        assert_eq!(fs::read_to_string(&test_2)?, "test_2_content");
+            // After syncing, the dir is created
+            assert_eq!(fs::read_to_string(test_d.join("test_1"))?, "test_1_content");
+            assert_eq!(fs::read_to_string(test_d.join("test_2"))?, "test_2_content");
+            Ok(())
+        })?;
 
         Ok(())
     }
 
     #[test]
     fn test_empty_dir() -> Result<()> {
-        let remote = TestRemote::new()?;
-        let temp = TempDir::new()?;
-        let test_d = temp.path().join("dir");
-        create_dir(&test_d)?;
+        let mut env = TestEnv::new(2)?;
+        let test_d = env.fs.join("dir");
 
-        let local_1 = init_util(&remote, true)?;
-        let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
-        add_util_no_test_run(local_1.path(), crate::cli::add::Piece::File, vec![test_d_s])?;
+        env.with(0, |f| {
+            create_dir(&test_d)?;
 
-        // Switching to being another machine, the dir doesn't exist yet
-        remove_dir_all(&test_d)?;
-        assert!(!test_d.exists());
+            let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
+            add_util_no_test_run(f, crate::cli::add::Piece::File, vec![test_d_s])?;
+            Ok(())
+        })?;
 
-        let local_2 = init_util(&remote, false)?;
+        env.with(1, |f| {
+            let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
+            let args = sync::Args {};
+            sync(top_level_args, args)?;
 
-        let top_level_args = TopLevelArgs::new_testing(local_2.path().clone(), false);
-        let args = sync::Args {};
-        sync(top_level_args, args)?;
-
-        // After syncing, the dir is created
-        assert!(test_d.exists());
-        // TODO(low): it would be nice if there is no .falconfkeep in it
-        assert_eq!(
-            read_dir(&test_d)?
-                .map(|d| d.map(|d| d.path()))
-                .collect::<io::Result<Vec<_>>>()?,
-            vec![test_d.join(".falconfkeep")]
-        );
+            // After syncing, the dir is created
+            assert!(test_d.exists());
+            // TODO(low): it would be nice if there is no .falconfkeep in it
+            assert_eq!(
+                read_dir(&test_d)?
+                    .map(|d| d.map(|d| d.path()))
+                    .collect::<io::Result<Vec<_>>>()?,
+                vec![test_d.join(".falconfkeep")]
+            );
+            Ok(())
+        })?;
 
         Ok(())
     }
