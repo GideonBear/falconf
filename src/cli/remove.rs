@@ -1,6 +1,7 @@
-use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
+use crate::cli::{PieceRef, complete};
 use crate::installation::Installation;
+use clap_complete::ArgValueCandidates;
 use color_eyre::eyre;
 use color_eyre::eyre::OptionExt as _;
 use color_eyre::eyre::Result;
@@ -12,6 +13,7 @@ use std::fs::{remove_dir_all, remove_file};
 pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(required = true)]
+    #[arg(add = ArgValueCandidates::new(complete::pieces))]
     pub(crate) pieces: Vec<PieceRef>,
 
     /// Remove the piece even if it is not unused

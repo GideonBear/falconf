@@ -1,15 +1,17 @@
-use crate::cli::TopLevelArgs;
 use crate::cli::machines::MachineRef;
+use crate::cli::{TopLevelArgs, complete};
 use crate::execution_context::ExecutionContext;
 use crate::group::Group;
 use crate::installation::Installation;
 use crate::machine::machines_by_name;
+use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// Specify the machine. 'this' is a shortcut for the current machine.
+    #[arg(add = ArgValueCandidates::new(complete::machines))]
     machine: MachineRef,
 
     /// Change the name (which is the hostname by default) of the machine.
@@ -17,11 +19,11 @@ pub struct Args {
     name: Option<String>,
 
     /// Add a group that include this machine
-    #[arg(long)]
+    #[arg(long, add = ArgValueCandidates::new(complete::machine_groups))]
     group: Vec<String>,
 
     /// Remove group from this machine
-    #[arg(long)]
+    #[arg(long, add = ArgValueCandidates::new(complete::machine_groups))]
     remove_group: Vec<String>,
 }
 

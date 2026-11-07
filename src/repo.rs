@@ -320,7 +320,7 @@ impl Repo {
 
 // TODO(low): below three are a bit convoluted
 
-const DATA_PATH: &str = "data.ron";
+pub const DATA_PATH: &str = "data.ron";
 
 fn workdir_from_repository(repo: &Repository) -> Result<&Path> {
     repo.workdir().ok_or_eyre("Repository is bare")

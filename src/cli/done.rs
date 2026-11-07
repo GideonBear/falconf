@@ -1,6 +1,7 @@
-use crate::cli::{PieceRef, TopLevelArgs};
+use crate::cli::{PieceRef, TopLevelArgs, complete};
 use crate::execution_context::ExecutionContext;
 use crate::installation::Installation;
+use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt;
 
@@ -8,6 +9,7 @@ use color_eyre::eyre::OptionExt;
 pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(required = true)]
+    #[arg(add = ArgValueCandidates::new(complete::pieces))]
     pub(crate) pieces: Vec<PieceRef>,
 }
 

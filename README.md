@@ -82,6 +82,18 @@ and install `dysk`.
   here. You can for example run any command, and then run `falconf add -d !!`. Your shell will expand `!!` to the
   previous command you ran.
 
+## Shell completions
+
+Falconf completes subcommands and options, and also piece IDs, machines and
+groups from your local data file. To enable it in bash, add this to your `~/.bashrc`:
+
+```bash
+source <(COMPLETE=bash falconf)
+```
+
+Other shells (zsh, fish, elvish, powershell) are supported as well, see
+[`clap_complete::env`](https://docs.rs/clap_complete/latest/clap_complete/env/index.html).
+
 ## Comparison to similar tools
 
 The most similar tool to falconf is Ansible, but there are two main differences:

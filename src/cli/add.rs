@@ -1,10 +1,11 @@
-use crate::cli::TopLevelArgs;
+use crate::cli::{TopLevelArgs, complete};
 use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
 use clap::ValueEnum;
+use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use log::info;
@@ -91,7 +92,7 @@ pub struct Args {
     pub value: Vec<String>,
 
     /// The group/machine to execute this on (default: all)
-    #[arg(long)]
+    #[arg(long, add = ArgValueCandidates::new(complete::piece_groups))]
     pub group: Option<String>,
 
     /// (command) Command to execute when undoing this

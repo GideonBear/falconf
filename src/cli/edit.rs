@@ -1,10 +1,11 @@
-use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
+use crate::cli::{PieceRef, complete};
 use crate::full_piece::FullPiece;
 use crate::group::Group;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
+use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, eyre};
 use indexmap::IndexMap;
@@ -21,10 +22,11 @@ pub struct Args {
     pub remove_comment: bool,
 
     /// Specify the piece id. '-' is a shortcut for the last piece.
+    #[arg(add = ArgValueCandidates::new(complete::pieces))]
     pub(crate) piece: PieceRef,
 
     /// The group/machine to execute this on (use `all` to execute on all machines)
-    #[arg(long)]
+    #[arg(long, add = ArgValueCandidates::new(complete::piece_groups))]
     pub group: Option<String>,
 
     // `value` is intentionally missing
@@ -37,11 +39,11 @@ pub struct Args {
     pub remove_undo: bool,
 
     /// Reorder this piece, moving it after the given piece
-    #[arg(long)]
+    #[arg(long, add = ArgValueCandidates::new(complete::pieces))]
     pub move_after: Option<PieceRef>,
 
     /// Reorder this piece, moving it before the given piece
-    #[arg(long, conflicts_with = "move_after")]
+    #[arg(long, conflicts_with = "move_after", add = ArgValueCandidates::new(complete::pieces))]
     pub move_before: Option<PieceRef>,
 }
 

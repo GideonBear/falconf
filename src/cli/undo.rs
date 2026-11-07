@@ -1,8 +1,9 @@
-use crate::cli::PieceRef;
 use crate::cli::TopLevelArgs;
+use crate::cli::{PieceRef, complete};
 use crate::execution_context::ExecutionContext;
 use crate::full_piece::FullPiece;
 use crate::installation::Installation;
+use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use log::info;
@@ -12,6 +13,7 @@ use std::collections::{HashMap, HashSet};
 pub struct Args {
     /// Specify piece ids. '-' is a shortcut for the last piece.
     #[clap(required = true)]
+    #[arg(add = ArgValueCandidates::new(complete::pieces))]
     pieces: Vec<PieceRef>,
 }
 

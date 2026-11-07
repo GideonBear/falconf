@@ -1,5 +1,6 @@
 use crate::full_piece::FullPiece;
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, CommandFactory as _, Parser, Subcommand};
+use clap_complete::CompleteEnv;
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt as _;
 use expanduser::expanduser;
@@ -12,6 +13,7 @@ use std::str::FromStr;
 pub use add::Piece;
 
 pub mod add;
+mod complete;
 mod done;
 mod edit;
 pub mod init;
@@ -24,6 +26,8 @@ pub mod sync;
 pub mod undo;
 mod watch_conf;
 mod watch_gsettings;
+
+const DEFAULT_PATH: &str = "~/.falconf";
 
 fn parse_path(s: &str) -> Result<PathBuf> {
     Ok(expanduser(s)?)
@@ -50,7 +54,7 @@ pub struct TopLevelArgs {
     verbose: bool,
 
     /// The path to the falconf directory.
-    #[arg(long, short, default_value = "~/.falconf", value_parser = parse_path, env = "FALCONF_PATH")]
+    #[arg(long, short, default_value = DEFAULT_PATH, value_parser = parse_path, env = "FALCONF_PATH")]
     pub path: PathBuf,
 
     // /// Don't execute any commands, and do not mark pieces as executed. WARNING: this
@@ -164,6 +168,8 @@ impl FromStr for PieceRef {
 }
 
 pub fn main() -> Result<()> {
+    CompleteEnv::with_factory(Cli::command).complete();
+
     let cli = Cli::parse();
 
     env_logger::Builder::new()

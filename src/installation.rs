@@ -151,7 +151,7 @@ impl Installation {
         Ok(Self { machine, repo })
     }
 
-    fn get_repository_path(root: &Path) -> PathBuf {
+    pub fn get_repository_path(root: &Path) -> PathBuf {
         root.join("repository")
     }
 
