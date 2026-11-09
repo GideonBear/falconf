@@ -4,7 +4,7 @@ use crate::full_piece::FullPiece;
 use crate::installation::Installation;
 use crate::pieces::{NonBulkPieceEnum, PieceEnum};
 use clap::ArgAction::SetTrue;
-use clap::ValueEnum;
+use clap::{ValueEnum, ValueHint};
 use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
@@ -88,7 +88,7 @@ pub struct Args {
     /// The value of the piece. For example the command, the package, etc.
     /// Quoting this is optional; both `falconf add apt install cowsay` and
     /// `falconf add "apt install cowsay"` are allowed.
-    #[arg(trailing_var_arg = true, required = true)]
+    #[arg(trailing_var_arg = true, required = true, value_hint = ValueHint::AnyPath)]
     pub value: Vec<String>,
 
     /// The group/machine to execute this on (default: all)
