@@ -35,7 +35,7 @@ fn parse_path(s: &str) -> Result<PathBuf> {
 
 #[derive(Parser, Debug)]
 #[command(name = "falconf", version)]
-#[command(about = "TODO description")] // TODO(med): Edit the description here, in GitHub, in Cargo.toml
+#[command(about = "A simple distro-agnostic personal configuration and setup manager")] // TODO(med): Edit the description here, in GitHub, in Cargo.toml
 pub struct Cli {
     #[command(subcommand)]
     command: Commands,

@@ -1,6 +1,6 @@
 [package]
 name = "falconf"
-description = "TODO description here"
+description = "A simple distro-agnostic personal configuration and setup manager"
 readme = "README.md"
 license = "GPL-3.0-only"
 repository = "https://github.com/GideonBear/falconf"
