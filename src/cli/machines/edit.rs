@@ -48,10 +48,18 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
 
     let (_machine, machine_data) = args.machine.resolve(machines, &ctx)?;
 
-    if let Some(name) = &args.name
-        && machines_by_name(machines).contains_key(name.as_str())
-    {
-        return Err(eyre!("Another machine already has name '{name}'"));
+    if let Some(name) = &args.name {
+        // TODO(low): both checks should also be on init, I guess a single validate function?
+        if machines_by_name(machines).contains_key(name.as_str()) {
+            return Err(eyre!("Another machine already has name '{name}'"));
+        }
+        // TODO(low): should also check groups on pieces?
+        if machines
+            .iter()
+            .any(|(_machine, machine_data)| machine_data.groups.contains(name))
+        {
+            return Err(eyre!("THere is already a group with this name"));
+        }
     }
 
     let add_groups: Vec<_> = args
