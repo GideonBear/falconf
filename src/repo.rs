@@ -5,7 +5,7 @@ use crate::{data, migrations};
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, WrapErr as _, eyre};
-use git2::{Diff, DiffOptions, Error, Repository, Status};
+use git2::{Diff, DiffOptions, Error, Repository, Status, StatusOptions};
 use itertools::Itertools as _;
 use log::debug;
 use std::fmt::{Debug, Formatter};
@@ -311,6 +311,28 @@ impl Repo {
                     .show_untracked_content(true),
             ),
         )
+    }
+
+    /// Returns true if `file` (relative to the file dir) has uncommitted changes
+    pub fn file_has_changes(&self, file: &Path) -> Result<bool> {
+        let file_dir = self.file_dir()?;
+        #[expect(clippy::missing_panics_doc, reason = "see expect")]
+        let path = file_dir
+            .strip_prefix(self.workdir()?)
+            .expect("File dir is always within repository workdir")
+            .join(file);
+        let statuses = self
+            .repository
+            .statuses(Some(
+                StatusOptions::new()
+                    .pathspec(&path)
+                    .disable_pathspec_match(true)
+                    .include_untracked(true)
+                    .recurse_untracked_dirs(true)
+                    .include_ignored(false),
+            ))
+            .wrap_err("Failed to get status")?;
+        Ok(!statuses.is_empty())
     }
 
     pub fn clean_file_dir(&self) -> Result<()> {

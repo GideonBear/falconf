@@ -19,6 +19,10 @@ pub struct Args {
     /// Remove the piece even if it is not unused
     #[arg(long, short)]
     pub force: bool,
+
+    /// Remove the piece even if its file has local changes that weren't pushed. These changes are lost and not recoverable from git history.
+    #[arg(long)]
+    pub remove_with_changes: bool,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -45,6 +49,19 @@ pub fn remove(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
         if !args.force && !piece.unused(data.machines()) {
             return Err(eyre::eyre!(
                 "Piece is still in use. Pass --force to remove it anyway, without undoing."
+            ));
+        }
+    }
+
+    // Check if attached files have local changes
+    for piece in &pieces_to_remove {
+        if let Some(file) = piece.file()
+            && !args.remove_with_changes
+            && repo.file_has_changes(file)?
+        {
+            return Err(eyre::eyre!(
+                "File {} has local changes. Run `falconf push` first, or pass --remove-with-changes to remove it anyway, losing the changes permanently.",
+                file.display()
             ));
         }
     }

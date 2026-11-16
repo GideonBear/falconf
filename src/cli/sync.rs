@@ -72,6 +72,7 @@ mod tests {
                 remove::Args {
                     pieces: vec![],
                     force: false,
+                    remove_with_changes: false,
                 },
             )?;
             let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
