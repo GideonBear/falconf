@@ -1,4 +1,7 @@
+use crate::cli::add;
+use crate::cli::add::tests::add_util_no_test_run;
 use crate::cli::init::tests::init_util;
+use crate::cli::sync::tests::sync_util;
 use crate::cli::{PieceRef, TopLevelArgs};
 use crate::installation::Installation;
 use color_eyre::Result;
@@ -6,6 +9,7 @@ use color_eyre::eyre::OptionExt;
 use command_error::CommandExt;
 use ctor::ctor;
 use log::LevelFilter;
+use std::fs;
 use std::fs::{create_dir, rename};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -127,6 +131,35 @@ impl TestEnv {
         rename(&self.fs, &self.stashes[machine])?;
         result
     }
+}
+
+/// Returns the output of `git status --porcelain` in the repository of `f`
+pub fn git_status(f: &Path) -> Result<String> {
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(f.join("repository"))
+        .args(["status", "--porcelain"])
+        .output_checked_utf8()?;
+    Ok(output.stdout)
+}
+
+/// Two machines with two files, `a` and `b`, synced to both
+pub fn setup_two_files() -> Result<(TestEnv, PathBuf, PathBuf)> {
+    let mut env = TestEnv::new(2)?;
+    let a = env.fs.join("a.txt");
+    let b = env.fs.join("b.txt");
+
+    env.with(0, |f| {
+        for (file, content) in [(&a, "a"), (&b, "b")] {
+            fs::write(file, content)?;
+            let file_s = file.to_str().ok_or_eyre("Invalid path")?.to_string();
+            add_util_no_test_run(f, add::Piece::File, vec![file_s])?;
+        }
+        Ok(())
+    })?;
+    env.with(1, |f| sync_util(f))?;
+
+    Ok((env, a, b))
 }
 
 #[ctor(unsafe)]

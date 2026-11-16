@@ -5,7 +5,11 @@ use crate::{data, migrations};
 use auth_git2::GitAuthenticator;
 use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, WrapErr as _, eyre};
-use git2::{Diff, DiffOptions, Error, Repository, Status, StatusOptions};
+use git2::build::CheckoutBuilder;
+use git2::{
+    CheckoutNotificationType, Commit, Diff, DiffOptions, Error, Repository, ResetType, Status,
+    StatusOptions, Tree,
+};
 use itertools::Itertools as _;
 use log::debug;
 use std::fmt::{Debug, Formatter};
@@ -13,6 +17,7 @@ use std::fs::{File, create_dir};
 use std::path::{Path, PathBuf};
 
 const BRANCH: &str = "main";
+const BRANCH_REF: &str = "refs/heads/main";
 
 pub struct Repo {
     repository: Repository,
@@ -125,7 +130,7 @@ impl Repo {
 
     fn from_repository(repository: Repository) -> Result<Self> {
         let auth = GitAuthenticator::default();
-        Self::pull(&repository, &auth).wrap_err("Failed to pull")?;
+        let needs_push = Self::pull(&repository, &auth).wrap_err("Failed to pull")?;
         let data_path = data_path_from_repository(&repository)?;
         let migrated = migrations::run_migrations(&data_path)?;
         let data = data::from_file::<Data>(&data_path).wrap_err("Failed to get data")?;
@@ -135,6 +140,10 @@ impl Repo {
             auth,
             data,
         };
+        if needs_push {
+            debug!("Local branch is ahead of the remote; pushing");
+            push(&repo.repository, &repo.auth).wrap_err("Failed to push")?;
+        }
         if let Some(migrated) = migrated {
             repo.write_and_push(vec![], Some(migrated))?
         }
@@ -146,7 +155,62 @@ impl Repo {
         Ok(repo)
     }
 
-    fn pull(repository: &Repository, auth: &GitAuthenticator) -> Result<()> {
+    /// Commit all local changes in the file dir, then pull (merging if necessary) and push.
+    /// If anything before the push fails, the local commit is undone, so the local changes are
+    /// left exactly as they were. `confirm` is called with the diff of the local changes, and
+    /// can abort by returning false. Returns false if there were no changes.
+    pub fn push_local_changes(
+        path: &Path,
+        confirm: impl FnOnce(&Diff<'_>) -> Result<bool>,
+    ) -> Result<bool> {
+        let repository = Repository::open(path).wrap_err("Failed to open repository")?;
+        let auth = GitAuthenticator::default();
+
+        if data_changed(&repository)? {
+            return Err(eyre!("The data file has uncommitted changes"));
+        }
+
+        let diff = diff_index_to_workdir(&repository)?;
+        let files: Vec<String> = diff
+            .deltas()
+            .filter_map(|d| d.new_file().path())
+            .map(|path| {
+                if path.starts_with("files") {
+                    Ok(path.to_string_lossy().to_string())
+                } else {
+                    Err(eyre!("A file not in files/ was changed in the repo"))
+                }
+            })
+            .collect::<Result<_>>()?;
+
+        if files.is_empty() {
+            return Ok(false);
+        }
+        if !confirm(&diff)? {
+            return Err(eyre!("Aborted"));
+        }
+
+        let old_head = repository
+            .head()
+            .wrap_err("Failed to get head")?
+            .peel_to_commit()
+            .wrap_err("Failed to peel head to commit")?;
+        commit(&repository, files, None).wrap_err("Failed to commit")?;
+        if let Err(err) = Self::pull(&repository, &auth) {
+            debug!("Pull failed, undoing the local commit");
+            repository
+                .reset(old_head.as_object(), ResetType::Mixed, None)
+                .wrap_err("Failed to undo the local commit after failing to pull")?;
+            return Err(err.wrap_err("Failed to pull"));
+        }
+        push(&repository, &auth).wrap_err("Failed to push")?;
+
+        Ok(true)
+    }
+
+    /// Fetch and integrate the remote branch, never overwriting local changes.
+    /// Returns true if the local branch is ahead of the remote, and needs to be pushed.
+    fn pull(repository: &Repository, auth: &GitAuthenticator) -> Result<bool> {
         let mut remote = repository
             .find_remote("origin")
             .wrap_err("Failed to find remote")?;
@@ -159,22 +223,31 @@ impl Repo {
         let fetch_commit = repository
             .reference_to_annotated_commit(&fetch_head)
             .wrap_err("Failed to convert fetch head to annotated commit")?;
+        let theirs = fetch_head
+            .peel_to_commit()
+            .wrap_err("Failed to peel fetch head to commit")?;
         let (analysis, _preference) = repository
             .merge_analysis(&[&fetch_commit])
             .wrap_err("Failed to do merge analysis")?;
 
         if analysis.is_up_to_date() {
-            Ok(())
         } else if analysis.is_fast_forward() {
-            let refname = format!("refs/heads/{BRANCH}");
-            let mut reference = repository.find_reference(&refname)?;
-            reference.set_target(fetch_commit.id(), "Fast-Forward")?;
-            repository.set_head(&refname)?;
-            repository.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
-            Ok(())
+            debug!("Fast-forwarding");
+            checkout_safe(repository, &theirs.tree()?)?;
+            let mut reference = repository.find_reference(BRANCH_REF)?;
+            reference.set_target(theirs.id(), "falconf: fast-forward")?;
+            repository.set_head(BRANCH_REF)?;
         } else {
-            Err(eyre!("Branches have diverted"))
+            debug!("Branches have diverged; merging");
+            merge(repository, &theirs)?;
         }
+
+        let head = repository
+            .head()
+            .wrap_err("Failed to get head")?
+            .peel_to_commit()
+            .wrap_err("Failed to peel head to commit")?;
+        Ok(head.id() != theirs.id())
     }
 
     fn write_data(&self) -> Result<()> {
@@ -183,107 +256,25 @@ impl Repo {
 
     /// Returns true if the data file was changed
     fn data_changed(&self) -> Result<bool> {
-        Ok(self
-            .repository
-            .status_file(DATA_PATH.as_ref())
-            .wrap_err("Failed to get status from data file")?
-            .contains(Status::WT_MODIFIED))
+        data_changed(&self.repository)
     }
 
     /// `files`: A list of files relative to the file dir that will be committed along with the data file.
     fn commit(&self, files: Vec<PathBuf>, extra_msg: Option<String>) -> Result<()> {
-        let mut index = self.repository.index().wrap_err("Failed to get index")?;
-
         let file_dir = self.file_dir()?;
         #[expect(clippy::missing_panics_doc, reason = "see expect")]
         let file_dir = file_dir
             .strip_prefix(self.workdir()?)
             .expect("File dir is always within repository workdir");
-        let mut files = files
+        let files = files
             .into_iter()
             .map(|p| file_dir.join(p).to_string_lossy().to_string())
-            .collect::<Vec<_>>();
-        files.push(DATA_PATH.to_owned());
-        index
-            .add_all(&files, git2::IndexAddOption::DEFAULT, None)
-            .wrap_err("Failed to add all")?;
-        index.write().wrap_err("Failed to write index")?;
-
-        let oid = index.write_tree().wrap_err("Failed to write tree")?;
-        let signature = self
-            .repository
-            .signature()
-            .wrap_err("Failed to get signature")?;
-        let tree = self
-            .repository
-            .find_tree(oid)
-            .wrap_err("Failed to find tree")?;
-
-        let mut message = format!("falconf: Update {}", files.iter().join(", "));
-        if let Some(extra_msg) = extra_msg {
-            message.push_str(&format!(" ({extra_msg})"));
-        }
-
-        if self.repository.head().is_ok() {
-            debug!("Head exists");
-            let parents = &[&self
-                .repository
-                .head()
-                .wrap_err("Failed to get head")?
-                .peel_to_commit()
-                .wrap_err("Failed to peel head to commit")?];
-
-            self.repository
-                .commit(
-                    Some("HEAD"),
-                    &signature,
-                    &signature,
-                    &message,
-                    &tree,
-                    parents,
-                )
-                .wrap_err("Failed to commit")?;
-        } else {
-            debug!("Head doesn't exist, this is the initial commit");
-
-            // Because there are no commits we need to make sure we're on `main` and not `master`
-            self.repository
-                .set_head("refs/heads/main")
-                .wrap_err("Failed to set head to main")?;
-
-            let parents = &[];
-            self.repository.commit(
-                Some("HEAD"),
-                &signature,
-                &signature,
-                &message,
-                &tree,
-                parents,
-            )?;
-        }
-
-        Ok(())
+            .collect();
+        commit(&self.repository, files, extra_msg)
     }
 
     fn push(&self) -> Result<()> {
-        // TODO(high):
-        //  I need to test what happens right now if you forget to `falconf push` and do a pull.
-        //  check for failed push
-        //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
-        //  > to test whether all the references were pushed successfully.
-        //  And return a divergence error when it fails because of divergence in the remote
-        let mut remote = self
-            .repository
-            .find_remote("origin")
-            .wrap_err("Failed to find remote")?;
-        self.auth
-            .push(
-                &self.repository,
-                &mut remote,
-                &[&format!("refs/heads/{BRANCH}")],
-            )
-            .wrap_err("Failed to push")?;
-        Ok(())
+        push(&self.repository, &self.auth)
     }
 
     pub fn write_and_push(&self, files: Vec<PathBuf>, extra_msg: Option<String>) -> Result<()> {
@@ -299,18 +290,6 @@ impl Repo {
             self.push().wrap_err("Failed to push")?;
         }
         Ok(())
-    }
-
-    pub fn diff_index_to_workdir(&self) -> std::result::Result<Diff<'_>, Error> {
-        self.repository.diff_index_to_workdir(
-            None,
-            Some(
-                DiffOptions::new()
-                    .include_untracked(true)
-                    .recurse_untracked_dirs(true)
-                    .show_untracked_content(true),
-            ),
-        )
     }
 
     /// Returns true if `file` (relative to the file dir) has uncommitted changes
@@ -338,6 +317,175 @@ impl Repo {
     pub fn clean_file_dir(&self) -> Result<()> {
         remove_empty_dirs(&self.file_dir()?)
     }
+}
+
+/// Check out `tree`, failing without changing anything if that would overwrite local changes.
+fn checkout_safe(repository: &Repository, tree: &Tree<'_>) -> Result<()> {
+    let mut conflicts = vec![];
+    let result = {
+        let mut builder = CheckoutBuilder::new();
+        builder
+            .safe()
+            .overwrite_ignored(false)
+            .notify_on(CheckoutNotificationType::CONFLICT)
+            .notify(|_kind, path, _baseline, _target, _workdir| {
+                if let Some(path) = path {
+                    conflicts.push(path.display().to_string());
+                }
+                true
+            });
+        repository.checkout_tree(tree.as_object(), Some(&mut builder))
+    };
+    if !conflicts.is_empty() {
+        return Err(eyre!(
+            "Pulling would overwrite local changes to: {}. Nothing was changed. Run `falconf push` to push your changes first, or revert them.",
+            conflicts.iter().join(", ")
+        ));
+    }
+    result.wrap_err("Failed to checkout")
+}
+
+/// Merge `theirs` into HEAD and commit, failing without changing anything on conflicts.
+fn merge(repository: &Repository, theirs: &Commit<'_>) -> Result<()> {
+    let ours = repository
+        .head()
+        .wrap_err("Failed to get head")?
+        .peel_to_commit()
+        .wrap_err("Failed to peel head to commit")?;
+    let mut index = repository
+        .merge_commits(&ours, theirs, None)
+        .wrap_err("Failed to merge")?;
+    if index.has_conflicts() {
+        let conflicts = index
+            .conflicts()?
+            .map(|conflict| {
+                let conflict = conflict?;
+                let entry = conflict
+                    .our
+                    .or(conflict.their)
+                    .or(conflict.ancestor)
+                    .ok_or_eyre("Conflict without entries")?;
+                Ok(String::from_utf8_lossy(&entry.path).to_string())
+            })
+            .collect::<Result<Vec<_>>>()?;
+        return Err(eyre!(
+            "Local changes conflict with remote changes in: {}. Nothing was changed. Resolve this manually with git in {}.",
+            conflicts.iter().join(", "),
+            workdir_from_repository(repository)?.display()
+        ));
+    }
+    let tree = repository
+        .find_tree(index.write_tree_to(repository)?)
+        .wrap_err("Failed to find merged tree")?;
+    checkout_safe(repository, &tree)?;
+    let signature = repository.signature().wrap_err("Failed to get signature")?;
+    repository
+        .commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            "falconf: Merge remote changes",
+            &tree,
+            &[&ours, theirs],
+        )
+        .wrap_err("Failed to commit merge")?;
+    Ok(())
+}
+
+fn data_changed(repository: &Repository) -> Result<bool> {
+    Ok(repository
+        .status_file(DATA_PATH.as_ref())
+        .wrap_err("Failed to get status from data file")?
+        .contains(Status::WT_MODIFIED))
+}
+
+fn diff_index_to_workdir(repository: &Repository) -> std::result::Result<Diff<'_>, Error> {
+    repository.diff_index_to_workdir(
+        None,
+        Some(
+            DiffOptions::new()
+                .include_untracked(true)
+                .recurse_untracked_dirs(true)
+                .show_untracked_content(true),
+        ),
+    )
+}
+
+/// `files`: A list of files relative to the workdir that will be committed along with the data file.
+fn commit(
+    repository: &Repository,
+    mut files: Vec<String>,
+    extra_msg: Option<String>,
+) -> Result<()> {
+    let mut index = repository.index().wrap_err("Failed to get index")?;
+
+    files.push(DATA_PATH.to_owned());
+    index
+        .add_all(&files, git2::IndexAddOption::DEFAULT, None)
+        .wrap_err("Failed to add all")?;
+    index.write().wrap_err("Failed to write index")?;
+
+    let oid = index.write_tree().wrap_err("Failed to write tree")?;
+    let signature = repository.signature().wrap_err("Failed to get signature")?;
+    let tree = repository.find_tree(oid).wrap_err("Failed to find tree")?;
+
+    let mut message = format!("falconf: Update {}", files.iter().join(", "));
+    if let Some(extra_msg) = extra_msg {
+        message.push_str(&format!(" ({extra_msg})"));
+    }
+
+    if repository.head().is_ok() {
+        debug!("Head exists");
+        let parents = &[&repository
+            .head()
+            .wrap_err("Failed to get head")?
+            .peel_to_commit()
+            .wrap_err("Failed to peel head to commit")?];
+
+        repository
+            .commit(
+                Some("HEAD"),
+                &signature,
+                &signature,
+                &message,
+                &tree,
+                parents,
+            )
+            .wrap_err("Failed to commit")?;
+    } else {
+        debug!("Head doesn't exist, this is the initial commit");
+
+        // Because there are no commits we need to make sure we're on `main` and not `master`
+        repository
+            .set_head(BRANCH_REF)
+            .wrap_err("Failed to set head to main")?;
+
+        let parents = &[];
+        repository.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            &message,
+            &tree,
+            parents,
+        )?;
+    }
+
+    Ok(())
+}
+
+fn push(repository: &Repository, auth: &GitAuthenticator) -> Result<()> {
+    // TODO(high):
+    //  check for failed push
+    //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
+    //  > to test whether all the references were pushed successfully.
+    //  And return a divergence error when it fails because of divergence in the remote
+    let mut remote = repository
+        .find_remote("origin")
+        .wrap_err("Failed to find remote")?;
+    auth.push(repository, &mut remote, &[BRANCH_REF])
+        .wrap_err("Failed to push")?;
+    Ok(())
 }
 
 // TODO(low): below three are a bit convoluted

@@ -125,6 +125,13 @@ impl Installation {
     }
 
     pub fn get_no_check_synced(top_level_args: &TopLevelArgs) -> Result<Self> {
+        let repo = Repo::get_from_path(&Self::get_repository_path_checked(top_level_args)?)?;
+
+        Self::from_repo(top_level_args, repo)
+    }
+
+    /// Get the repository path, checking that the installation exists
+    pub fn get_repository_path_checked(top_level_args: &TopLevelArgs) -> Result<PathBuf> {
         let root = &top_level_args.path;
         debug!("Looking at {}", root.display());
 
@@ -134,9 +141,7 @@ impl Installation {
             ));
         }
 
-        let repo = Repo::get_from_path(&Self::get_repository_path(root))?;
-
-        Self::from_repo(top_level_args, repo)
+        Ok(Self::get_repository_path(root))
     }
 
     fn from_repo(top_level_args: &TopLevelArgs, repo: Repo) -> Result<Self> {
