@@ -30,13 +30,13 @@ impl NonBulkPiece for Command {
     }
 
     fn undo(&mut self, _ctx: &ExecutionContext) -> Result<()> {
-        if self.undo_command.is_none() {
-            let undo_command =
-                prompt("This command piece is missing an undo command. Undo command to use: ")?;
-            self.undo_command = Some(undo_command);
-        }
-        // TODO(low): do this in a non-unwrappy way
-        Self::run_command(self.undo_command.as_ref().unwrap())
+        let undo_command = match self.undo_command {
+            Some(ref undo_command) => undo_command,
+            None => self.undo_command.insert(prompt(
+                "This command piece is missing an undo command. Undo command to use: ",
+            )?),
+        };
+        Self::run_command(undo_command)
     }
 }
 
