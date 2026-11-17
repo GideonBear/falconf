@@ -3,12 +3,12 @@ use crate::machine::{Machine, MachineData};
 use crate::utils::remove_empty_dirs;
 use crate::{data, migrations};
 use auth_git2::GitAuthenticator;
-use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, WrapErr as _, eyre};
+use color_eyre::{Report, Result, Section as _, SectionExt as _};
 use git2::build::CheckoutBuilder;
 use git2::{
-    CheckoutNotificationType, Commit, Diff, DiffOptions, Error, Repository, ResetType, Status,
-    StatusOptions, Tree,
+    CheckoutNotificationType, Commit, Diff, DiffOptions, Error, PushOptions, RemoteCallbacks,
+    Repository, ResetType, Status, StatusOptions, Tree,
 };
 use itertools::Itertools as _;
 use log::{debug, warn};
@@ -511,17 +511,51 @@ fn commit(
 }
 
 fn push(repository: &Repository, auth: &GitAuthenticator) -> Result<()> {
-    // TODO(high):
-    //  check for failed push
-    //  > Note that you’ll likely want to use RemoteCallbacks and set push_update_reference
-    //  > to test whether all the references were pushed successfully.
-    //  And return a divergence error when it fails because of divergence in the remote
     let mut remote = repository
         .find_remote("origin")
         .wrap_err("Failed to find remote")?;
-    auth.push(repository, &mut remote, &[BRANCH_REF])
-        .wrap_err("Failed to push")?;
-    Ok(())
+    let git_config = repository.config().wrap_err("Failed to get config")?;
+    let mut rejected = vec![];
+    let mut remote_output = String::new();
+    let result = {
+        let mut callbacks = RemoteCallbacks::new();
+        callbacks
+            .credentials(auth.credentials(&git_config))
+            .sideband_progress(|data| {
+                remote_output.push_str(&String::from_utf8_lossy(data));
+                true
+            })
+            // Called with an error status for every ref the remote rejected,
+            //  which `push` itself doesn't return as an error
+            .push_update_reference(|refname, status| {
+                if let Some(status) = status {
+                    rejected.push(format!("{refname} ({status})"));
+                }
+                Ok(())
+            });
+        let mut options = PushOptions::new();
+        options.remote_callbacks(callbacks);
+        remote.push(&[BRANCH_REF], Some(&mut options))
+    };
+    let result = result.map_err(Report::from).and_then(|()| {
+        if rejected.is_empty() {
+            Ok(())
+        } else {
+            Err(eyre!(
+                "The remote rejected the push of {}",
+                rejected.join(", ")
+            ))
+        }
+    });
+    let remote_output = remote_output.trim();
+    let result = if remote_output.is_empty() {
+        result
+    } else {
+        result.section(remote_output.to_owned().header("Remote output:"))
+    };
+    result.suggestion(
+        "Your changes are committed locally; the next falconf command will try to push them again",
+    )
 }
 
 // TODO(low): below three are a bit convoluted
@@ -540,10 +574,15 @@ fn data_path_from_repository(repo: &Repository) -> Result<PathBuf> {
 mod tests {
     use super::*;
     use crate::cli::TopLevelArgs;
+    use crate::cli::add;
+    use crate::cli::add::tests::add_util;
     use crate::installation::Installation;
-    use crate::testing::TestEnv;
+    use crate::testing::{TestEnv, TestRemote};
+    use command_error::CommandExt as _;
     use std::fs::OpenOptions;
     use std::io::Write;
+    use std::os::unix::fs::PermissionsExt as _;
+    use std::process::Command;
 
     #[test]
     fn test_error_on_changed_data_file() -> Result<()> {
@@ -563,5 +602,45 @@ mod tests {
             );
             Ok(())
         })
+    }
+
+    #[test]
+    fn test_push_rejected() -> Result<()> {
+        let mut env = TestEnv::with_remote(TestRemote::new_daemon()?, 1)?;
+        let hook = env.remote.path.join("hooks/pre-receive");
+        std::fs::write(&hook, "#!/bin/sh\necho 'not today' >&2\nexit 1\n")?;
+        std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755))?;
+        let rev = |args: &[&str]| -> Result<String> {
+            Ok(Command::new("git")
+                .args(args)
+                .args(["rev-parse", "main"])
+                .output_checked_utf8()?
+                .stdout)
+        };
+        let remote_path = env.remote.path.clone();
+        let remote_rev = || rev(&["--git-dir", remote_path.to_str().unwrap()]);
+        let remote_before = remote_rev()?;
+
+        env.with(0, |f| {
+            let local_rev = || rev(&["-C", f.join("repository").to_str().unwrap()]);
+            let err = add_util(f, add::Piece::Command, vec![String::from("true")]).unwrap_err();
+            let err = format!("{err:?}");
+            assert!(
+                err.contains("The remote rejected the push of refs/heads/main"),
+                "{err}"
+            );
+            assert!(err.contains("not today"), "{err}");
+            // The commit is kept locally
+            assert_eq!(remote_rev()?, remote_before);
+            assert_ne!(local_rev()?, remote_before);
+
+            // The next command pushes it
+            std::fs::remove_file(&hook)?;
+            Installation::get(&TopLevelArgs::new_testing(f.clone(), true))?;
+            assert_eq!(remote_rev()?, local_rev()?);
+            Ok(())
+        })?;
+
+        Ok(())
     }
 }
