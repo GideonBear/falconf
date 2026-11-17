@@ -59,9 +59,7 @@ pub fn prompt(question: &str) -> io::Result<String> {
 
 pub fn create_parent(path: &Path) -> Result<()> {
     let parent = path.parent().ok_or_eyre("File doesn't have parent")?;
-    if !parent.exists() {
-        std::fs::create_dir_all(parent)?;
-    }
+    std::fs::create_dir_all(parent)?;
     Ok(())
 }
 
