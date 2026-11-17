@@ -1,12 +1,10 @@
 use crate::cli::machines::MachineRef;
 use crate::cli::{TopLevelArgs, complete};
 use crate::execution_context::ExecutionContext;
-use crate::group::Group;
 use crate::installation::Installation;
-use crate::machine::machines_by_name;
 use clap_complete::ArgValueCandidates;
 use color_eyre::Result;
-use color_eyre::eyre::eyre;
+use color_eyre::eyre::{WrapErr as _, eyre};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -48,25 +46,7 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
 
     let (_machine, machine_data) = args.machine.resolve(machines, &ctx)?;
 
-    if let Some(name) = &args.name {
-        // TODO(low): both checks should also be on init, I guess a single validate function?
-        if machines_by_name(machines).contains_key(name.as_str()) {
-            return Err(eyre!("Another machine already has name '{name}'"));
-        }
-        // TODO(low): should also check groups on pieces?
-        if machines
-            .iter()
-            .any(|(_machine, machine_data)| machine_data.groups.contains(name))
-        {
-            return Err(eyre!("THere is already a group with this name"));
-        }
-    }
-
-    let add_groups: Vec<_> = args
-        .group
-        .iter()
-        .map(|group| Group::parse_for_machine(group, machines))
-        .collect::<Result<_>>()?;
+    let add_groups = args.group;
 
     let remove_groups: Vec<_> = args
         .remove_group
@@ -97,6 +77,10 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
     for group in remove_groups {
         machine_data.groups.remove(group);
     }
+
+    repo.data()
+        .validate()
+        .wrap_err("Can't make this change to the machine")?;
 
     // Push changes
     repo.write_and_push(vec![], None)?;

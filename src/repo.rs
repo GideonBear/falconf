@@ -1,5 +1,5 @@
 use crate::data::Data;
-use crate::machine::{Machine, MachineData, machines_by_name};
+use crate::machine::{Machine, MachineData};
 use crate::utils::remove_empty_dirs;
 use crate::{data, migrations};
 use auth_git2::GitAuthenticator;
@@ -11,7 +11,7 @@ use git2::{
     StatusOptions, Tree,
 };
 use itertools::Itertools as _;
-use log::debug;
+use log::{debug, warn};
 use std::fmt::{Debug, Formatter};
 use std::fs::{File, create_dir};
 use std::path::{Path, PathBuf};
@@ -94,14 +94,9 @@ impl Repo {
             .wrap_err("Failed to set user.email")?;
 
         let data = repo.data_mut();
-        if machines_by_name(data.machines()).contains_key(machine_data.name.as_str()) {
-            // TODO: allow passing machine name with `--name` to `falconf init`
-            return Err(eyre!(
-                "Machine name '{}' is already taken",
-                machine_data.name
-            ));
-        }
         data.machines_mut().insert(machine, machine_data);
+        data.validate()
+            .wrap_err("Can't add this machine. Pass a different name with --name")?;
         repo.write_and_push(files, None)
             .wrap_err("Failed to write_and_push")?;
         Ok(repo)
@@ -134,6 +129,10 @@ impl Repo {
         let data_path = data_path_from_repository(&repository)?;
         let migrated = migrations::run_migrations(&data_path)?;
         let data = data::from_file::<Data>(&data_path).wrap_err("Failed to get data")?;
+        // Only warn, so that it can still be fixed with falconf
+        if let Err(err) = data.validate() {
+            warn!("Invalid data file: {err}");
+        }
 
         let repo = Self {
             repository,

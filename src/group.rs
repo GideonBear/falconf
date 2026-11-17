@@ -33,20 +33,6 @@ impl Group {
         }
     }
 
-    pub fn parse_for_machine(s: &str, machines: &IndexMap<Machine, MachineData>) -> Result<String> {
-        match s {
-            "all" | "none" => Err(eyre!(format!(
-                "Cannot use reserved '{s}' group for a machine"
-            ))),
-            machine_name if machines_by_name(machines).contains_key(machine_name) => {
-                Err(eyre!(format!(
-                    "Cannot use machine name '{s}' as a group, it is already implicitly a group containing that machine"
-                )))
-            }
-            custom => Ok(custom.to_string()),
-        }
-    }
-
     pub fn machines<'a>(
         &self,
         machines: &'a IndexMap<Machine, MachineData>,
