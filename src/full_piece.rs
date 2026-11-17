@@ -80,7 +80,7 @@ impl FullPiece {
     pub fn do_todo(pieces: &mut IndexMap<u32, Self>, ctx: &ExecutionContext) -> Result<()> {
         let (mut to_execute, mut to_undo) = Self::get_todo(pieces, ctx);
 
-        PieceEnum::undo_bulk(
+        PieceEnum::undo_multiple(
             to_undo
                 .iter_mut()
                 .map(|(id, x)| {
@@ -98,7 +98,7 @@ impl FullPiece {
             ctx,
         )?;
 
-        PieceEnum::execute_bulk(
+        PieceEnum::execute_multiple(
             to_execute
                 .iter_mut()
                 .map(|(id, x)| {
@@ -129,8 +129,8 @@ impl FullPiece {
             // If we don't execute it, just mark it as executed immediately.
             cb();
         } else {
-            // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::execute_bulk(vec![(id, &mut self.piece, cb)], ctx)?;
+            // We could bypass `execute_multiple` here, but this is clearer
+            PieceEnum::execute_multiple(vec![(id, &mut self.piece, cb)], ctx)?;
         }
 
         Ok(id)
@@ -151,8 +151,8 @@ impl FullPiece {
         };
 
         if undo_here {
-            // We could bypass `execute_bulk` here, but this is clearer
-            PieceEnum::undo_bulk(vec![(id, &mut self.piece, cb)], ctx)?;
+            // We could bypass `undo_multiple` here, but this is clearer
+            PieceEnum::undo_multiple(vec![(id, &mut self.piece, cb)], ctx)?;
         } else {
             // If we don't execute it, just add it immediately.
             cb();

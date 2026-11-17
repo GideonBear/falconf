@@ -131,24 +131,23 @@ impl Action {
 }
 
 impl PieceEnum {
-    // TODO(low): Improve naming
     /// Execute multiple pieces
-    pub fn execute_bulk<F: FnMut()>(
+    pub fn execute_multiple<F: FnMut()>(
         pieces: Vec<(u32, &mut Self, F)>,
         ctx: &ExecutionContext,
     ) -> Result<()> {
-        Self::run_bulk(Action::Execute, pieces, ctx)
+        Self::run_multiple(Action::Execute, pieces, ctx)
     }
 
     /// Undo multiple pieces.
-    pub fn undo_bulk<F: FnMut()>(
+    pub fn undo_multiple<F: FnMut()>(
         pieces: Vec<(u32, &mut Self, F)>,
         ctx: &ExecutionContext,
     ) -> Result<()> {
-        Self::run_bulk(Action::Undo, pieces, ctx)
+        Self::run_multiple(Action::Undo, pieces, ctx)
     }
 
-    fn run_bulk<F: FnMut()>(
+    fn run_multiple<F: FnMut()>(
         action: Action,
         pieces: Vec<(u32, &mut Self, F)>,
         ctx: &ExecutionContext,
@@ -158,15 +157,15 @@ impl PieceEnum {
         //     return Ok(());
         // }
         let (apt, deb_get, cargo_install, conf, non_bulk) = Self::sort_pieces(pieces);
-        Self::run_bulk_bulk(action, apt, ctx)?;
-        Self::run_bulk_bulk(action, deb_get, ctx)?;
-        Self::run_bulk_bulk(action, cargo_install, ctx)?;
-        Self::run_bulk_bulk(action, conf, ctx)?;
-        Self::run_non_bulk_bulk(action, non_bulk, ctx)?;
+        Self::run_bulk(action, apt, ctx)?;
+        Self::run_bulk(action, deb_get, ctx)?;
+        Self::run_bulk(action, cargo_install, ctx)?;
+        Self::run_bulk(action, conf, ctx)?;
+        Self::run_multiple_non_bulk(action, non_bulk, ctx)?;
         Ok(())
     }
 
-    fn run_bulk_bulk<F: FnMut(), P: BulkPiece>(
+    fn run_bulk<F: FnMut(), P: BulkPiece>(
         action: Action,
         pieces: Vec<(u32, &mut P, F)>,
         ctx: &ExecutionContext,
@@ -203,7 +202,7 @@ impl PieceEnum {
         Ok(())
     }
 
-    fn run_non_bulk_bulk<F: FnMut()>(
+    fn run_multiple_non_bulk<F: FnMut()>(
         action: Action,
         pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
         ctx: &ExecutionContext,
