@@ -2,7 +2,6 @@ use color_eyre::Result;
 use color_eyre::eyre::{Context, OptionExt as _, eyre};
 use color_eyre::owo_colors::OwoColorize as _;
 use command_error::{ChildExt, CommandExt};
-use itertools::Itertools;
 use log::{debug, info};
 use std::ffi::OsStr;
 use std::fmt::Debug;
@@ -118,10 +117,7 @@ pub fn match_prefix<'a>(
     match matches.as_slice() {
         [] => Err(eyre!("No matches found")),
         [one] => Ok(one),
-        many => Err(eyre!(
-            "Multiple matches found: {}",
-            many.iter().map(|s| s.to_string()).join(", "),
-        )),
+        many => Err(eyre!("Multiple matches found: {}", many.join(", "),)),
     }
 }
 
