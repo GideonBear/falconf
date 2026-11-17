@@ -501,7 +501,7 @@ dependencies = [
 
 [[package]]
 name = "falconf"
-version = "0.5.4"
+version = "0.5.5"
 dependencies = [
  "auth-git2",
  "clap",
