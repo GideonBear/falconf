@@ -37,12 +37,10 @@ pub fn confirm(question: &str) -> io::Result<bool> {
         io::stdin().read_line(&mut input)?;
         let ans = input.to_ascii_lowercase();
         let ans = ans.trim_end();
-        if ans == "y" || ans == "yes" {
-            return Ok(true);
-        } else if ans == "n" || ans == "no" {
-            return Ok(false);
-        } else {
-            println!("Invalid answer.");
+        match ans {
+            "y" | "yes" => return Ok(true),
+            "n" | "no" => return Ok(false),
+            _ => println!("Invalid answer."),
         }
     }
 }
