@@ -107,14 +107,13 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
             operations.push(Box::new(move |pieces| {
                 #[expect(clippy::missing_panics_doc, reason = "Checked above")]
                 let piece = pieces.get_mut(&id).unwrap();
-                if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece {
-                    if let Some(existing_undo) = &piece.undo_command {
-                        warn!("Overwriting existing undo: {existing_undo}");
-                    }
-                    piece.undo_command = Some(undo);
-                } else {
+                let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece else {
                     unreachable!();
+                };
+                if let Some(existing_undo) = &piece.undo_command {
+                    warn!("Overwriting existing undo: {existing_undo}");
                 }
+                piece.undo_command = Some(undo);
             }));
         } else {
             return Err(eyre!(
@@ -130,11 +129,10 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
             operations.push(Box::new(move |pieces| {
                 #[expect(clippy::missing_panics_doc, reason = "Checked above")]
                 let piece = pieces.get_mut(&id).unwrap();
-                if let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece {
-                    piece.undo_command = None;
-                } else {
+                let PieceEnum::NonBulk(NonBulkPieceEnum::Command(piece)) = &mut piece.piece else {
                     unreachable!();
-                }
+                };
+                piece.undo_command = None;
             }));
         } else {
             return Err(eyre!(
