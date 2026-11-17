@@ -1,6 +1,8 @@
 use crate::full_piece::FullPiece;
+use crate::group::Group;
 use crate::machine::{Machine, MachineData};
 use crate::migrations;
+use crate::utils::print_id;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use indexmap::IndexMap;
@@ -11,7 +13,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
-/// Group names with a special meaning, see [`crate::group::Group`]
+/// Group names with a special meaning, see [`Group`]
 const RESERVED_GROUPS: [&str; 2] = ["all", "none"];
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -72,8 +74,23 @@ impl Data {
                 ));
             }
         }
-        // TODO(low): should also check groups on pieces?
-        for group in self.machines.values().flat_map(|m| &m.groups) {
+        let piece_groups = self
+            .pieces
+            .iter()
+            .filter_map(|(&id, piece)| match &piece.group {
+                Group::Custom(group) => Some(Ok(group)),
+                Group::Machine(machine) if !self.machines.contains_key(machine) => {
+                    Some(Err(eyre!(
+                        "Piece {} is grouped on machine {}, which doesn't exist",
+                        print_id(id),
+                        machine.0
+                    )))
+                }
+                Group::All | Group::None | Group::Machine(_) => None,
+            });
+        let machine_groups = self.machines.values().flat_map(|m| &m.groups).map(Ok);
+        for group in machine_groups.chain(piece_groups) {
+            let group = group?;
             if RESERVED_GROUPS.contains(&group.as_str()) {
                 return Err(eyre!("'{group}' is reserved and can't be used as a group"));
             }
@@ -114,7 +131,17 @@ pub fn to_file<T: Serialize>(data: &T, path: &Path) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pieces::falconf_init::FalconfInit;
+    use crate::pieces::{NonBulkPieceEnum, PieceEnum};
     use std::collections::BTreeSet;
+
+    fn with_piece(mut data: Data, group: Group) -> Data {
+        let piece = PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
+            "remote".to_string(),
+        )));
+        data.pieces.insert(1, FullPiece::new(piece, None, group));
+        data
+    }
 
     fn data_with(machines: &[(&str, &[&str])]) -> Data {
         let mut data = Data::init_new();
@@ -144,5 +171,33 @@ mod tests {
         assert!(data_with(&[("a", &[]), ("b", &["a"])]).validate().is_err());
         assert!(data_with(&[("all", &[])]).validate().is_err());
         assert!(data_with(&[("a", &["none"])]).validate().is_err());
+
+        let data = data_with(&[("a", &[])]);
+        let a = *data.machines.keys().next().unwrap();
+        assert!(
+            with_piece(data.clone(), Group::Machine(a))
+                .validate()
+                .is_ok()
+        );
+        assert!(
+            with_piece(data.clone(), Group::Custom("g".to_string()))
+                .validate()
+                .is_ok()
+        );
+        assert!(
+            with_piece(data.clone(), Group::Machine(Machine::new()))
+                .validate()
+                .is_err()
+        );
+        assert!(
+            with_piece(data.clone(), Group::Custom("a".to_string()))
+                .validate()
+                .is_err()
+        );
+        assert!(
+            with_piece(data, Group::Custom("all".to_string()))
+                .validate()
+                .is_err()
+        );
     }
 }
