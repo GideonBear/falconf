@@ -102,12 +102,13 @@ impl Installation {
                     )
                 })
                 .collect();
-            if falconf_inits.is_empty() {
-                return Err(eyre!("Expected a falconf init piece to be present"));
-            } else if falconf_inits.len() > 1 {
-                return Err(eyre!("Expected only one falconf init piece to be present"));
-            }
-            let (_id, ref mut falconf_init) = falconf_inits[0];
+            let (_id, falconf_init) = match falconf_inits.as_mut_slice() {
+                [piece] => piece,
+                [] => return Err(eyre!("Expected a falconf init piece to be present")),
+                [_, _, ..] => {
+                    return Err(eyre!("Expected only one falconf init piece to be present"));
+                }
+            };
             falconf_init.done(machine);
 
             repo.write_and_push(vec![], None)?;
