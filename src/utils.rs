@@ -68,10 +68,7 @@ pub fn remove_empty_dirs(path: &Path) -> Result<()> {
             let p = entry.path();
             if p.is_dir() {
                 remove_empty_dirs(&p)?;
-                if fs::read_dir(&p)
-                    .map(|mut d| d.next().is_none())
-                    .unwrap_or(false)
-                {
+                if fs::read_dir(&p).is_ok_and(|mut d| d.next().is_none()) {
                     fs::remove_dir(&p)?;
                 }
             }
