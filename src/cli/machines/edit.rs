@@ -35,6 +35,16 @@ impl Args {
             remove_group: vec![],
         }
     }
+
+    #[cfg(test)]
+    pub fn new_testing_name(machine: MachineRef, name: String) -> Self {
+        Self {
+            machine,
+            name: Some(name),
+            group: vec![],
+            remove_group: vec![],
+        }
+    }
 }
 
 pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {

@@ -3,7 +3,7 @@ mod migration_3;
 mod migration_4;
 mod migration_5;
 
-use crate::data::{from_file, to_file};
+use crate::data::{from_file, from_reader, to_file};
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use itertools::Itertools;
@@ -11,6 +11,7 @@ use log::info;
 use seq_macro::seq;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::io::Read;
 use std::path::Path;
 
 pub(crate) const VERSION: u32 = 5;
@@ -18,6 +19,10 @@ pub(crate) const VERSION: u32 = 5;
 #[derive(Debug, Clone, Deserialize)]
 struct Data {
     version: u32,
+}
+
+pub(crate) fn version(reader: impl Read) -> Result<u32> {
+    Ok(from_reader::<Data>(reader)?.version)
 }
 
 pub(crate) fn run_migrations(path: &Path) -> Result<Option<String>> {

@@ -32,11 +32,12 @@ pub fn sync(top_level_args: TopLevelArgs, _args: Args) -> Result<()> {
 pub mod tests {
     use super::*;
     use crate::cli::add::tests::{add_util, add_util_no_test_run};
+    use crate::cli::machines::MachineRef;
     use crate::cli::push::push;
     use crate::cli::push::tests::push_util;
     use crate::cli::remove::remove;
     use crate::cli::undo::tests::undo_util;
-    use crate::cli::{add, push, remove};
+    use crate::cli::{add, machines, push, remove};
     use crate::testing::{TestEnv, get_piece};
     use crate::testing::{git_status, setup_two_files};
     use color_eyre::eyre::OptionExt;
@@ -371,6 +372,53 @@ pub mod tests {
             // Both machines added a piece at the end, which git can't merge
             let err = Installation::get(&TopLevelArgs::new_testing(f.clone(), true)).unwrap_err();
             assert!(format!("{err:?}").contains("conflict with remote changes in: data.ron"));
+            // Nothing was changed; the unpushed commit is still there
+            assert_eq!(head()?, head_before);
+            assert_eq!(git_status(f)?, "");
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_pull_rejects_invalid_merge() -> Result<()> {
+        let mut env = TestEnv::new(2)?;
+        let remote = env.remote.address.clone();
+        let rename = |f: &Path| {
+            machines::edit::edit(
+                TopLevelArgs::new_testing(f.to_path_buf(), true),
+                machines::edit::Args::new_testing_name(MachineRef::This, "foo".to_string()),
+            )
+        };
+
+        env.with(1, |f| {
+            set_push_url(f, "file:///nonexistent")?;
+            assert!(rename(f).is_err());
+            set_push_url(f, &remote)?;
+            Ok(())
+        })?;
+
+        env.with(0, |f| rename(f))?;
+
+        env.with(1, |f| {
+            let head = || -> Result<String> {
+                Ok(Command::new("git")
+                    .arg("-C")
+                    .arg(f.join("repository"))
+                    .args(["rev-parse", "HEAD"])
+                    .output_checked_utf8()?
+                    .stdout)
+            };
+            let head_before = head()?;
+            // Git can merge both renames, but that results in two machines named 'foo'
+            let err = Installation::get(&TopLevelArgs::new_testing(f.clone(), true)).unwrap_err();
+            let err = format!("{err:?}");
+            assert!(
+                err.contains("changes to data.ron can't be combined"),
+                "{err}"
+            );
+            assert!(err.contains("already used by another machine"), "{err}");
             // Nothing was changed; the unpushed commit is still there
             assert_eq!(head()?, head_before);
             assert_eq!(git_status(f)?, "");

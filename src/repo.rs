@@ -376,6 +376,7 @@ fn merge(repository: &Repository, theirs: &Commit<'_>) -> Result<()> {
     let tree = repository
         .find_tree(index.write_tree_to(repository)?)
         .wrap_err("Failed to find merged tree")?;
+    check_merged_data(repository, &ours, theirs, &tree)?;
     checkout_safe(repository, &tree)?;
     let signature = repository.signature().wrap_err("Failed to get signature")?;
     repository
@@ -389,6 +390,42 @@ fn merge(repository: &Repository, theirs: &Commit<'_>) -> Result<()> {
         )
         .wrap_err("Failed to commit merge")?;
     Ok(())
+}
+
+/// Fail if the merge made the data file invalid, e.g. two machines concurrently renamed to the same name.
+/// Data that was already invalid on either side is let through, so that it can still be fixed with falconf.
+fn check_merged_data(
+    repository: &Repository,
+    ours: &Commit<'_>,
+    theirs: &Commit<'_>,
+    merged: &Tree<'_>,
+) -> Result<()> {
+    let Some(Err(err)) = data_validity(repository, merged)? else {
+        return Ok(());
+    };
+    for side in [ours, theirs] {
+        if !matches!(data_validity(repository, &side.tree()?)?, Some(Ok(()))) {
+            return Ok(());
+        }
+    }
+    Err(err.wrap_err(format!(
+        "Local and remote changes to {DATA_PATH} can't be combined. Nothing was changed. Resolve this manually with git in {}.",
+        workdir_from_repository(repository)?.display()
+    )))
+}
+
+/// Parse and validate the data file in `tree`, or `None` if it isn't at the current version
+fn data_validity(repository: &Repository, tree: &Tree<'_>) -> Result<Option<Result<()>>> {
+    let blob = tree
+        .get_path(DATA_PATH.as_ref())?
+        .to_object(repository)?
+        .peel_to_blob()?;
+    let content = blob.content();
+    Ok(match migrations::version(content) {
+        Ok(version) if version != migrations::VERSION => None,
+        Ok(_) => Some(data::from_reader::<Data>(content).and_then(|data| data.validate())),
+        Err(err) => Some(Err(err)),
+    })
 }
 
 fn data_changed(repository: &Repository) -> Result<bool> {
