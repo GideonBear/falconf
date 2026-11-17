@@ -27,8 +27,7 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
             .arg("list-recursively")
             .output_checked_utf8()?
             .stdout
-            .trim()
-            .split('\n')
+            .lines()
             .map(|s| {
                 let (schema, key, value) = s
                     .splitn(3, ' ')
