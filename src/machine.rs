@@ -1,5 +1,4 @@
 use crate::group::Group;
-use crate::utils::OptionExt;
 use color_eyre::Result;
 use color_eyre::owo_colors::OwoColorize;
 use indexmap::IndexMap;
@@ -27,8 +26,10 @@ pub struct MachineData {
 impl MachineData {
     pub fn new_this(name: Option<String>) -> Result<Self> {
         Ok(Self {
-            name: name
-                .unwrap_or_else_fallible(|| Ok(hostname::get()?.to_string_lossy().into_owned()))?,
+            name: match name {
+                Some(name) => name,
+                None => hostname::get()?.to_string_lossy().into_owned(),
+            },
             groups: BTreeSet::new(),
         })
     }
