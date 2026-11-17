@@ -150,7 +150,7 @@ fn sudo_write_file(path: &Path, contents: &str) -> Result<()> {
 }
 
 /// Joins a value using shell_words::join when necessary
-pub fn join_value(value: &Vec<String>) -> String {
+pub fn join_value(value: &[String]) -> String {
     if value.len() == 1 {
         value[0].clone()
     } else {
@@ -173,7 +173,12 @@ mod tests {
 
     fn testcase_join_value(input: Vec<&str>, output: &str) {
         assert_eq!(
-            join_value(&input.into_iter().map(ToString::to_string).collect()),
+            join_value(
+                &input
+                    .into_iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+            ),
             output,
         );
     }
@@ -193,6 +198,6 @@ mod tests {
     #[test]
     fn test_join_value_pipe_not_escaped() {
         let command = "curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get";
-        assert_eq!(join_value(&vec![command.to_string()]), command);
+        assert_eq!(join_value(&[command.to_string()]), command);
     }
 }
