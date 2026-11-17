@@ -115,73 +115,29 @@ impl NonBulkPieceEnum {
     }
 }
 
+#[derive(Clone, Copy)]
+enum Action {
+    Execute,
+    Undo,
+}
+
+impl Action {
+    const fn verb(self) -> &'static str {
+        match self {
+            Self::Execute => "Executing",
+            Self::Undo => "Undoing",
+        }
+    }
+}
+
 impl PieceEnum {
-    // TODO(low): maybe deduplicate between execute and undo with some generics or something?
     // TODO(low): Improve naming
     /// Execute multiple pieces
     pub fn execute_bulk<F: FnMut()>(
         pieces: Vec<(u32, &mut Self, F)>,
         ctx: &ExecutionContext,
     ) -> Result<()> {
-        // if ctx.dry_run {
-        //     warn!("Dry run! Not doing anything.");
-        //     return Ok(());
-        // }
-        let (apt, deb_get, cargo_install, conf, non_bulk) = Self::sort_pieces(pieces);
-        Self::execute_bulk_bulk(apt, ctx)?;
-        Self::execute_bulk_bulk(deb_get, ctx)?;
-        Self::execute_bulk_bulk(cargo_install, ctx)?;
-        Self::execute_bulk_bulk(conf, ctx)?;
-        Self::execute_non_bulk_bulk(non_bulk, ctx)?;
-        Ok(())
-    }
-
-    fn execute_bulk_bulk<F: FnMut(), P: BulkPiece>(
-        pieces: Vec<(u32, &mut P, F)>,
-        ctx: &ExecutionContext,
-    ) -> Result<()> {
-        if pieces.is_empty() {
-            return Ok(());
-        }
-
-        if pieces.len() == 1 {
-            let (id, piece, _cb) = &pieces[0];
-            info!("Executing piece: {} {piece}", print_id(*id));
-        } else {
-            info!("Executing multiple pieces at once:");
-            for (id, piece, _cb) in &pieces {
-                info!("- {} {piece}", print_id(*id));
-            }
-        }
-
-        let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
-        // As we're executing in bulk, we want to wait with the callbacks until after execution
-        if !ctx.test_run {
-            P::execute_bulk(pieces, ctx)?;
-        } else {
-            warn!("Test run! Refraining from execution, but marking as normal.");
-        }
-        for mut cb in cbs {
-            cb();
-        }
-
-        Ok(())
-    }
-
-    fn execute_non_bulk_bulk<F: FnMut()>(
-        pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
-        ctx: &ExecutionContext,
-    ) -> Result<()> {
-        for (id, piece, mut cb) in pieces {
-            info!("Executing piece: {} {piece}", print_id(id));
-            if !ctx.test_run {
-                piece.execute(ctx)?;
-            } else {
-                warn!("Test run! Refraining from execution, but marking as normal.");
-            }
-            cb();
-        }
-        Ok(())
+        Self::run_bulk(Action::Execute, pieces, ctx)
     }
 
     /// Undo multiple pieces.
@@ -189,20 +145,29 @@ impl PieceEnum {
         pieces: Vec<(u32, &mut Self, F)>,
         ctx: &ExecutionContext,
     ) -> Result<()> {
+        Self::run_bulk(Action::Undo, pieces, ctx)
+    }
+
+    fn run_bulk<F: FnMut()>(
+        action: Action,
+        pieces: Vec<(u32, &mut Self, F)>,
+        ctx: &ExecutionContext,
+    ) -> Result<()> {
         // if ctx.dry_run {
         //     warn!("Dry run! Not doing anything.");
         //     return Ok(());
         // }
         let (apt, deb_get, cargo_install, conf, non_bulk) = Self::sort_pieces(pieces);
-        Self::undo_bulk_bulk(apt, ctx)?;
-        Self::undo_bulk_bulk(deb_get, ctx)?;
-        Self::undo_bulk_bulk(cargo_install, ctx)?;
-        Self::undo_bulk_bulk(conf, ctx)?;
-        Self::undo_non_bulk_bulk(non_bulk, ctx)?;
+        Self::run_bulk_bulk(action, apt, ctx)?;
+        Self::run_bulk_bulk(action, deb_get, ctx)?;
+        Self::run_bulk_bulk(action, cargo_install, ctx)?;
+        Self::run_bulk_bulk(action, conf, ctx)?;
+        Self::run_non_bulk_bulk(action, non_bulk, ctx)?;
         Ok(())
     }
 
-    fn undo_bulk_bulk<F: FnMut(), P: BulkPiece>(
+    fn run_bulk_bulk<F: FnMut(), P: BulkPiece>(
+        action: Action,
         pieces: Vec<(u32, &mut P, F)>,
         ctx: &ExecutionContext,
     ) -> Result<()> {
@@ -210,11 +175,12 @@ impl PieceEnum {
             return Ok(());
         }
 
+        let verb = action.verb();
         if pieces.len() == 1 {
             let (id, piece, _cb) = &pieces[0];
-            info!("Undoing piece: {} {piece}", print_id(*id));
+            info!("{verb} piece: {} {piece}", print_id(*id));
         } else {
-            info!("Undoing multiple pieces at once:");
+            info!("{verb} multiple pieces at once:");
             for (id, piece, _cb) in &pieces {
                 info!("- {} {piece}", print_id(*id));
             }
@@ -222,10 +188,13 @@ impl PieceEnum {
 
         let (_ids, pieces, cbs): (Vec<u32>, Vec<&mut P>, Vec<F>) = pieces.into_iter().multiunzip();
         // As we're executing in bulk, we want to wait with the callbacks until after execution
-        if !ctx.test_run {
-            P::undo_bulk(pieces, ctx)?;
-        } else {
+        if ctx.test_run {
             warn!("Test run! Refraining from execution, but marking as normal.");
+        } else {
+            match action {
+                Action::Execute => P::execute_bulk(pieces, ctx)?,
+                Action::Undo => P::undo_bulk(pieces, ctx)?,
+            }
         }
         for mut cb in cbs {
             cb();
@@ -234,16 +203,21 @@ impl PieceEnum {
         Ok(())
     }
 
-    fn undo_non_bulk_bulk<F: FnMut()>(
+    fn run_non_bulk_bulk<F: FnMut()>(
+        action: Action,
         pieces: Vec<(u32, &mut NonBulkPieceEnum, F)>,
         ctx: &ExecutionContext,
     ) -> Result<()> {
+        let verb = action.verb();
         for (id, piece, mut cb) in pieces {
-            info!("Undoing piece: {} {piece}", print_id(id));
-            if !ctx.test_run {
-                piece.undo(ctx)?;
-            } else {
+            info!("{} piece: {verb} {piece}", print_id(id));
+            if ctx.test_run {
                 warn!("Test run! Refraining from execution, but marking as normal.");
+            } else {
+                match action {
+                    Action::Execute => piece.execute(ctx)?,
+                    Action::Undo => piece.undo(ctx)?,
+                }
             }
             cb();
         }
