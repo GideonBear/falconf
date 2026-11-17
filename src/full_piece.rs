@@ -208,15 +208,14 @@ impl FullPiece {
         let comment_suffix = comment_suffix.italic();
         let comment_suffix = comment_suffix.dimmed();
 
-        let group_suffix = if let Group::Machine(machine) = &self.group {
-            #[expect(clippy::missing_panics_doc, reason = "Invalid config")]
-            {
-                format!(" (runs on: {})", machines.get(machine).unwrap().name)
+        let group_suffix = match &self.group {
+            Group::Machine(machine) => {
+                #[expect(clippy::missing_panics_doc, reason = "Invalid config")]
+                let name = &machines.get(machine).unwrap().name;
+                format!(" (runs on: {name})")
             }
-        } else if let Group::Custom(custom) = &self.group {
-            format!(" (runs on group: {})", custom)
-        } else {
-            String::new()
+            Group::Custom(custom) => format!(" (runs on group: {custom})"),
+            Group::All | Group::None => String::new(),
         };
         let group_suffix = group_suffix.bright_green();
 
