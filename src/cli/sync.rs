@@ -44,8 +44,6 @@ pub mod tests {
     use command_error::CommandExt as _;
     use log::debug;
     use std::fs;
-    use std::fs::File;
-    use std::io::Write;
     use std::path::Path;
     use std::process::Command;
 
@@ -59,7 +57,7 @@ pub mod tests {
         let test_1 = env.fs.join("test_1.txt");
 
         env.with(0, |f| {
-            File::create(&test_1)?.write_all(b"test_1_content")?;
+            fs::write(&test_1, b"test_1_content")?;
             debug!("Created {test_1:?}");
             let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
             add_util_no_test_run(f, add::Piece::File, vec![test_1_s.clone()])?;
@@ -175,7 +173,7 @@ pub mod tests {
         let test_1_s = test_1.to_str().ok_or_eyre("Invalid path")?.to_string();
 
         env.with(0, |f| {
-            File::create(&test_1)?.write_all(b"test_1_content")?;
+            fs::write(&test_1, b"test_1_content")?;
             debug!("Created {test_1:?}");
             add_util_no_test_run(f, add::Piece::File, vec![test_1_s.clone()])?;
             Ok(())
@@ -185,14 +183,14 @@ pub mod tests {
             let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
             let args = Args {};
             sync(top_level_args, args)?;
-            File::create(&test_1)?.write_all(b"test_1_content_edit_local_2")?;
+            fs::write(&test_1, b"test_1_content_edit_local_2")?;
             let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
             push(top_level_args, push::Args { yes: true })?;
             Ok(())
         })?;
 
         env.with(0, |f| {
-            File::create(&test_1)?.write_all(b"test_1_content_edit_local_1")?;
+            fs::write(&test_1, b"test_1_content_edit_local_1")?;
             let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
             let args = Args {};
             assert!(sync(top_level_args, args).is_err());
@@ -201,7 +199,7 @@ pub mod tests {
                 "test_1_content_edit_local_1".to_string()
             );
 
-            File::create(&test_1)?.write_all(b"test_1_content")?;
+            fs::write(&test_1, b"test_1_content")?;
             let top_level_args = TopLevelArgs::new_testing(f.clone(), false);
             let args = Args {};
             sync(top_level_args, args)?;

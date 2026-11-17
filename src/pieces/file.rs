@@ -186,7 +186,6 @@ mod tests {
     use crate::testing::TestEnv;
     use color_eyre::eyre::OptionExt;
     use std::fs::create_dir;
-    use std::io::Write;
     use std::{fs, io};
 
     #[test]
@@ -196,8 +195,8 @@ mod tests {
 
         env.with(0, |f| {
             create_dir(&test_d)?;
-            fs::File::create(test_d.join("test_1"))?.write_all(b"test_1_content")?;
-            fs::File::create(test_d.join("test_2"))?.write_all(b"test_2_content")?;
+            fs::write(test_d.join("test_1"), b"test_1_content")?;
+            fs::write(test_d.join("test_2"), b"test_2_content")?;
 
             let test_d_s = test_d.to_str().ok_or_eyre("Invalid path")?.to_string();
             add_util_no_test_run(f, crate::cli::add::Piece::File, vec![test_d_s])?;

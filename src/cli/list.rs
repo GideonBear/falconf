@@ -43,7 +43,7 @@ pub mod tests {
     use color_eyre::Result;
     use log::debug;
     use regex::Regex;
-    use std::fs::File;
+    use std::fs;
     use tempfile::TempDir;
 
     #[test]
@@ -82,7 +82,7 @@ pub mod tests {
             // File
             let temp = TempDir::new()?;
             let test1 = temp.path().join("test1.txt");
-            File::create(&test1)?.write_all(b"test1")?;
+            fs::write(&test1, b"test1")?;
             debug!("Created {test1:?}");
             add_util(f, add::Piece::File, vec![test1.display().to_string()])?;
             // Manual
