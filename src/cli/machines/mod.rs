@@ -35,7 +35,7 @@ pub enum MachineRef {
 }
 
 impl MachineRef {
-    fn _resolve(
+    fn resolve_machine(
         &self,
         machines: &IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
@@ -60,7 +60,7 @@ impl MachineRef {
         machines: &'a IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
     ) -> Result<(Machine, &'a MachineData)> {
-        let machine = self._resolve(machines, ctx)?;
+        let machine = self.resolve_machine(machines, ctx)?;
         Ok((
             machine,
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]
@@ -76,7 +76,7 @@ impl MachineRef {
         machines: &'a mut IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
     ) -> Result<(Machine, &'a mut MachineData)> {
-        let machine = self._resolve(machines, ctx)?;
+        let machine = self.resolve_machine(machines, ctx)?;
         Ok((
             machine,
             #[expect(clippy::missing_panics_doc, reason = "illegal configuration")]

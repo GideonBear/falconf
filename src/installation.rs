@@ -42,7 +42,7 @@ impl Installation {
         }
         fs::create_dir(root)?;
 
-        match Self::_init(top_level_args, args) {
+        match Self::init_inner(top_level_args, args) {
             Ok(installation) => Ok(installation),
             Err(e) => {
                 info!(
@@ -54,7 +54,7 @@ impl Installation {
         }
     }
 
-    fn _init(top_level_args: &TopLevelArgs, args: init::Args) -> Result<Self> {
+    fn init_inner(top_level_args: &TopLevelArgs, args: init::Args) -> Result<Self> {
         let root = &top_level_args.path;
 
         let machine_path = root.join("machine");
