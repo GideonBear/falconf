@@ -2,6 +2,7 @@ use crate::cli::TopLevelArgs;
 use crate::cli::machines::MachineRef;
 use crate::execution_context::ExecutionContext;
 use crate::installation::Installation;
+use crate::utils::print_id_raw;
 use std::io::Write;
 
 #[derive(clap::Args, Debug)]
@@ -9,6 +10,10 @@ pub struct Args {
     /// Only show pieces applicable to the given machine. 'this' is a shortcut for the current machine.
     #[arg(long = "for")]
     for_: Option<MachineRef>,
+
+    /// Output only ids (e.g. for passing to other commands)
+    #[arg(long)]
+    ids: bool,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -24,14 +29,18 @@ pub fn list<W: Write>(
     let pieces = data.pieces();
     let machines = data.machines();
 
-    for (id, piece) in pieces {
+    for (&id, piece) in pieces {
         if let Some(for_) = &args.for_ {
             let (machine, machine_data) = for_.resolve(machines, &ctx)?;
             if !machine_data.in_group(machine, &piece.group) {
                 continue;
             }
         }
-        writeln!(writer, "{}", piece.print(*id, machines))?;
+        if args.ids {
+            writeln!(writer, "{}", print_id_raw(id))?;
+        } else {
+            writeln!(writer, "{}", piece.print(id, machines))?;
+        }
     }
 
     Ok(())
@@ -193,7 +202,7 @@ pub mod tests {
             )?;
 
             let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
-            let args = Args { for_: None };
+            let args = Args { for_: None, ids: false };
             let mut writer = vec![];
 
             list(top_level_args, args, &mut writer)?;
