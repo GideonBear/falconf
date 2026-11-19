@@ -1,23 +1,36 @@
 use crate::cli::TopLevelArgs;
+use crate::cli::machines::MachineRef;
+use crate::execution_context::ExecutionContext;
 use crate::installation::Installation;
 use std::io::Write;
 
 #[derive(clap::Args, Debug)]
-pub struct Args {}
+pub struct Args {
+    /// Only show pieces applicable to the given machine. 'this' is a shortcut for the current machine.
+    #[arg(long = "for")]
+    for_: Option<MachineRef>,
+}
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn list<W: Write>(
     top_level_args: TopLevelArgs,
-    _args: Args,
+    args: Args,
     writer: &mut W,
 ) -> color_eyre::Result<()> {
     let mut installation = Installation::get(&top_level_args)?;
+    let ctx = ExecutionContext::new(&installation, &top_level_args)?;
     let repo = installation.repo_mut();
     let data = repo.data();
     let pieces = data.pieces();
     let machines = data.machines();
 
     for (id, piece) in pieces {
+        if let Some(for_) = &args.for_ {
+            let (machine, machine_data) = for_.resolve(machines, &ctx)?;
+            if !machine_data.in_group(machine, &piece.group) {
+                continue;
+            }
+        }
         writeln!(writer, "{}", piece.print(*id, machines))?;
     }
 
@@ -180,7 +193,7 @@ pub mod tests {
             )?;
 
             let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
-            let args = Args {};
+            let args = Args { for_: None };
             let mut writer = vec![];
 
             list(top_level_args, args, &mut writer)?;

@@ -55,7 +55,7 @@ impl MachineRef {
         }
     }
 
-    fn resolve<'a>(
+    pub fn resolve<'a>(
         &self,
         machines: &'a IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
@@ -71,7 +71,7 @@ impl MachineRef {
         ))
     }
 
-    fn resolve_mut<'a>(
+    pub fn resolve_mut<'a>(
         &self,
         machines: &'a mut IndexMap<Machine, MachineData>,
         ctx: &ExecutionContext,
