@@ -27,7 +27,7 @@ pub struct FullPiece {
 }
 
 #[derive(Debug, Clone)]
-enum Todo {
+pub enum Todo {
     Noop,
     Execute,
     Undo,
@@ -46,7 +46,7 @@ impl FullPiece {
         }
     }
 
-    fn todo(&self, ctx: &ExecutionContext) -> Todo {
+    pub fn todo(&self, ctx: &ExecutionContext) -> Todo {
         let done = self.done_on.contains(&ctx.machine);
         let should_do = ctx.machine_data.in_group(ctx.machine, &self.group);
 
@@ -78,8 +78,15 @@ impl FullPiece {
     }
 
     pub fn do_todo(pieces: &mut IndexMap<u32, Self>, ctx: &ExecutionContext) -> Result<()> {
-        let (mut to_execute, mut to_undo) = Self::get_todo(pieces, ctx);
+        let (to_execute, to_undo) = Self::get_todo(pieces, ctx);
+        Self::do_(to_execute, to_undo, ctx)
+    }
 
+    pub fn do_(
+        mut to_execute: Vec<IdPiecePair>,
+        mut to_undo: Vec<IdPiecePair>,
+        ctx: &ExecutionContext,
+    ) -> Result<()> {
         PieceEnum::undo_multiple(
             to_undo
                 .iter_mut()

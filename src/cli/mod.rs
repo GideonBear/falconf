@@ -16,6 +16,7 @@ pub mod add;
 mod complete;
 mod done;
 mod edit;
+mod exec;
 pub mod init;
 mod list;
 mod machines;
@@ -96,6 +97,9 @@ enum Commands {
 
     #[command(about = "Synchronize changes in the repo to this machine")]
     Sync(sync::Args),
+
+    #[command(about = "Execute or undo specific pieces")]
+    Exec(exec::Args),
 
     #[command(about = "Add a new piece")]
     Add(add::Args),
@@ -183,6 +187,7 @@ pub fn main() -> Result<()> {
     match command {
         Commands::Init(args) => init::init(top_level, args),
         Commands::Sync(args) => sync::sync(top_level, args),
+        Commands::Exec(args) => exec::exec(top_level, args),
         Commands::Add(args) => add::add(top_level, args),
         Commands::List(args) => list::list(top_level, args, &mut io::stdout().lock()),
         Commands::Undo(args) => undo::undo(top_level, args),
