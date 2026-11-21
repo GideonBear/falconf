@@ -10,6 +10,7 @@ use crate::repo::Repo;
 use color_eyre::Result;
 use color_eyre::eyre::{WrapErr as _, eyre};
 use log::{debug, info};
+use std::collections::BTreeSet;
 use std::fs;
 use std::fs::remove_dir_all;
 use std::path::{Path, PathBuf};
@@ -86,6 +87,7 @@ impl Installation {
                         ))),
                         None,
                         Group::All,
+                        BTreeSet::new(),
                     ),
                     true,
                 )],

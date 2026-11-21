@@ -32,6 +32,7 @@ pub mod tests {
     use crate::pieces::{NonBulkPieceEnum, PieceEnum};
     use crate::testing::{TempDirSub, TestEnv, TestRemote};
     use log::debug;
+    use std::collections::BTreeSet;
     use tempfile::TempDir;
 
     pub fn init_util(remote: &TestRemote, new: bool, name: String) -> Result<TempDirSub> {
@@ -80,6 +81,7 @@ pub mod tests {
                 PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(address))),
                 None,
                 Group::All,
+                BTreeSet::new(),
             );
             expected.done(installation.machine());
             assert_eq!(pieces[0], expected);

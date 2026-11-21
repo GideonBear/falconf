@@ -1,8 +1,10 @@
-use crate::cli::TopLevelArgs;
 use crate::cli::machines::MachineRef;
+use crate::cli::{TopLevelArgs, complete};
 use crate::execution_context::ExecutionContext;
 use crate::installation::Installation;
 use crate::utils::print_id_raw;
+use clap_complete::ArgValueCandidates;
+use std::collections::BTreeSet;
 use std::io::Write;
 
 #[derive(clap::Args, Debug)]
@@ -14,6 +16,11 @@ pub struct Args {
     /// Output only ids (e.g. for passing to other commands)
     #[arg(long)]
     ids: bool,
+
+    /// Only show pieces that have this label. When multiple labels are given, only show pieces that have
+    /// all the given labels.
+    #[arg(long, add = ArgValueCandidates::new(complete::labels))]
+    label: Vec<String>,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -29,6 +36,7 @@ pub fn list<W: Write>(
     let pieces = data.pieces();
     let machines = data.machines();
 
+    let labels = BTreeSet::from_iter(args.label);
     for (&id, piece) in pieces {
         if let Some(for_) = &args.for_ {
             let (machine, machine_data) = for_.resolve(machines, &ctx)?;
@@ -36,6 +44,10 @@ pub fn list<W: Write>(
                 continue;
             }
         }
+        if !labels.is_subset(&piece.labels) {
+            continue;
+        }
+
         if args.ids {
             writeln!(writer, "{}", print_id_raw(id))?;
         } else {
@@ -50,7 +62,7 @@ pub fn list<W: Write>(
 pub mod tests {
     use super::*;
     use crate::cli::add::add_internal;
-    use crate::cli::add::tests::{add_util, add_util_comment, add_util_group};
+    use crate::cli::add::tests::{add_util, add_util_comment, add_util_group, add_util_labels};
     use crate::cli::edit::edit;
     use crate::cli::machines::MachineRef;
     use crate::cli::undo::tests::undo_util;
@@ -66,6 +78,7 @@ pub mod tests {
     use log::debug;
     use regex::Regex;
     use std::fs;
+    use std::path::Path;
     use tempfile::TempDir;
 
     #[test]
@@ -99,6 +112,8 @@ pub mod tests {
                     remove_undo: false,
                     move_after: None,
                     move_before: None,
+                    label: vec![],
+                    remove_label: vec![],
                 },
             )?;
             // File
@@ -128,6 +143,7 @@ pub mod tests {
                         ))),
                         None,
                         Group::All,
+                        BTreeSet::new(),
                     ),
                     false,
                 )],
@@ -152,6 +168,7 @@ pub mod tests {
                         ))),
                         None,
                         Group::All,
+                        BTreeSet::new(),
                     ),
                     false,
                 )],
@@ -168,6 +185,7 @@ pub mod tests {
                         ))),
                         None,
                         Group::All,
+                        BTreeSet::new(),
                     ),
                     false,
                 )],
@@ -200,9 +218,20 @@ pub mod tests {
                 vec![String::from("cowsay")],
                 "some_group".to_string(),
             )?;
+            // With label
+            add_util_labels(
+                f,
+                add::Piece::Apt,
+                vec![String::from("cowsay")],
+                vec!["some_label".to_string(), "some_other_label".to_string()],
+            )?;
 
             let top_level_args = TopLevelArgs::new_testing(f.clone(), true);
-            let args = Args { for_: None, ids: false };
+            let args = Args {
+                for_: None,
+                ids: false,
+                label: vec![],
+            };
             let mut writer = vec![];
 
             list(top_level_args, args, &mut writer)?;
@@ -218,21 +247,22 @@ pub mod tests {
 
             let expected = format!(
                 "
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m (undo: echo I am undoing this piece)\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m In /etc/something.conf: [Section] cursor-theme=blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on: machine_0)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
-\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[92m (runs on group: some_group)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m echo 'some text'\u{1b}[93m (undo: echo I am undoing this piece)\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Tracking file at: {}\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m Manual action: some message\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m gsettings set org.gnome.desktop.interface cursor-theme blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m deb-get install cowsay-2\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m cargo install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m In /etc/something.conf: [Section] cursor-theme=blah\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m falconf init https://github.com/user/repo\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m // This is a comment!\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[9m\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m\u{1b}[0m\u{1b}[9m \u{1b}[0m\u{1b}[9mapt install cowsay\u{1b}[0m\u{1b}[9m\u{1b}[93m\u{1b}[39m\u{1b}[0m\u{1b}[9m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[0m\u{1b}[9m\u{1b}[94m\u{1b}[39m\u{1b}[0m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m (unused)\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m (runs on: machine_0)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m\u{1b}[39m\u{1b}[92m (runs on group: some_group)\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
+\u{1b}[1m\u{1b}[35m[ID_WAS_HERE]\u{1b}[39m\u{1b}[0m apt install cowsay\u{1b}[93m\u{1b}[39m\u{1b}[2m\u{1b}[3m\u{1b}[0m\u{1b}[0m\u{1b}[94m (labels: some_label, some_other_label)\u{1b}[39m\u{1b}[92m\u{1b}[39m\u{1b}[96m\u{1b}[3m\u{1b}[0m\u{1b}[39m
 ",
                 address,
                 test1.display()
@@ -250,6 +280,80 @@ pub mod tests {
             );
 
             assert_eq!(format!("\n{output}\n"), expected,);
+
+            Ok(())
+        })
+    }
+
+    fn edit_labels(f: &Path, label: &[&str], remove_label: &[&str]) -> Result<()> {
+        edit(
+            TopLevelArgs::new_testing(f.to_path_buf(), true),
+            edit::Args {
+                comment: None,
+                remove_comment: false,
+                piece: PieceRef::Last,
+                group: None,
+                undo: None,
+                remove_undo: false,
+                move_after: None,
+                move_before: None,
+                label: label.iter().map(|&l| l.to_owned()).collect(),
+                remove_label: remove_label.iter().map(|&l| l.to_owned()).collect(),
+            },
+        )
+    }
+
+    fn count_with_labels(f: &Path, label: &[&str]) -> Result<usize> {
+        let args = Args {
+            for_: None,
+            ids: true,
+            label: label.iter().map(|&l| l.to_owned()).collect(),
+        };
+        let mut writer = vec![];
+        list(
+            TopLevelArgs::new_testing(f.to_path_buf(), true),
+            args,
+            &mut writer,
+        )?;
+        Ok(String::from_utf8(writer)?.lines().count())
+    }
+
+    #[test]
+    fn test_list_labels() -> Result<()> {
+        let mut env = TestEnv::new(1)?;
+
+        env.with(0, |f| {
+            add_util_labels(
+                f,
+                add::Piece::Apt,
+                vec![String::from("a")],
+                vec![String::from("x")],
+            )?;
+            add_util_labels(
+                f,
+                add::Piece::Apt,
+                vec![String::from("b")],
+                vec![String::from("x"), String::from("y")],
+            )?;
+            add_util(f, add::Piece::Apt, vec![String::from("c")])?;
+
+            // Including the falconf init piece
+            assert_eq!(count_with_labels(f, &[])?, 4);
+            assert_eq!(count_with_labels(f, &["x"])?, 2);
+            assert_eq!(count_with_labels(f, &["x", "y"])?, 1);
+            assert_eq!(count_with_labels(f, &["z"])?, 0);
+
+            edit_labels(f, &["x", "z"], &[])?;
+            assert_eq!(count_with_labels(f, &["x"])?, 3);
+            assert_eq!(count_with_labels(f, &["z"])?, 1);
+
+            edit_labels(f, &[], &["z"])?;
+            assert_eq!(count_with_labels(f, &["z"])?, 0);
+            assert_eq!(count_with_labels(f, &["x"])?, 3);
+
+            assert!(edit_labels(f, &[], &["z"]).is_err());
+            assert!(edit_labels(f, &["y"], &["y"]).is_err());
+            assert_eq!(count_with_labels(f, &["y"])?, 1);
 
             Ok(())
         })

@@ -63,6 +63,20 @@ pub fn machine_groups() -> Vec<CompletionCandidate> {
         .collect()
 }
 
+/// Labels used by any piece
+pub fn labels() -> Vec<CompletionCandidate> {
+    let Some(data) = read_data() else {
+        return vec![];
+    };
+    data.pieces()
+        .values()
+        .flat_map(|piece| &piece.labels)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .map(CompletionCandidate::new)
+        .collect()
+}
+
 /// Groups/machines a piece can run on
 pub fn piece_groups() -> Vec<CompletionCandidate> {
     let Some(data) = read_data() else {

@@ -11,7 +11,7 @@ use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use itertools::Itertools;
 use log::info;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::process::Command;
 
 #[derive(clap::Args, Debug)]
@@ -106,6 +106,7 @@ pub fn watch_gsettings(top_level_args: TopLevelArgs, _args: Args) -> Result<()> 
                         )),
                         None,
                         Group::All,
+                        BTreeSet::new(),
                     ),
                     true,
                 )

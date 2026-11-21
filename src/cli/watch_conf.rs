@@ -11,6 +11,7 @@ use color_eyre::{Report, Result};
 use ini_preserve::Ini;
 use itertools::{EitherOrBoth, Itertools};
 use log::info;
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 #[derive(clap::Args, Debug)]
@@ -108,6 +109,7 @@ pub fn watch_conf(top_level_args: TopLevelArgs, args: Args) -> Result<()> {
                         ))),
                         None,
                         Group::All,
+                        BTreeSet::new(),
                     ),
                     true,
                 )

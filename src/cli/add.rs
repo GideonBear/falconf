@@ -95,6 +95,10 @@ pub struct Args {
     #[arg(long, add = ArgValueCandidates::new(complete::piece_groups))]
     pub group: Option<String>,
 
+    /// A label for this piece. Can be given multiple times
+    #[arg(long, add = ArgValueCandidates::new(complete::labels))]
+    pub label: Vec<String>,
+
     /// (command) Command to execute when undoing this
     #[arg(short, long)]
     pub undo: Option<String>,
@@ -169,6 +173,7 @@ pub mod tests {
         value: Vec<String>,
         comment: Option<String>,
         group: Option<String>,
+        labels: Vec<String>,
     ) -> Args {
         Args {
             comment,
@@ -183,6 +188,7 @@ pub mod tests {
             _conf: (),
             value,
             group,
+            label: labels,
             undo: None,
             done: false,
         }
@@ -195,10 +201,11 @@ pub mod tests {
         test_run: bool,
         comment: Option<String>,
         group: Option<String>,
+        label: Vec<String>,
     ) -> Result<()> {
         let top_level_args = TopLevelArgs::new_testing(falconf_path.to_path_buf(), test_run);
 
-        let args = add_args_util(Some(piece), value, comment, group);
+        let args = add_args_util(Some(piece), value, comment, group, label);
 
         add(top_level_args, args)?;
 
@@ -206,7 +213,7 @@ pub mod tests {
     }
 
     pub fn add_util(falconf_path: &Path, piece: Piece, value: Vec<String>) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, None, None)
+        add_util_opts(falconf_path, piece, value, true, None, None, vec![])
     }
 
     pub fn add_util_no_test_run(
@@ -214,7 +221,7 @@ pub mod tests {
         piece: Piece,
         value: Vec<String>,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, false, None, None)
+        add_util_opts(falconf_path, piece, value, false, None, None, vec![])
     }
 
     pub fn add_util_comment(
@@ -223,7 +230,15 @@ pub mod tests {
         value: Vec<String>,
         comment: String,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, Some(comment), None)
+        add_util_opts(
+            falconf_path,
+            piece,
+            value,
+            true,
+            Some(comment),
+            None,
+            vec![],
+        )
     }
 
     pub fn add_util_group(
@@ -232,7 +247,16 @@ pub mod tests {
         value: Vec<String>,
         group: String,
     ) -> Result<()> {
-        add_util_opts(falconf_path, piece, value, true, None, Some(group))
+        add_util_opts(falconf_path, piece, value, true, None, Some(group), vec![])
+    }
+
+    pub fn add_util_labels(
+        falconf_path: &Path,
+        piece: Piece,
+        value: Vec<String>,
+        labels: Vec<String>,
+    ) -> Result<()> {
+        add_util_opts(falconf_path, piece, value, true, None, None, labels)
     }
 
     // Add is tested in sync

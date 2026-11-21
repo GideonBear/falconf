@@ -10,6 +10,7 @@ use color_eyre::Result;
 use color_eyre::eyre::{OptionExt as _, eyre};
 use indexmap::IndexMap;
 use log::warn;
+use std::mem;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -37,6 +38,14 @@ pub struct Args {
     /// Remove any existing undo
     #[arg(long, action=SetTrue, conflicts_with = "undo")]
     pub remove_undo: bool,
+
+    /// Add a label to this piece. Can be given multiple times
+    #[arg(long, add = ArgValueCandidates::new(complete::labels))]
+    pub label: Vec<String>,
+
+    /// Remove a label from this piece. Can be given multiple times
+    #[arg(long, add = ArgValueCandidates::new(complete::labels))]
+    pub remove_label: Vec<String>,
 
     /// Reorder this piece, moving it after the given piece
     #[arg(long, add = ArgValueCandidates::new(complete::pieces))]
@@ -78,6 +87,36 @@ pub fn edit(top_level_args: TopLevelArgs, mut args: Args) -> Result<()> {
             #[expect(clippy::missing_panics_doc, reason = "Checked above")]
             let piece = pieces.get_mut(&id).unwrap();
             piece.comment = None;
+        }));
+    }
+
+    if let Some(label) = args
+        .label
+        .iter()
+        .find(|label| args.remove_label.contains(label))
+    {
+        return Err(eyre!("Can't both add and remove label '{label}'"));
+    }
+    for label in &args.remove_label {
+        if !piece.labels.contains(label) {
+            return Err(eyre!("Piece doesn't have label '{label}'"));
+        }
+    }
+    for label in &args.label {
+        if piece.labels.contains(label) {
+            warn!("Piece already has label '{label}'");
+        }
+    }
+    if !args.label.is_empty() || !args.remove_label.is_empty() {
+        let add = mem::take(&mut args.label);
+        let remove = mem::take(&mut args.remove_label);
+        operations.push(Box::new(move |pieces| {
+            #[expect(clippy::missing_panics_doc, reason = "Checked above")]
+            let piece = pieces.get_mut(&id).unwrap();
+            piece.labels.extend(add);
+            for label in &remove {
+                piece.labels.remove(label);
+            }
         }));
     }
     if let Some(group) = args.group.take() {

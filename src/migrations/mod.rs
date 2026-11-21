@@ -2,6 +2,7 @@ mod migration_2;
 mod migration_3;
 mod migration_4;
 mod migration_5;
+mod migration_6;
 
 use crate::data::{from_file, from_reader, to_file};
 use color_eyre::Result;
@@ -14,7 +15,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Read;
 use std::path::Path;
 
-pub(crate) const VERSION: u32 = 5;
+pub(crate) const VERSION: u32 = 6;
 
 #[derive(Debug, Clone, Deserialize)]
 struct Data {
@@ -49,7 +50,7 @@ pub(crate) fn run_migrations(path: &Path) -> Result<Option<String>> {
 }
 
 fn migrate(migration: u32, path: &Path) -> Result<()> {
-    seq!(N in 2..=5 {
+    seq!(N in 2..=6 {
         match migration {
             #( N => migrate_generic::<migration_~N::OldData, migration_~N::NewData>(path), )*
             #[expect(clippy::missing_panics_doc)]
@@ -142,7 +143,8 @@ mod tests {
     test_migration!(2, 3);
     test_migration!(3, 4);
     test_migration!(4, 5);
-    const CURRENT_BYTES: &[u8] = include_bytes!("test_data/version_5.ron");
+    test_migration!(5, 6);
+    const CURRENT_BYTES: &[u8] = include_bytes!("test_data/version_6.ron");
 
     #[test]
     fn test_current_parses() -> Result<()> {

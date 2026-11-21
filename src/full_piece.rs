@@ -8,9 +8,11 @@ use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize as _;
 use indexmap::IndexMap;
+use itertools::Itertools as _;
 use rand::Rng as _;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use std::mem;
 use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,6 +26,9 @@ pub struct FullPiece {
     done_on: BTreeSet<Machine>,
     /// The group on which this piece should be done
     pub group: Group,
+    /// Labels assigned to this piece
+    // Uses a BTreeSet instead of a HashSet to avoid shuffling when writing data again
+    pub labels: BTreeSet<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -37,12 +42,18 @@ type IdPiecePair<'a> = (u32, &'a mut FullPiece);
 
 impl FullPiece {
     // TODO(low): one-time support (in all below methods), and then in cli
-    pub const fn new(piece: PieceEnum, comment: Option<String>, group: Group) -> Self {
+    pub const fn new(
+        piece: PieceEnum,
+        comment: Option<String>,
+        group: Group,
+        labels: BTreeSet<String>,
+    ) -> Self {
         Self {
             piece,
             comment,
             done_on: BTreeSet::new(),
             group,
+            labels,
         }
     }
 
@@ -188,7 +199,13 @@ impl FullPiece {
             None => Group::All,
             Some(group) => Group::parse_for_piece(&group, machines)?,
         };
-        Ok(Self::new(PieceEnum::from_cli(args)?, comment, group))
+        let labels = BTreeSet::from_iter(mem::take(&mut args.label));
+        Ok(Self::new(
+            PieceEnum::from_cli(args)?,
+            comment,
+            group,
+            labels,
+        ))
     }
 
     fn new_id() -> u32 {
@@ -215,6 +232,13 @@ impl FullPiece {
         let comment_suffix = comment_suffix.italic();
         let comment_suffix = comment_suffix.dimmed();
 
+        let label_suffix = if self.labels.is_empty() {
+            String::new()
+        } else {
+            format!(" (labels: {})", self.labels.iter().join(", "))
+        };
+        let label_suffix = label_suffix.bright_blue();
+
         let group_suffix = match &self.group {
             Group::Machine(machine) => {
                 #[expect(clippy::missing_panics_doc, reason = "Invalid config")]
@@ -237,19 +261,26 @@ impl FullPiece {
         // TODO(low): Workaround for https://github.com/owo-colors/owo-colors/issues/45. Fix better.
         if self.undone(machines) {
             format!(
-                "{}{}{}{}{}{}{}",
+                "{}{}{}{}{}{}{}{}",
                 id_prefix.strikethrough(),
                 " ".strikethrough(),
                 self.piece.strikethrough(),
                 undo_suffix.strikethrough(),
                 comment_suffix.strikethrough(),
+                label_suffix.strikethrough(),
                 group_suffix,
                 unused_suffix,
             )
         } else {
             format!(
-                "{} {}{}{}{}{}",
-                id_prefix, self.piece, undo_suffix, comment_suffix, group_suffix, unused_suffix,
+                "{} {}{}{}{}{}{}",
+                id_prefix,
+                self.piece,
+                undo_suffix,
+                comment_suffix,
+                label_suffix,
+                group_suffix,
+                unused_suffix,
             )
         }
     }

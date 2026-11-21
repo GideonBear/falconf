@@ -139,7 +139,8 @@ mod tests {
         let piece = PieceEnum::NonBulk(NonBulkPieceEnum::FalconfInit(FalconfInit::new(
             "remote".to_string(),
         )));
-        data.pieces.insert(1, FullPiece::new(piece, None, group));
+        data.pieces
+            .insert(1, FullPiece::new(piece, None, group, BTreeSet::new()));
         data
     }
 
