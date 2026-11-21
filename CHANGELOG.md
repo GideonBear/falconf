@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6](https://github.com/GideonBear/falconf/compare/v0.5.5...v0.5.6) - 2026-11-21
+
+### Added
+- add labels
+- add `falconf exec`
+- *(list)* add --ids
+- *(list)* add --for
+
+### Fixed
+- detect pushes rejected by the remote
+- reject merges that result in invalid data
+- validate piece groups
+- validate machine names and groups on load, init and machines edit
+
 ## [0.5.5](https://github.com/GideonBear/falconf/compare/v0.5.4...v0.5.5) - 2026-11-16
 
 ### Added
